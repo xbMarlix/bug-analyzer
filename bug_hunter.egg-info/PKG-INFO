@@ -1,0 +1,11 @@
+Metadata-Version: 2.4
+Name: bug-hunter
+Version: 0.2.0
+Summary: BugHunter — AI-powered universal bug finder for any codebase
+License: MIT
+Requires-Python: >=3.10
+Description-Content-Type: text/markdown
+Requires-Dist: openai>=1.0.0
+Requires-Dist: PyYAML>=6.0
+Provides-Extra: dev
+Requires-Dist: pytest>=7.0; extra == "dev"

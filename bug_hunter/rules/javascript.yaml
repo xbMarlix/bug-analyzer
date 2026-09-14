@@ -1,0 +1,96 @@
+# Pattern rules for JavaScript / TypeScript.
+- id: js-eval
+  pattern: '\beval\s*\('
+  severity: high
+  category: injection
+  title: eval() usage
+  description: eval executes arbitrary code; RCE/XSS if input reaches it.
+  suggestion: Use JSON.parse or a safe alternative.
+
+- id: js-innerhtml
+  pattern: '\.innerHTML\s*='
+  severity: medium
+  category: xss
+  title: innerHTML assignment
+  description: Assigning to innerHTML with unsanitized data is DOM XSS.
+  suggestion: Use textContent or a sanitizer (DOMPurify).
+
+- id: js-document-write
+  pattern: 'document\.write\s*\('
+  severity: medium
+  category: xss
+  title: document.write usage
+  description: document.write with dynamic data enables DOM XSS.
+  suggestion: Use DOM APIs instead.
+
+- id: js-dangerously-set
+  pattern: 'dangerouslySetInnerHTML'
+  severity: medium
+  category: xss
+  title: React dangerouslySetInnerHTML
+  description: Raw HTML injection in React; XSS if the content is user-controlled.
+  suggestion: Sanitize with DOMPurify first.
+
+- id: js-child-process-exec
+  pattern: 'child_process.*\bexec\s*\(|require\(["'']child_process["'']\)\.exec'
+  severity: high
+  category: injection
+  title: child_process.exec
+  description: exec runs a shell; string interpolation is command injection.
+  suggestion: Use execFile/spawn with an argv array.
+
+- id: js-sql-concat
+  pattern: '(query|execute)\s*\(\s*[`"''][^`"'']*(\+|\$\{)'
+  severity: high
+  category: sqli
+  title: SQL built by string concatenation/interpolation
+  description: Interpolated values in SQL are SQL injection.
+  suggestion: Use parameterized queries / prepared statements.
+
+- id: js-hardcoded-secret
+  pattern: '(?i)(api[_-]?key|secret|password|token)\s*[:=]\s*["''][^"'']{8,}["'']'
+  severity: high
+  category: secrets
+  title: Hardcoded credential
+  description: A secret/password/token is hardcoded in source.
+  suggestion: Use environment variables (process.env).
+
+- id: js-jwt-no-verify
+  pattern: 'jwt\.decode\s*\('
+  severity: high
+  category: auth
+  title: jwt.decode used instead of jwt.verify
+  description: "decode() does not validate the signature: token forgery possible."
+  suggestion: Use jwt.verify with the secret/public key.
+
+- id: js-cors-star
+  pattern: '(?i)(Access-Control-Allow-Origin|cors\().*["'']\*["'']'
+  severity: medium
+  category: misconfiguration
+  title: CORS wildcard origin
+  description: "Allow-Origin '*' lets any site read responses from a user's browser."
+  suggestion: Whitelist specific origins.
+
+- id: js-regex-dos
+  pattern: 'new RegExp\s*\([^)]*req\.|new RegExp\s*\([^)]*params'
+  severity: medium
+  category: dos
+  title: Regex built from user input
+  description: User-controlled regex enables ReDoS (catastrophic backtracking).
+  suggestion: Escape user input or use a fixed pattern.
+
+- id: js-proto-pollution
+  pattern: '__proto__\s*\[?\s*=|\.constructor\.prototype\s*='
+  severity: high
+  category: injection
+  title: Prototype pollution
+  description: Assigning to __proto__/constructor.prototype pollutes all objects.
+  suggestion: Use Object.create(null) maps or validate keys.
+
+- id: js-no-csrf-cookie
+  pattern: 'cookie\s*:\s*\{[^}]*sameSite\s*:\s*["'']none["'']'
+  severity: medium
+  category: csrf
+  title: Cookie sameSite=none
+  description: sameSite=none allows cross-site sending — CSRF risk without extra protection.
+  suggestion: Use sameSite 'lax'/'strict' or add CSRF tokens.

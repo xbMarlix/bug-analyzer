@@ -2,7 +2,7 @@ import ast
 import sys
 from pathlib import Path
 
-from analyzer.base import AnalysisResult, BaseAnalyzer, Bug
+from .base import AnalysisResult, BaseAnalyzer, Bug
 
 
 class ASTAnalyzer(BaseAnalyzer):
@@ -73,6 +73,7 @@ class _PythonChecker(ast.NodeVisitor):
         ))
 
     def visit_FunctionDef(self, node):
+        self._check_function_common(node)
         self._scope_names.append(set())
         self.generic_visit(node)
         self._check_unused_names(node)
@@ -175,6 +176,43 @@ class _PythonChecker(ast.NodeVisitor):
 
     def visit_Starred(self, node):
         self.generic_visit(node)
+
+    def _check_function_common(self, node):
+        """Cross-language quality checks on a function definition."""
+        name = getattr(node, "name", "")
+        end = getattr(node, "end_lineno", None) or getattr(node, "lineno", 0)
+        length = end - getattr(node, "lineno", end) + 1
+        if length > 60:
+            self._add_bug(
+                node, "low", "code-quality",
+                "Overly Long Function",
+                f"Function '{name}' is {length} lines long. Long functions are hard to test and review.",
+                "Split it into smaller functions with a single responsibility.",
+                confidence=0.6,
+            )
+        pos_args = list(getattr(node.args, "args", []) or [])
+        kwonly = list(getattr(node.args, "kwonlyargs", []) or [])
+        n_params = len(pos_args) + len(kwonly)
+        if n_params > 6:
+            self._add_bug(
+                node, "low", "code-quality",
+                "Too Many Parameters",
+                f"Function '{name}' takes {n_params} parameters. Wide signatures are error-prone.",
+                "Group related parameters into a dataclass/config object.",
+                confidence=0.6,
+            )
+        returns = [
+            n for n in _walk_scope(node)
+            if isinstance(n, ast.Return) and n.value is not None
+        ]
+        if len(returns) > 5:
+            self._add_bug(
+                node, "info", "code-quality",
+                "Many Return Statements",
+                f"Function '{name}' has {len(returns)} return points — high cyclomatic complexity.",
+                "Reduce branching or extract helper functions.",
+                confidence=0.5,
+            )
 
     def _check_unused_names(self, func_node):
         defined = set()

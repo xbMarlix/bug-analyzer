@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Security Review — contracts</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background:#0d1117; color:#c9d1d9; padding: 32px; }
+  .page { max-width: 980px; margin: 0 auto; }
+  .header { border-bottom: 1px solid #21262d; padding-bottom: 20px; margin-bottom: 24px; }
+  h1 { font-size: 26px; color: #f0f6fc; }
+  .sub { color: #8b949e; margin-top: 6px; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; }
+  .card { background:#161b22; border: 1px solid #21262d; border-radius: 8px; padding: 18px; }
+  .card h3 { color:#f0f6fc; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; }
+  .score { font-size: 52px; font-weight: 700; color: #e8710a; }
+  .grade { font-size: 22px; color: #e8710a; font-weight: 600; display:block; margin-top: 4px; }
+  .sev-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+  .sev-dot { width: 10px; height: 10px; border-radius: 50%; display:inline-block; flex: 0 0 10px; }
+  .sev-label { width: 90px; color: #c9d1d9; }
+  .sev-bar { flex: 1; background:#21262d; border-radius: 4px; height: 10px; overflow:hidden; }
+  .sev-fill { height: 100%; border-radius: 4px; }
+  .sev-count { width: 30px; text-align:right; color:#8b949e; }
+  .metrics { display: flex; gap: 28px; flex-wrap: wrap; color:#8b949e; font-size: 13px; margin-bottom: 8px; }
+  .finding { background:#161b22; border: 1px solid #21262d; border-left: 4px solid #30363d; border-radius: 8px; padding: 16px 18px; margin-bottom: 14px; }
+  .finding-head { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+  .badge { color:#fff; font-size: 11px; font-weight:700; padding: 3px 9px; border-radius: 20px; text-transform: uppercase; letter-spacing: .5px; }
+  .finding-title { font-size: 15px; font-weight:600; color:#f0f6fc; }
+  .conf { margin-left:auto; font-size: 11px; color:#8b949e; }
+  .finding-meta { margin-top:6px; font-size: 12px; color:#8b949e; }
+  code { background:#21262d; padding: 2px 6px; border-radius: 4px; font-size: 12px; font-family: Consolas, monospace; }
+  .analyzer { background:#1f6feb22; color:#58a6ff; padding: 2px 8px; border-radius: 4px; margin-left: 8px; }
+  .finding-desc { margin-top: 10px; font-size: 13.5px; color:#c9d1d9; }
+  .finding-fix { margin-top: 6px; font-size: 13px; color:#8b949e; }
+  .code { background:#0d1117; border:1px solid #21262d; border-radius: 6px; padding: 12px; margin-top: 10px; font-family: Consolas, monospace; font-size: 12px; overflow-x:auto; color:#a5d6ff; }
+  details summary { cursor:pointer; color:#58a6ff; font-size:12px; margin-top:8px; }
+  .footer { color:#484f58; font-size: 11px; margin-top: 28px; text-align:center; }
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="header">
+    <h1>Security Review — contracts</h1>
+    <div class="sub">Generated 2026-09-05 23:54:09 &nbsp;·&nbsp; Analyzers: static, ast, solidity_semantic</div>
+    <div class="sub">Path: <code>C:\Users\123123\Desktop\BugHunter_Work\протоколы\lambda\contracts</code></div>
+  </div>
+
+  <div class="grid">
+    <div class="card">
+      <h3>Security Score</h3>
+      <span class="score">75</span><span class="grade">Grade C</span>
+      <div class="metrics" style="margin-top:12px">
+        <span>Bugs: 13</span>
+        <span>Files: 40</span>
+        <span>Lines: 5,738</span>
+      </div>
+    </div>
+    <div class="card">
+      <h3>Findings Breakdown</h3>
+      <div class="sev-row"><span class="sev-dot" style="background:#d93025"></span><span class="sev-label">Critical</span><div class="sev-bar"><div class="sev-fill" style="width:0.0%;background:#d93025"></div></div><span class="sev-count">0</span></div>
+<div class="sev-row"><span class="sev-dot" style="background:#ea4335"></span><span class="sev-label">High</span><div class="sev-bar"><div class="sev-fill" style="width:15.4%;background:#ea4335"></div></div><span class="sev-count">2</span></div>
+<div class="sev-row"><span class="sev-dot" style="background:#f9ab00"></span><span class="sev-label">Medium</span><div class="sev-bar"><div class="sev-fill" style="width:7.7%;background:#f9ab00"></div></div><span class="sev-count">1</span></div>
+<div class="sev-row"><span class="sev-dot" style="background:#1a73e8"></span><span class="sev-label">Low</span><div class="sev-bar"><div class="sev-fill" style="width:76.9%;background:#1a73e8"></div></div><span class="sev-count">10</span></div>
+<div class="sev-row"><span class="sev-dot" style="background:#5f6368"></span><span class="sev-label">Info</span><div class="sev-bar"><div class="sev-fill" style="width:0.0%;background:#5f6368"></div></div><span class="sev-count">0</span></div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-bottom:24px">
+    <h3>Scope</h3>
+    <b>solidity</b>: 40 files
+  </div>
+
+  <h2 style="font-size:20px;color:#f0f6fc;margin-bottom:16px">Findings (13)</h2>
+  
+            <div class="finding">
+              <div class="finding-head">
+                <span class="badge" style="background:#ea4335">High</span>
+                <span class="finding-title">block.number For Randomness</span>
+                <span class="conf">confidence 70%</span>
+              </div>
+              <div class="finding-meta">
+                <code>test\HedgerCalibration.t.sol</code>:97
+                <span class="analyzer">static</span>
+              </div>
+              <div class="finding-desc"><b>Problem:</b> Using block.number as a randomness source is predictable and exploitable.</div>
+              <div class="finding-fix"><b>Recommendation:</b> Use Chainlink VRF or a commit-reveal scheme for randomness.</div>
+              <details><summary>Code</summary><pre class="code">      95 |         // Hyperliquid rejects prices with &gt; 5 significant figures; verify the rounding was applied.<br>      96 |         uint256 p = uint256(limitPx);<br>&gt;&gt;&gt;   97 |         while (p % 10 == 0 &amp;&amp; p &gt; 0) p /= 10;<br>      98 |         uint256 sigFigs;<br>      99 |         uint256 tmp2 = p;</pre></details>
+            </div>
+            
+            <div class="finding">
+              <div class="finding-head">
+                <span class="badge" style="background:#ea4335">High</span>
+                <span class="finding-title">block.number For Randomness</span>
+                <span class="conf">confidence 70%</span>
+              </div>
+              <div class="finding-meta">
+                <code>test\LambdaHedger.t.sol</code>:211
+                <span class="analyzer">static</span>
+              </div>
+              <div class="finding-desc"><b>Problem:</b> Using block.number as a randomness source is predictable and exploitable.</div>
+              <div class="finding-fix"><b>Recommendation:</b> Use Chainlink VRF or a commit-reveal scheme for randomness.</div>
+              <details><summary>Code</summary><pre class="code">     209 |         // Count significant figures: divide out trailing zeros, count remaining digits.<br>     210 |         uint256 p = uint256(px);<br>&gt;&gt;&gt;  211 |         while (p % 10 == 0 &amp;&amp; p &gt; 0) p /= 10;<br>     212 |         uint256 sigFigs = 0;<br>     213 |         uint256 tmp = p;</pre></details>
+            </div>
+            
+            <div class="finding">
+              <div class="finding-head">
+                <span class="badge" style="background:#f9ab00">Medium</span>
+                <span class="finding-title">Balance Comparison</span>
+                <span class="conf">confidence 70%</span>
+              </div>
+              <div class="finding-meta">
+                <code>src\LambdaHook.sol</code>:437
+                <span class="analyzer">static</span>
+              </div>
+              <div class="finding-desc"><b>Problem:</b> Comparing contract balance to determine behavior can be exploited by forced ETH sends.</div>
+              <div class="finding-fix"><b>Recommendation:</b> Track balances internally instead of relying on contract.balance.</div>
+              <details><summary>Code</summary><pre class="code">     435 | <br>     436 |         // Refund any native surplus (token0 paid from msg.value).<br>&gt;&gt;&gt;  437 |         if (address(this).balance &gt; 0) SafeTransferLib.safeTransferETH(msg.sender, address(this).balance);<br>     438 | <br>     439 |         emit Deposited(id, to, liquidity, shares, amount0, amount1);</pre></details>
+            </div>
+            
+            <div class="finding">
+              <div class="finding-head">
+                <span class="badge" style="background:#1a73e8">Low</span>
+                <span class="finding-title">Address Is Contract Check</span>
+                <span class="conf">confidence 70%</span>
+              </div>
+              <div class="finding-meta">
+                <code>script\HookMiner.sol</code>:37
+                <span class="analyzer">static</span>
+              </div>
+              <div class="finding-desc"><b>Problem:</b> .code.length == 0 is unreliable for confirming an address is EOA, especially after deployment.</div>
+              <div class="finding-fix"><b>Recommendation:</b> Consider upgrading to a better EOA detection or avoiding this check entirely.</div>
+              <details><summary>Code</summary><pre class="code">      35 |             salt = bytes32(i);<br>      36 |             hookAddress = computeAddress(deployer, salt, initCodeHash);<br>&gt;&gt;&gt;   37 |             if (uint160(hookAddress) &amp; FLAG_MASK == flags &amp;&amp; hookAddress.code.length == 0) {<br>      38 |                 return (hookAddress, salt);<br>      39 |             }</pre></details>
+            </div>
+            
+            <div class="finding">
+              <div class="finding-head">
+                <span class="badge" style="background:#1a73e8">Low</span>
+                <span class="finding-title">Unoptimized Loop</span>
+                <span class="conf">confidence 70%</span>
+              </div>
+              <div class="finding-meta">
+                <code>test\CoreWriterLib.t.sol</code>:51
+                <span class="analyzer">static</span>
+              </div>
+              <div class="finding-desc"><b>Problem:</b> Loops in Solidity cost gas per iteration. Consider bounds and caching state variables in memory.</div>
+              <div class="finding-fix"><b>Recommendation:</b> Cache state variables in memory before the loop, and consider if the loop can be avoided.</div>
+              <details><summary>Code</summary><pre class="code">      49 | <br>      50 |         bytes memory body = new bytes(data.length - 4);<br>&gt;&gt;&gt;   51 |         for (uint256 i = 0; i &lt; body.length; i++) {<br>      52 |             body[i] = data[i + 4];<br>      53 |         }</pre></details>
+            </div>
+            
+            <div class="finding">
+              <div class="finding-head">
+                <span class="badge" style="background:#1a73e8">Low</span>
+                <span class="finding-title">Unoptimized Loop</span>
+                <span class="conf">confidence 70%</span>
+              </div>
+              <div class="finding-meta">
+                <code>test\CoreWriterLib.t.sol</code>:95
+                <span class="analyzer">static</span>
+              </div>
+              <div class="finding-desc"><b>Problem:</b> Loops in Solidity cost gas per iteration. Consider bounds and caching state variables in memory.</div>
+              <div class="finding-fix"><b>Recommendation:</b> Cache state variables in memory before the loop, and consider if the loop can be avoided.</div>
+              <details><summary>Code</summary><pre class="code">      93 |         bytes memory data = CoreWriterLib.encodeUsdClassTransfer(t);<br>      94 |         bytes memory body = new bytes(data.length - 4);<br>&gt;&gt;&gt;   95 |         for (uint256 i = 0; i &lt; body.length; i++) body[i] = data[i + 4];<br>      96 |         (uint64 ntl, bool toPerp) = abi.decode(body, (uint64, bool));<br>      97 |         assertEq(ntl, t.ntl, &quot;ntl round-trips&quot;);</pre></details>
+            </div>
+            
+            <div class="finding">
+              <div class="finding-head">
+                <span class="badge" style="background:#1a73e8">Low</span>
+                <span class="finding-title">Unoptimized Loop</span>
+                <span class="conf">confidence 70%</span>
+              </div>
+              <div class="finding-meta">
+                <code>test\HedgerCalibration.t.sol</code>:117
+                <span class="analyzer">static</span>
+              </div>
+              <div class="finding-desc"><b>Problem:</b> Loops in Solidity cost gas per iteration. Consider bounds and caching state variables in memory.</div>
+              <div class="finding-fix"><b>Recommendation:</b> Cache state variables in memory before the loop, and consider if the loop can be avoided.</div>
+              <details><summary>Code</summary><pre class="code">     115 |     {<br>     116 |         bytes memory body = new bytes(action.length - 4);<br>&gt;&gt;&gt;  117 |         for (uint256 i = 0; i &lt; body.length; i++) {<br>     118 |             body[i] = action[i + 4];<br>     119 |         }</pre></details>
+            </div>
+            
+            <div class="finding">
+              <div class="finding-head">
+                <span class="badge" style="background:#1a73e8">Low</span>
+                <span class="finding-title">Unoptimized Loop</span>
+                <span class="conf">confidence 70%</span>
+              </div>
+              <div class="finding-meta">
+                <code>test\LambdaHedger.t.sol</code>:59
+                <span class="analyzer">static</span>
+              </div>
+              <div class="finding-desc"><b>Problem:</b> Loops in Solidity cost gas per iteration. Consider bounds and caching state variables in memory.</div>
+              <div class="finding-fix"><b>Recommendation:</b> Cache state variables in memory before the loop, and consider if the loop can be avoided.</div>
+              <details><summary>Code</summary><pre class="code">      57 |         bytes memory data = MockCoreWriter(CORE_WRITER).lastAction();<br>      58 |         bytes memory body = new bytes(data.length - 4);<br>&gt;&gt;&gt;   59 |         for (uint256 i = 0; i &lt; body.length; i++) {<br>      60 |             body[i] = data[i + 4];<br>      61 |         }</pre></details>
+            </div>
+            
+            <div class="finding">
+              <div class="finding-head">
+                <span class="badge" style="background:#1a73e8">Low</span>
+                <span class="finding-title">Unoptimized Loop</span>
+                <span class="conf">confidence 70%</span>
+              </div>
+              <div class="finding-meta">
+                <code>test\LambdaHedger.t.sol</code>:262
+                <span class="analyzer">static</span>
+              </div>
+              <div class="finding-desc"><b>Problem:</b> Loops in Solidity cost gas per iteration. Consider bounds and caching state variables in memory.</div>
+              <div class="finding-fix"><b>Recommendation:</b> Cache state variables in memory before the loop, and consider if the loop can be avoided.</div>
+              <details><summary>Code</summary><pre class="code">     260 |         // Decode body: (uint64 ntl, bool toPerp)<br>     261 |         bytes memory body = new bytes(sent.length - 4);<br>&gt;&gt;&gt;  262 |         for (uint256 i = 0; i &lt; body.length; i++) body[i] = sent[i + 4];<br>     263 |         (uint64 ntl, bool toPerp) = abi.decode(body, (uint64, bool));<br>     264 |         assertEq(ntl, 5_000_000, &quot;ntl&quot;);</pre></details>
+            </div>
+            
+            <div class="finding">
+              <div class="finding-head">
+                <span class="badge" style="background:#1a73e8">Low</span>
+                <span class="finding-title">Unoptimized Loop</span>
+                <span class="conf">confidence 70%</span>
+              </div>
+              <div class="finding-meta">
+                <code>test\LambdaHedger.t.sol</code>:272
+                <span class="analyzer">static</span>
+              </div>
+              <div class="finding-desc"><b>Problem:</b> Loops in Solidity cost gas per iteration. Consider bounds and caching state variables in memory.</div>
+              <div class="finding-fix"><b>Recommendation:</b> Cache state variables in memory before the loop, and consider if the loop can be avoided.</div>
+              <details><summary>Code</summary><pre class="code">     270 |         bytes memory sent = MockCoreWriter(CORE_WRITER).lastAction();<br>     271 |         bytes memory body = new bytes(sent.length - 4);<br>&gt;&gt;&gt;  272 |         for (uint256 i = 0; i &lt; body.length; i++) body[i] = sent[i + 4];<br>     273 |         (, bool toPerp) = abi.decode(body, (uint64, bool));<br>     274 |         assertFalse(toPerp, &quot;toPerp=false for withdrawMargin&quot;);</pre></details>
+            </div>
+            
+            <div class="finding">
+              <div class="finding-head">
+                <span class="badge" style="background:#1a73e8">Low</span>
+                <span class="finding-title">Unoptimized Loop</span>
+                <span class="conf">confidence 70%</span>
+              </div>
+              <div class="finding-meta">
+                <code>test\LambdaReactive.t.sol</code>:113
+                <span class="analyzer">static</span>
+              </div>
+              <div class="finding-desc"><b>Problem:</b> Loops in Solidity cost gas per iteration. Consider bounds and caching state variables in memory.</div>
+              <div class="finding-fix"><b>Recommendation:</b> Cache state variables in memory before the loop, and consider if the loop can be avoided.</div>
+              <details><summary>Code</summary><pre class="code">     111 |     {<br>     112 |         bytes memory body = new bytes(payload.length - 4);<br>&gt;&gt;&gt;  113 |         for (uint256 i = 0; i &lt; body.length; i++) {<br>     114 |             body[i] = payload[i + 4];<br>     115 |         }</pre></details>
+            </div>
+            
+            <div class="finding">
+              <div class="finding-head">
+                <span class="badge" style="background:#1a73e8">Low</span>
+                <span class="finding-title">Unoptimized Loop</span>
+                <span class="conf">confidence 70%</span>
+              </div>
+              <div class="finding-meta">
+                <code>test\fork\LambdaForkE2E.t.sol</code>:263
+                <span class="analyzer">static</span>
+              </div>
+              <div class="finding-desc"><b>Problem:</b> Loops in Solidity cost gas per iteration. Consider bounds and caching state variables in memory.</div>
+              <div class="finding-fix"><b>Recommendation:</b> Cache state variables in memory before the loop, and consider if the loop can be avoided.</div>
+              <details><summary>Code</summary><pre class="code">     261 |     {<br>     262 |         bytes memory body = new bytes(payload.length - 4);<br>&gt;&gt;&gt;  263 |         for (uint256 i = 0; i &lt; body.length; i++) {<br>     264 |             body[i] = payload[i + 4];<br>     265 |         }</pre></details>
+            </div>
+            
+            <div class="finding">
+              <div class="finding-head">
+                <span class="badge" style="background:#1a73e8">Low</span>
+                <span class="finding-title">Unoptimized Loop</span>
+                <span class="conf">confidence 70%</span>
+              </div>
+              <div class="finding-meta">
+                <code>test\fork\LambdaHedgerForkHyperEVM.t.sol</code>:156
+                <span class="analyzer">static</span>
+              </div>
+              <div class="finding-desc"><b>Problem:</b> Loops in Solidity cost gas per iteration. Consider bounds and caching state variables in memory.</div>
+              <div class="finding-fix"><b>Recommendation:</b> Cache state variables in memory before the loop, and consider if the loop can be avoided.</div>
+              <details><summary>Code</summary><pre class="code">     154 |     {<br>     155 |         bytes memory body = new bytes(action.length - 4);<br>&gt;&gt;&gt;  156 |         for (uint256 i = 0; i &lt; body.length; i++) {<br>     157 |             body[i] = action[i + 4];<br>     158 |         }</pre></details>
+            </div>
+            
+
+  <div class="footer">Generated by BugHunter · AI-assisted automated security review · For auditing purposes only</div>
+</div>
+</body>
+</html>

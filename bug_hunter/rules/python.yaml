@@ -1,0 +1,112 @@
+# Pattern rules for Python.
+- id: py-pickle-load
+  pattern: '\bpickle\.(loads?|load)\s*\('
+  severity: high
+  category: deserialization
+  title: Unsafe pickle deserialization
+  description: Unpickling untrusted data executes arbitrary code.
+  suggestion: Use JSON or a safe format; never unpickle untrusted bytes.
+
+- id: py-yaml-load
+  pattern: 'yaml\.load\s*\([^)]*\)'
+  severity: high
+  category: deserialization
+  title: yaml.load without SafeLoader
+  description: yaml.load without a SafeLoader can construct arbitrary Python objects.
+  suggestion: Use yaml.safe_load.
+
+- id: py-subprocess-shell
+  pattern: 'subprocess\.(call|run|Popen|check_output)\s*\([^)]*shell\s*=\s*True'
+  severity: high
+  category: injection
+  title: subprocess with shell=True
+  description: shell=True with formatted strings is command injection.
+  suggestion: Pass a list of arguments with shell=False.
+
+- id: py-os-system
+  pattern: '\bos\.system\s*\('
+  severity: high
+  category: injection
+  title: os.system usage
+  description: os.system with dynamic input is command injection.
+  suggestion: Use subprocess with an argument list.
+
+- id: py-exec-eval
+  pattern: '\b(exec|eval)\s*\('
+  severity: high
+  category: injection
+  title: exec/eval usage
+  description: Dynamic code execution; RCE if input reaches it.
+  suggestion: Avoid; use ast.literal_eval for data.
+
+- id: py-hardcoded-secret
+  pattern: '(?i)(api[_-]?key|secret|password|passwd|token)\s*=\s*["''][^"'']{8,}["'']'
+  severity: high
+  category: secrets
+  title: Hardcoded credential
+  description: A secret/password/token is hardcoded in source.
+  suggestion: Use environment variables (os.environ).
+
+- id: py-requests-no-verify
+  pattern: 'requests\.(get|post|put|delete|head|patch)\s*\([^)]*verify\s*=\s*False'
+  severity: high
+  category: crypto
+  title: TLS verification disabled
+  description: verify=False disables certificate validation — MITM possible.
+  suggestion: Remove verify=False; fix the certificate chain.
+
+- id: py-weak-hash
+  pattern: 'hashlib\.(md5|sha1)\s*\('
+  severity: medium
+  category: crypto
+  title: Weak hash algorithm
+  description: MD5/SHA1 are broken for security use (collisions, brute force).
+  suggestion: Use sha256+ for integrity, bcrypt/argon2 for passwords.
+
+- id: py-flask-debug
+  pattern: 'app\.run\s*\([^)]*debug\s*=\s*True'
+  severity: high
+  category: misconfiguration
+  title: Flask debug mode enabled
+  description: Debug mode exposes the Werkzeug debugger — RCE in production.
+  suggestion: Disable debug in production.
+
+- id: py-sql-format
+  pattern: 'execute\s*\(\s*(f["'']|["''][^"'']*"\s*%|["''][^"'']*"\s*\.format)'
+  severity: high
+  category: sqli
+  title: SQL query built by string formatting
+  description: Formatted SQL strings are SQL injection.
+  suggestion: Use parameterized queries (?, :name).
+
+- id: py-mktemp
+  pattern: 'tempfile\.mktemp\s*\('
+  severity: medium
+  category: race-condition
+  title: Insecure tempfile.mktemp
+  description: mktemp has a TOCTOU race between name creation and file open.
+  suggestion: Use tempfile.NamedTemporaryFile or mkstemp.
+
+- id: py-assert-validation
+  pattern: '^\s*assert\s+.*,\s*["'']'
+  severity: medium
+  category: error-handling
+  title: assert used for validation
+  description: asserts are stripped with -O; validation disappears in production.
+  suggestion: Use if/raise.
+
+- id: py-xml-etree
+  pattern: 'xml\.etree\.ElementTree\.(parse|fromstring)|xml\.sax\.parse'
+  severity: medium
+  category: xxe
+  title: Unsafe XML parsing
+  description: stdlib XML parsers are vulnerable to billion-laughs / external entities.
+  suggestion: Use defusedxml.
+
+- id: py-random-security
+  pattern: 'random\.(random|randint|choice|shuffle)\s*\('
+  severity: low
+  category: crypto
+  title: random module for security-sensitive value
+  description: random is not cryptographically secure; predictable for tokens/keys.
+  suggestion: Use the secrets module.

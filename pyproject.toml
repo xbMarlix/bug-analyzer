@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "bug-hunter"
+version = "0.2.0"
+description = "BugHunter — AI-powered universal bug finder for any codebase"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+dependencies = [
+    "openai>=1.0.0",
+    "PyYAML>=6.0",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=7.0"]
+
+[project.scripts]
+bug-hunter = "bug_hunter.main:main"
+
+[tool.setuptools.packages.find]
+include = ["bug_hunter*"]
+
+[tool.setuptools.package-data]
+bug_hunter = ["rules/*.yaml"]

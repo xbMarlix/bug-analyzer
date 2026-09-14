@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Security Review — contracts</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background:#0d1117; color:#c9d1d9; padding: 32px; }
+  .page { max-width: 980px; margin: 0 auto; }
+  .header { border-bottom: 1px solid #21262d; padding-bottom: 20px; margin-bottom: 24px; }
+  h1 { font-size: 26px; color: #f0f6fc; }
+  .sub { color: #8b949e; margin-top: 6px; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; }
+  .card { background:#161b22; border: 1px solid #21262d; border-radius: 8px; padding: 18px; }
+  .card h3 { color:#f0f6fc; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; }
+  .score { font-size: 52px; font-weight: 700; color: #d93025; }
+  .grade { font-size: 22px; color: #d93025; font-weight: 600; display:block; margin-top: 4px; }
+  .sev-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+  .sev-dot { width: 10px; height: 10px; border-radius: 50%; display:inline-block; flex: 0 0 10px; }
+  .sev-label { width: 90px; color: #c9d1d9; }
+  .sev-bar { flex: 1; background:#21262d; border-radius: 4px; height: 10px; overflow:hidden; }
+  .sev-fill { height: 100%; border-radius: 4px; }
+  .sev-count { width: 30px; text-align:right; color:#8b949e; }
+  .metrics { display: flex; gap: 28px; flex-wrap: wrap; color:#8b949e; font-size: 13px; margin-bottom: 8px; }
+  .finding { background:#161b22; border: 1px solid #21262d; border-left: 4px solid #30363d; border-radius: 8px; padding: 16px 18px; margin-bottom: 14px; }
+  .finding-head { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+  .badge { color:#fff; font-size: 11px; font-weight:700; padding: 3px 9px; border-radius: 20px; text-transform: uppercase; letter-spacing: .5px; }
+  .finding-title { font-size: 15px; font-weight:600; color:#f0f6fc; }
+  .conf { margin-left:auto; font-size: 11px; color:#8b949e; }
+  .finding-meta { margin-top:6px; font-size: 12px; color:#8b949e; }
+  code { background:#21262d; padding: 2px 6px; border-radius: 4px; font-size: 12px; font-family: Consolas, monospace; }
+  .analyzer { background:#1f6feb22; color:#58a6ff; padding: 2px 8px; border-radius: 4px; margin-left: 8px; }
+  .finding-desc { margin-top: 10px; font-size: 13.5px; color:#c9d1d9; }
+  .finding-fix { margin-top: 6px; font-size: 13px; color:#8b949e; }
+  .code { background:#0d1117; border:1px solid #21262d; border-radius: 6px; padding: 12px; margin-top: 10px; font-family: Consolas, monospace; font-size: 12px; overflow-x:auto; color:#a5d6ff; }
+  details summary { cursor:pointer; color:#58a6ff; font-size:12px; margin-top:8px; }
+  .footer { color:#484f58; font-size: 11px; margin-top: 28px; text-align:center; }
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="header">
+    <h1>Security Review — contracts</h1>
+    <div class="sub">Generated 2026-09-05 02:21:53 &nbsp;·&nbsp; Analyzers: static, solidity_semantic</div>
+    <div class="sub">Path: <code>C:\Users\123123\Desktop\BugHunter_Work\протоколы\merkl\contracts</code></div>
+  </div>
+
+  <div class="grid">
+    <div class="card">
+      <h3>Security Score</h3>
+      <span class="score">33</span><span class="grade">Grade F</span>
+      <div class="metrics" style="margin-top:12px">
+        <span>Bugs: 13</span>
+        <span>Files: 42</span>
+        <span>Lines: 4,669</span>
+      </div>
+    </div>
+    <div class="card">
+      <h3>Findings Breakdown</h3>
+      <div class="sev-row"><span class="sev-dot" style="background:#d93025"></span><span class="sev-label">Critical</span><div class="sev-bar"><div class="sev-fill" style="width:30.8%;background:#d93025"></div></div><span class="sev-count">4</span></div>
+<div class="sev-row"><span class="sev-dot" style="background:#ea4335"></span><span class="sev-label">High</span><div class="sev-bar"><div class="sev-fill" style="width:0.0%;background:#ea4335"></div></div><span class="sev-count">0</span></div>
+<div class="sev-row"><span class="sev-dot" style="background:#f9ab00"></span><span class="sev-label">Medium</span><div class="sev-bar"><div class="sev-fill" style="width:69.2%;background:#f9ab00"></div></div><span class="sev-count">9</span></div>
+<div class="sev-row"><span class="sev-dot" style="background:#1a73e8"></span><span class="sev-label">Low</span><div class="sev-bar"><div class="sev-fill" style="width:0.0%;background:#1a73e8"></div></div><span class="sev-count">0</span></div>
+<div class="sev-row"><span class="sev-dot" style="background:#5f6368"></span><span class="sev-label">Info</span><div class="sev-bar"><div class="sev-fill" style="width:0.0%;background:#5f6368"></div></div><span class="sev-count">0</span></div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-bottom:24px">
+    <h3>Scope</h3>
+    <b>solidity</b>: 42 files
+  </div>
+
+  <h2 style="font-size:20px;color:#f0f6fc;margin-bottom:16px">Findings (13)</h2>
+  
+            <div class="finding">
+              <div class="finding-head">
+                <span class="badge" style="background:#d93025">Critical</span>
+                <span class="finding-title">tx.origin For Authorization</span>
+                <span class="conf">confidence 70%</span>
+              </div>
+              <div class="finding-meta">
+                <code>DistributionCreator.sol</code>:154
+                <span class="analyzer">static</span>
+              </div>
+              <div class="finding-desc"><b>Problem:</b> Using tx.origin for authorization is a vulnerability. A phishing attack can authorize transactions from the victim's account.</div>
+              <div class="finding-fix"><b>Recommendation:</b> Use msg.sender instead of tx.origin for authorization checks.</div>
+              <details><summary>Code</summary><pre class="code">     152 | <br>     153 |     /// @notice Ensures the caller has accepted the current terms or is whitelisted for this<br>&gt;&gt;&gt;  154 |     /// @dev Checks both msg.sender and tx.origin for signature or whitelist status<br>     155 |     modifier hasSigned() {<br>     156 |         if (</pre></details>
+            </div>
+            
+            <div class="finding">
+              <div class="finding-head">
+                <span class="badge" style="background:#d93025">Critical</span>
+                <span class="finding-title">tx.origin For Authorization</span>
+                <span class="conf">confidence 70%</span>
+              </div>
+              <div class="finding-meta">
+                <code>DistributionCreator.sol</code>:158
+                <span class="analyzer">static</span>
+              </div>
+              <div class="finding-desc"><b>Problem:</b> Using tx.origin for authorization is a vulnerability. A phishing attack can authorize transactions from the victim's account.</div>
+              <div class="finding-fix"><b>Recommendation:</b> Use msg.sender instead of tx.origin for authorization checks.</div>
+              <details><summary>Code</summary><pre class="code">     156 |         if (<br>     157 |             userSignatureWhitelist[msg.sender] == 0 &amp;&amp;<br>&gt;&gt;&gt;  158 |             userSignatureWhitelist[tx.origin] == 0 &amp;&amp;<br>     159 |             userSignatures[msg.sender] != messageHash &amp;&amp;<br>     160 |             userSignatures[tx.origin] != messageHash</pre></details>
+            </div>
+            
+            <div class="finding">
+              <div class="finding-head">
+                <span class="badge" style="background:#d93025">Critical</span>
+                <span class="finding-title">tx.origin For Authorization</span>
+                <span class="conf">confidence 70%</span>
+              </div>
+              <div class="finding-meta">
+                <code>DistributionCreator.sol</code>:160
+                <span class="analyzer">static</span>
+              </div>
+              <div class="finding-desc"><b>Problem:</b> Using tx.origin for authorization is a vulnerability. A phishing attack can authorize transactions from the victim's account.</div>
+              <div class="finding-fix"><b>Recommendation:</b> Use msg.sender instead of tx.origin for authorization checks.</div>
+              <details><summary>Code</summary><pre class="code">     158 |             userSignatureWhitelist[tx.origin] == 0 &amp;&amp;<br>     159 |             userSignatures[msg.sender] != messageHash &amp;&amp;<br>&gt;&gt;&gt;  160 |             userSignatures[tx.origin] != messageHash<br>     161 |         ) revert Errors.NotSigned();<br>     162 |         _;</pre></details>
+            </div>
+            
+            <div class="finding">
+              <div class="finding-head">
+                <span class="badge" style="background:#d93025">Critical</span>
+                <span class="finding-title">tx.origin For Authorization</span>
+                <span class="conf">confidence 70%</span>
+              </div>
+              <div class="finding-meta">
+                <code>Distributor.sol</code>:448
+                <span class="analyzer">static</span>
+              </div>
+              <div class="finding-desc"><b>Problem:</b> Using tx.origin for authorization is a vulnerability. A phishing attack can authorize transactions from the victim's account.</div>
+              <div class="finding-fix"><b>Recommendation:</b> Use msg.sender instead of tx.origin for authorization checks.</div>
+              <details><summary>Code</summary><pre class="code">     446 |             if (<br>     447 |                 msg.sender != user &amp;&amp;<br>&gt;&gt;&gt;  448 |                 tx.origin != user &amp;&amp;<br>     449 |                 mainOperators[msg.sender][token] == 0 &amp;&amp;<br>     450 |                 mainOperators[msg.sender][address(0)] == 0 &amp;&amp;</pre></details>
+            </div>
+            
+            <div class="finding">
+              <div class="finding-head">
+                <span class="badge" style="background:#f9ab00">Medium</span>
+                <span class="finding-title">Fixed-Gas Transfer</span>
+                <span class="conf">confidence 70%</span>
+              </div>
+              <div class="finding-meta">
+                <code>Disputer.sol</code>:69
+                <span class="analyzer">static</span>
+              </div>
+              <div class="finding-desc"><b>Problem:</b> transfer()/send() has a fixed 2300 gas stipend which may fail for contracts with complex receive functions.</div>
+              <div class="finding-fix"><b>Recommendation:</b> Use .call{value: amount} with proper error handling (checks-effects-interactions).</div>
+              <details><summary>Code</summary><pre class="code">      67 |     /// @param amount Amount to withdraw<br>      68 |     function withdrawFunds(address asset, address to, uint256 amount) external onlyOwner {<br>&gt;&gt;&gt;   69 |         IERC20(asset).transfer(to, amount);<br>      70 |     }<br>      71 | </pre></details>
+            </div>
+            
+            <div class="finding">
+              <div class="finding-head">
+                <span class="badge" style="background:#f9ab00">Medium</span>
+                <span class="finding-title">Timestamp Dependence</span>
+                <span class="conf">confidence 70%</span>
+              </div>
+              <div class="finding-meta">
+                <code>DistributionCreator.sol</code>:252
+                <span class="analyzer">static</span>
+              </div>
+              <div class="finding-desc"><b>Problem:</b> Using block.timestamp for critical logic (lotteries, randomness). Miners can manipulate timestamps within a range.</div>
+              <div class="finding-fix"><b>Recommendation:</b> Avoid relying on block.timestamp for randomness or critical timing decisions.</div>
+              <details><summary>Code</summary><pre class="code">     250 |         newCampaign.rewardToken = _campaign.rewardToken; // Reward token cannot be changed<br>     251 |         if (<br>&gt;&gt;&gt;  252 |             (newCampaign.startTimestamp != _campaign.startTimestamp &amp;&amp; block.timestamp &gt; _campaign.startTimestamp) || // Allow to update startTimestamp before campaign start<br>     253 |             newCampaign.amount * HOUR &lt; rewardTokenMinAmounts[newCampaign.rewardToken] * newCampaign.duration<br>     254 |         ) revert Errors.InvalidOverride();</pre></details>
+            </div>
+            
+            <div class="finding">
+              <div class="finding-head">
+                <span class="badge" style="background:#f9ab00">Medium</span>
+                <span class="finding-title">Timestamp Dependence</span>
+                <span class="conf">confidence 70%</span>
+              </div>
+              <div class="finding-meta">
+                <code>DistributionCreator.sol</code>:272
+                <span class="analyzer">static</span>
+              </div>
+              <div class="finding-desc"><b>Problem:</b> Using block.timestamp for critical logic (lotteries, randomness). Miners can manipulate timestamps within a range.</div>
+              <div class="finding-fix"><b>Recommendation:</b> Avoid relying on block.timestamp for randomness or critical timing decisions.</div>
+              <details><summary>Code</summary><pre class="code">     270 |         _isSenderValidOperatorForCampaign(_campaign.creator);<br>     271 |         // Check campaign end time using the overridden parameters if they exist<br>&gt;&gt;&gt;  272 |         if (block.timestamp &lt; _campaign.startTimestamp + _campaign.duration) revert Errors.InvalidReallocation();<br>     273 |         if (to == address(0)) revert Errors.ZeroAddress();<br>     274 | </pre></details>
+            </div>
+            
+            <div class="finding">
+              <div class="finding-head">
+                <span class="badge" style="background:#f9ab00">Medium</span>
+                <span class="finding-title">Timestamp Dependence</span>
+                <span class="conf">confidence 70%</span>
+              </div>
+              <div class="finding-meta">
+                <code>Distributor.sol</code>:227
+                <span class="analyzer">static</span>
+              </div>
+              <div class="finding-desc"><b>Problem:</b> Using block.timestamp for critical logic (lotteries, randomness). Miners can manipulate timestamps within a range.</div>
+              <div class="finding-fix"><b>Recommendation:</b> Avoid relying on block.timestamp for randomness or critical timing decisions.</div>
+              <details><summary>Code</summary><pre class="code">     225 |     /// @dev Returns tree.merkleRoot if dispute period has passed and no active dispute<br>     226 |     function getMerkleRoot() public view returns (bytes32) {<br>&gt;&gt;&gt;  227 |         if (block.timestamp &gt;= endOfDisputePeriod &amp;&amp; disputer == address(0)) return tree.merkleRoot;<br>     228 |         else return lastTree.merkleRoot;<br>     229 |     }</pre></details>
+            </div>
+            
+            <div class="finding">
+              <div class="finding-head">
+                <span class="badge" style="background:#f9ab00">Medium</span>
+                <span class="finding-title">Timestamp Dependence</span>
+                <span class="conf">confidence 70%</span>
+              </div>
+              <div class="finding-meta">
+                <code>Distributor.sol</code>:285
+                <span class="analyzer">static</span>
+              </div>
+              <div class="finding-desc"><b>Problem:</b> Using block.timestamp for critical logic (lotteries, randomness). Miners can manipulate timestamps within a range.</div>
+              <div class="finding-fix"><b>Recommendation:</b> Avoid relying on block.timestamp for randomness or critical timing decisions.</div>
+              <details><summary>Code</summary><pre class="code">     283 |     function disputeTree(string memory reason) external {<br>     284 |         if (disputer != address(0)) revert Errors.UnresolvedDispute();<br>&gt;&gt;&gt;  285 |         if (block.timestamp &gt;= endOfDisputePeriod) revert Errors.InvalidDispute();<br>     286 |         IERC20(disputeToken).safeTransferFrom(msg.sender, address(this), disputeAmount);<br>     287 |         disputer = msg.sender;</pre></details>
+            </div>
+            
+            <div class="finding">
+              <div class="finding-head">
+                <span class="badge" style="background:#f9ab00">Medium</span>
+                <span class="finding-title">Timestamp Dependence</span>
+                <span class="conf">confidence 70%</span>
+              </div>
+              <div class="finding-meta">
+                <code>Distributor.sol</code>:305
+                <span class="analyzer">static</span>
+              </div>
+              <div class="finding-desc"><b>Problem:</b> Using block.timestamp for critical logic (lotteries, randomness). Miners can manipulate timestamps within a range.</div>
+              <div class="finding-fix"><b>Recommendation:</b> Avoid relying on block.timestamp for randomness or critical timing decisions.</div>
+              <details><summary>Code</summary><pre class="code">     303 |             // A trusted address cannot update a tree right after a precedent tree update otherwise it can de facto<br>     304 |             // validate a tree which has not passed the dispute period<br>&gt;&gt;&gt;  305 |             ((canUpdateMerkleRoot[msg.sender] != 1 || block.timestamp &lt; endOfDisputePeriod) &amp;&amp; !accessControlManager.isGovernor(msg.sender))<br>     306 |         ) revert Errors.NotTrusted();<br>     307 |         MerkleTree memory _lastTree = tree;</pre></details>
+            </div>
+            
+            <div class="finding">
+              <div class="finding-head">
+                <span class="badge" style="background:#f9ab00">Medium</span>
+                <span class="finding-title">Fixed-Gas Transfer</span>
+                <span class="conf">confidence 70%</span>
+              </div>
+              <div class="finding-meta">
+                <code>mock\weth.sol</code>:103
+                <span class="analyzer">static</span>
+              </div>
+              <div class="finding-desc"><b>Problem:</b> transfer()/send() has a fixed 2300 gas stipend which may fail for contracts with complex receive functions.</div>
+              <div class="finding-fix"><b>Recommendation:</b> Use .call{value: amount} with proper error handling (checks-effects-interactions).</div>
+              <details><summary>Code</summary><pre class="code">     101 |         require(_balanceOf[msg.sender] &gt;= wad);<br>     102 |         _balanceOf[msg.sender] -= wad;<br>&gt;&gt;&gt;  103 |         payable(msg.sender).transfer(wad);<br>     104 |         emit Withdrawal(msg.sender, wad);<br>     105 |     }</pre></details>
+            </div>
+            
+            <div class="finding">
+              <div class="finding-head">
+                <span class="badge" style="background:#f9ab00">Medium</span>
+                <span class="finding-title">Fixed-Gas Transfer</span>
+                <span class="conf">confidence 70%</span>
+              </div>
+              <div class="finding-meta">
+                <code>mock\weth9.sol</code>:42
+                <span class="analyzer">static</span>
+              </div>
+              <div class="finding-desc"><b>Problem:</b> transfer()/send() has a fixed 2300 gas stipend which may fail for contracts with complex receive functions.</div>
+              <div class="finding-fix"><b>Recommendation:</b> Use .call{value: amount} with proper error handling (checks-effects-interactions).</div>
+              <details><summary>Code</summary><pre class="code">      40 |         require(balanceOf[msg.sender] &gt;= wad);<br>      41 |         balanceOf[msg.sender] -= wad;<br>&gt;&gt;&gt;   42 |         payable(msg.sender).transfer(wad);<br>      43 |         emit Withdrawal(msg.sender, wad);<br>      44 |     }</pre></details>
+            </div>
+            
+            <div class="finding">
+              <div class="finding-head">
+                <span class="badge" style="background:#f9ab00">Medium</span>
+                <span class="finding-title">Timestamp Dependence</span>
+                <span class="conf">confidence 70%</span>
+              </div>
+              <div class="finding-meta">
+                <code>partners\tokenWrappers\TokenTGEWrapper.sol</code>:37
+                <span class="analyzer">static</span>
+              </div>
+              <div class="finding-desc"><b>Problem:</b> Using block.timestamp for critical logic (lotteries, randomness). Miners can manipulate timestamps within a range.</div>
+              <div class="finding-fix"><b>Recommendation:</b> Avoid relying on block.timestamp for randomness or critical timing decisions.</div>
+              <details><summary>Code</summary><pre class="code">      35 |     /// @notice On claim: checks unlock timestamp, then sends underlying to the claimer<br>      36 |     function _onClaim(address to, uint256 amount) internal override {<br>&gt;&gt;&gt;   37 |         if (block.timestamp &lt; unlockTimestamp) revert Errors.NotAllowed();<br>      38 |         IERC20(token).safeTransfer(to, amount);<br>      39 |     }</pre></details>
+            </div>
+            
+
+  <div class="footer">Generated by BugHunter · AI-assisted automated security review · For auditing purposes only</div>
+</div>
+</body>
+</html>

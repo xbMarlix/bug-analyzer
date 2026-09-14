@@ -1,5 +1,5 @@
 import re
-from analyzer.base import AnalysisResult, BaseAnalyzer, Bug
+from .base import AnalysisResult, BaseAnalyzer, Bug
 
 
 _COMMENT_RE = re.compile(r"\s*(//.*|/\*.*)$")

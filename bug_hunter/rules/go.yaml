@@ -1,0 +1,80 @@
+# Pattern rules for Go.
+- id: go-exec-command
+  pattern: 'exec\.Command\s*\([^)]*"sh"\s*,\s*"-c"'
+  severity: high
+  category: injection
+  title: exec.Command with sh -c
+  description: sh -c with interpolated strings is command injection.
+  suggestion: Pass the binary and args directly to exec.Command.
+
+- id: go-sql-fmt
+  pattern: 'fmt\.Sprintf\s*\(\s*"[^"]*(SELECT|INSERT|UPDATE|DELETE|WHERE)'
+  severity: high
+  category: sqli
+  title: SQL built with fmt.Sprintf
+  description: Sprintf into SQL is SQL injection.
+  suggestion: Use database/sql placeholders ($1, ?).
+
+- id: go-hardcoded-secret
+  pattern: '(?i)(apiKey|secret|password|token)\s*:?=\s*"[^"]{8,}"'
+  severity: high
+  category: secrets
+  title: Hardcoded credential
+  description: A secret/password/token is hardcoded in source.
+  suggestion: Load from environment or a secrets store.
+
+- id: go-tls-insecure
+  pattern: 'InsecureSkipVerify\s*:\s*true'
+  severity: high
+  category: crypto
+  title: TLS verification disabled
+  description: InsecureSkipVerify=true accepts any certificate — MITM.
+  suggestion: Remove it; configure proper RootCAs.
+
+- id: go-md5-password
+  pattern: 'md5\.(New|Sum)\s*\('
+  severity: medium
+  category: crypto
+  title: MD5 hash usage
+  description: MD5 is broken for security purposes (collisions, fast brute force).
+  suggestion: Use bcrypt/argon2 for passwords, SHA-256+ for integrity.
+
+- id: go-des-ofb
+  pattern: 'des\.(NewCipher|NewTripleDESCipher)'
+  severity: medium
+  category: crypto
+  title: DES/3DES cipher
+  description: DES and 3DES are deprecated and weak.
+  suggestion: Use AES-GCM.
+
+- id: go-ignore-error
+  pattern: '^\s*_\s*,?\s*\w*\s*=\s*\w+\.(Close|Write|Flush)\('
+  severity: low
+  category: error-handling
+  title: Error return ignored
+  description: Discarded error from a close/write can hide data loss.
+  suggestion: Check and handle the error.
+
+- id: go-goroutine-loop-var
+  pattern: 'go\s+func\s*\(\s*\)\s*\{[^}]*\b(range|for)\b'
+  severity: medium
+  category: race-condition
+  title: Goroutine capturing loop variable
+  description: Closures over loop variables can read the wrong value (pre-Go 1.22 semantics).
+  suggestion: Pass the variable as a parameter to the goroutine.
+
+- id: go-http-no-timeout
+  pattern: 'http\.(Get|Post|Head|Do)\s*\('
+  severity: medium
+  category: dos
+  title: HTTP request without timeout
+  description: Package-level http.Get uses the default client with no timeout — can hang forever.
+  suggestion: Use an http.Client with Timeout set.
+
+- id: go-yaml-unmarshal-untrusted
+  pattern: 'unsafe\.Pointer'
+  severity: medium
+  category: memory-safety
+  title: unsafe.Pointer usage
+  description: unsafe.Pointer bypasses Go's memory safety guarantees.
+  suggestion: Refactor to safe Go; if required, isolate and document.

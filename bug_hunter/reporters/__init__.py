@@ -1,7 +1,7 @@
 from datetime import datetime
 from pathlib import Path
 
-from config import REPORT_DIR, SEVERITY_ORDER
+from ..config import REPORT_DIR, SEVERITY_ORDER
 
 
 SEVERITY_EMOJI = {

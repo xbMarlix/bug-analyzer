@@ -1,6 +1,7 @@
 import re
+from pathlib import Path
 
-from analyzer.base import AnalysisResult, BaseAnalyzer, Bug
+from .base import AnalysisResult, BaseAnalyzer, Bug
 
 
 class StaticAnalyzer(BaseAnalyzer):
@@ -291,12 +292,17 @@ class StaticAnalyzer(BaseAnalyzer):
         },
     ]
 
-    def __init__(self):
+    def __init__(self, extra_rules: list[dict] | None = None):
         self._compiled = []
         for p in self.PATTERNS:
             try:
                 self._compiled.append((re.compile(p["pattern"], re.MULTILINE | re.IGNORECASE), p))
             except re.error:
+                continue
+        for rule in load_yaml_rules() + list(extra_rules or []):
+            try:
+                self._compiled.append((re.compile(rule["pattern"], re.MULTILINE | re.IGNORECASE), rule))
+            except (re.error, KeyError):
                 continue
 
     def analyze(self, files: list) -> AnalysisResult:
@@ -331,6 +337,58 @@ class StaticAnalyzer(BaseAnalyzer):
                         confidence=0.7,
                     )
                     result.add(bug)
+
+
+_RULES_CACHE: list[dict] | None = None
+
+
+def load_yaml_rules(rules_dir=None) -> list[dict]:
+    """Load pattern rules from YAML files in bug_hunter/rules/.
+
+    Each YAML file is a list of rules:
+      - id, pattern (regex), severity, category, title, description, suggestion,
+        languages (optional: derived from the filename, e.g. python.yaml -> python).
+    """
+    global _RULES_CACHE
+    if _RULES_CACHE is not None and rules_dir is None:
+        return _RULES_CACHE
+
+    try:
+        import yaml
+    except ImportError:
+        return []
+
+    directory = Path(rules_dir) if rules_dir else Path(__file__).resolve().parent.parent / "rules"
+    rules: list[dict] = []
+    if not directory.is_dir():
+        _RULES_CACHE = rules
+        return rules
+
+    for path in sorted(directory.glob("*.yaml")) + sorted(directory.glob("*.yml")):
+        language = path.stem
+        try:
+            data = yaml.safe_load(path.read_text(encoding="utf-8"))
+        except Exception:
+            continue
+        if not isinstance(data, list):
+            continue
+        for entry in data:
+            if not isinstance(entry, dict) or "pattern" not in entry:
+                continue
+            rule = {
+                "pattern": entry["pattern"],
+                "category": entry.get("category", "security"),
+                "title": entry.get("title", entry.get("id", "YAML rule")),
+                "description": entry.get("description", ""),
+                "suggestion": entry.get("suggestion", ""),
+                "severity": entry.get("severity", "medium"),
+                "languages": entry.get("languages") or [language],
+            }
+            rules.append(rule)
+
+    if rules_dir is None:
+        _RULES_CACHE = rules
+    return rules
 
 
 def _in_comment(language: str, m, line: str) -> bool:

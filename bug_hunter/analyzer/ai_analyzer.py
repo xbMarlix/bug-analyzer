@@ -3,15 +3,24 @@ import logging
 import time
 from pathlib import Path
 
-from analyzer.base import AnalysisResult, BaseAnalyzer, Bug
-from analyzer.patterns import pattern_hints, validate_severity
-from config import OPENAI_API_KEY, OPENAI_MODEL, OPENAI_BASE_URL, MAX_AI_CHUNK_LINES
-from config import AI_CHUNK_OVERLAP, AI_BACKOFF_BASE_S, AI_BACKOFF_MAX_RETRIES
-import config as _cfg
+from .base import AnalysisResult, BaseAnalyzer, Bug
+from .patterns import pattern_hints, validate_severity
+from .. import config as _cfg
+from ..config import OPENAI_API_KEY, OPENAI_MODEL, OPENAI_BASE_URL, MAX_AI_CHUNK_LINES
+from ..config import AI_CHUNK_OVERLAP, AI_BACKOFF_BASE_S, AI_BACKOFF_MAX_RETRIES
 
-SYSTEM_PROMPT = """You analyze Solidity smart contracts for real security vulnerabilities. Output a findings JSON array, or [] if nothing is wrong."""
+SYSTEM_PROMPT_GENERIC = (
+    "You are a senior security engineer and code auditor. Analyze source code for "
+    "real bugs and security vulnerabilities. Output a findings JSON array, or [] if "
+    "nothing is wrong."
+)
 
-AUDIT_PROMPT = """You find real security vulnerabilities in Solidity smart contracts. Only report concrete loss-of-funds or broken-invariant bugs with a traceable exploit. Return findings as a JSON array.
+SYSTEM_PROMPT_SOLIDITY = (
+    "You analyze Solidity smart contracts for real security vulnerabilities. "
+    "Output a findings JSON array, or [] if nothing is wrong."
+)
+
+AUDIT_PROMPT_SOLIDITY = """You find real security vulnerabilities in Solidity smart contracts. Only report concrete loss-of-funds or broken-invariant bugs with a traceable exploit. Return findings as a JSON array.
 
 Example 1:
 ```solidity
@@ -24,18 +33,6 @@ function withdrawAll() external {
 ```
 Response:
 [{"line": 2, "severity": "high", "title": "Full-balance sweep drains all pooled funds", "category": "accounting", "root_cause": "withdrawAll sends the entire contract balance instead of the caller's own deposit", "exploit_path": "any depositor calls withdrawAll and receives all funds parked in the contract, including other users' deposits", "impact": "complete drain of pooled ETH", "fix": "send only deposits[msg.sender] and subtract it before transfer", "confidence": 0.9, "in_scope": true}]
-
-Example 2:
-```solidity
-function refund() external {
-    if (address(this).balance > 0) {
-        (bool ok, ) = msg.sender.call{value: address(this).balance}("");
-        require(ok, "fail");
-    }
-}
-```
-Response:
-[{"line": 3, "severity": "high", "title": "Refund-all sends whole balance to caller", "category": "accounting", "root_cause": "refund sends address(this).balance instead of the caller's own entitlement", "exploit_path": "anyone calls refund and sweeps all ETH parked in the contract", "impact": "contract drained entirely", "fix": "pay only the caller's tracked entitlement", "confidence": 0.9, "in_scope": true}]
 
 RULES:
 - A function with a nonReentrant modifier is NOT a reentrancy report by itself. Only report reentrancy if you can show a concrete extra extraction of value enabled by stale state inside a callback.
@@ -51,19 +48,29 @@ Now analyse the contract below. Return a JSON array of findings, or [] if nothin
 FINDINGS JSON:
 """
 
-RETRY_PROMPT = """Your previous analysis returned no findings. Find real vulnerabilities in this Solidity contract and return a JSON array, or [] if nothing is wrong. Follow the same format as the two examples below.
+AUDIT_PROMPT_GENERIC = """You find real bugs and security vulnerabilities in {language} source code. Report only concrete, demonstrable issues with a clear failure or attack scenario — not style nits or generic "potential" concerns. Return findings as a JSON array.
 
-Example:
-```solidity
-function withdrawAll() external {
-    uint256 bal = address(this).balance;
-    (bool ok, ) = msg.sender.call{value: bal}("");
-    require(ok, "fail");
-    deposits[msg.sender] = 0;
-}
+Each finding: {{"line": <int>, "severity": "critical"|"high"|"medium"|"low"|"info", "title": "...", "category": "...", "root_cause": "...", "exploit_path": "concrete steps an attacker or user takes to trigger it", "impact": "what breaks / is lost", "fix": "how to fix", "confidence": 0.0-1.0, "in_scope": true}}
+
+Focus on:
+- Security: injection (SQL/command/code), auth bypass, secrets handling, unsafe deserialization, path traversal, SSRF, XSS.
+- Correctness: unhandled errors, race conditions, null/None dereference, resource leaks, off-by-one, integer overflow, logic errors that corrupt data or crash.
+
+RULES:
+- Do NOT report style, naming, formatting, or documentation issues.
+- Do NOT report generic issues ("could throw", "no validation"). Every High/Critical must describe a concrete trigger and its consequence.
+- If the code is fine, return [].
+
+Now analyse the file below. Return a JSON array of findings, or [] if nothing is wrong.
+
+--- {file_relpath} ---
+```{lang_tag}
+{code}
 ```
-Response:
-[{"line": 2, "severity": "high", "title": "Full-balance sweep drains all pooled funds", "category": "accounting", "root_cause": "withdrawAll sends the entire contract balance instead of the caller's own deposit", "exploit_path": "any depositor calls withdrawAll and receives all funds parked in the contract", "impact": "complete drain of pooled ETH", "fix": "pay only the caller's deposit", "confidence": 0.9, "in_scope": true}]
+FINDINGS JSON:
+"""
+
+RETRY_PROMPT_SOLIDITY = """Your previous analysis returned no findings. Find real vulnerabilities in this Solidity contract and return a JSON array, or [] if nothing is wrong.
 
 {hints}
 
@@ -74,7 +81,18 @@ Response:
 FINDINGS JSON:
 """
 
-VERIFY_PROMPT = """You are a smart-contract audit validator. A rule-based analyzer flagged a candidate issue in a Solidity file. Inspect the code context and decide whether it is a REAL exploitable vulnerability.
+RETRY_PROMPT_GENERIC = """Your previous analysis returned no findings. Re-check this {language} file carefully for real bugs (security, correctness, error handling) and return a JSON array, or [] if genuinely nothing is wrong.
+
+{hints}
+
+--- {file_relpath} ---
+```{lang_tag}
+{code}
+```
+FINDINGS JSON:
+"""
+
+VERIFY_PROMPT = """You are a security audit validator. A rule-based analyzer flagged a candidate issue in a {language} file. Inspect the code context and decide whether it is a REAL exploitable/reproducible bug.
 
 CANDIDATE:
 - file: {file_relpath}
@@ -83,32 +101,49 @@ CANDIDATE:
 - title: {title}
 - description: {description}
 
-The context below shows the source around the flagged line. Reason about whether an attacker can actually cause loss of funds or a broken invariant. Do NOT confirm class-level or theoretical issues; require a concrete attacker path.
+Reason about whether an attacker or user can actually trigger the failure. Do NOT confirm class-level or theoretical issues; require a concrete trigger path.
 
 Respond with exactly one JSON object:
-{{"verdict": "confirmed" | "rejected" | "downgrade", "exploit_path": "concrete attacker steps", "impact": "what is lost", "fix": "how to fix", "confidence": 0.0-1.0, "actual_severity": "high" | "medium" | "low"}}
+{{"verdict": "confirmed" | "rejected" | "downgrade", "exploit_path": "concrete trigger steps", "impact": "what is lost/broken", "fix": "how to fix", "confidence": 0.0-1.0, "actual_severity": "high" | "medium" | "low"}}
 
 Rules:
-- verdict "confirmed": real, exploitable bug. Provide exploit_path.
-- verdict "downgrade": minor/theoretical/requires-trusted-role. Set actual_severity to medium or low.
+- verdict "confirmed": real bug. Provide exploit_path.
+- verdict "downgrade": minor/theoretical. Set actual_severity to medium or low.
 - verdict "rejected": not a bug. Explain in one line as fix.
 
 --- {file_relpath} (context) ---
-```solidity
+```{lang_tag}
 {context}
 ```
 VERDICT JSON:
 """
 
-# Lines of surrounding structure injected above each chunk so the model sees the
-# enclosing function/contract even when a chunk is mid-file.
+# Languages that get a specialized prompt; everything else falls back to generic.
+_SPECIAL_PROMPTS = {"solidity"}
+
+# Markers per language for the context header (enclosing function/class/etc.)
+_HEADER_MARKERS = {
+    "solidity": ("contract ", "library ", "interface ", "function ", "modifier ", "abstract contract "),
+    "python": ("def ", "class ", "async def "),
+    "javascript": ("function ", "class ", "const ", "export ", "async function "),
+    "typescript": ("function ", "class ", "interface ", "const ", "export ", "async function "),
+    "go": ("func ", "type ", "package "),
+    "java": ("class ", "interface ", "public ", "private ", "protected ", "void "),
+    "rust": ("fn ", "impl ", "struct ", "enum ", "trait ", "pub "),
+}
+_DEFAULT_MARKERS = ("def ", "class ", "function ", "func ", "fn ")
+
+# Lines of surrounding structure injected above each chunk.
 _MAX_CONTEXT_LINES = 40
 
-# Hard cap on AI error entries appended to result.errors so huge scans can't
-# flood the report. The tail is replaced by a truncation note.
+# Hard cap on AI error entries appended to result.errors.
 _MAX_ERRORS_CAP = 100
 
 logger = logging.getLogger(__name__)
+
+
+def _is_solidity(language: str) -> bool:
+    return language in _SPECIAL_PROMPTS
 
 
 class AIAnalyzer(BaseAnalyzer):
@@ -140,13 +175,14 @@ class AIAnalyzer(BaseAnalyzer):
             return result
 
         hints = pattern_hints(compact=True)
-        sol_files = [f for f in files if f.language == "solidity"]
-        self._project_contracts = [str(f.relative_path) for f in sol_files]
+        # Analyze every supported language, not only Solidity.
+        target_files = [f for f in files if f.language]
+        self._project_contracts = [str(f.relative_path) for f in target_files]
 
-        for f in sol_files:
+        for f in target_files:
             self._analyze_file(f, result, hints)
 
-        result.files_analyzed = len(sol_files)
+        result.files_analyzed = len(target_files)
         return result
 
     def _analyze_file(self, f, result: AnalysisResult, hints: str):
@@ -159,16 +195,15 @@ class AIAnalyzer(BaseAnalyzer):
             if not code.strip():
                 continue
 
-            actual_start = chunk_start + 1
-            actual_end = chunk_start + len(chunk_lines)
+            header = self._build_context_header(lines, chunk_start, len(chunk_lines), f.language)
+            body = header + "\n" + code
 
-            header = self._build_context_header(lines, chunk_start, len(chunk_lines))
-
-            prompt = _render(AUDIT_PROMPT, header + "\n" + code, hints, str(f.relative_path))
-
+            prompt = _render(_select_audit_prompt(f.language), body, hints,
+                             str(f.relative_path), f.language)
             bugs = self._call_llm(prompt, f, chunk_start)
             if not bugs:
-                retry_prompt = _render(RETRY_PROMPT, header + "\n" + code, hints, str(f.relative_path))
+                retry_prompt = _render(_select_retry_prompt(f.language), body, hints,
+                                       str(f.relative_path), f.language)
                 bugs = self._call_llm(retry_prompt, f, chunk_start)
 
             for b in bugs:
@@ -183,8 +218,6 @@ class AIAnalyzer(BaseAnalyzer):
 
     # ------------------------------------------------------------------
     # AI verification of rule-detected candidates (hybrid: rules + AI).
-    # Each candidate gets the file context around its line; the model
-    # decides confirmed / downgrade / rejected and writes exploit_path.
     # ------------------------------------------------------------------
     def verify_candidates(self, candidates: list, files: list, errors=None) -> list[Bug]:
         if not candidates:
@@ -205,6 +238,8 @@ class AIAnalyzer(BaseAnalyzer):
             context = self._context_around(f.content.split("\n"), cand.line)
             prompt = (
                 VERIFY_PROMPT
+                .replace("{language}", f.language or "source")
+                .replace("{lang_tag}", f.language or "")
                 .replace("{file_relpath}", str(cand.file))
                 .replace("{line}", str(cand.line))
                 .replace("{severity}", cand.severity)
@@ -212,7 +247,7 @@ class AIAnalyzer(BaseAnalyzer):
                 .replace("{description}", (cand.description or "")[:600])
                 .replace("{context}", context)
             )
-            verdict = self._call_verify(prompt)
+            verdict = self._call_verify(prompt, f.language)
             if verdict is None:
                 result.append(cand)
                 continue
@@ -257,10 +292,10 @@ class AIAnalyzer(BaseAnalyzer):
             out.append(f"{marker} {i + 1:4d} | {lines[i]}")
         return "\n".join(out)
 
-    def _call_verify(self, prompt: str) -> dict:
+    def _call_verify(self, prompt: str, language: str = "") -> dict:
         label = "verify"
         messages = [
-            {"role": "system", "content": SYSTEM_PROMPT},
+            {"role": "system", "content": _select_system_prompt(language)},
             {"role": "user", "content": prompt},
         ]
         try:
@@ -270,7 +305,7 @@ class AIAnalyzer(BaseAnalyzer):
                 return {}
             text = response.choices[0].message.content.strip()
             return _extract_single_json(text) or {}
-        except Exception as e:  # noqa: BLE001 - logged via _record_error below
+        except Exception as e:  # noqa: BLE001
             self._record_error(f"AI verify call error: {e}")
             return {}
 
@@ -286,16 +321,10 @@ class AIAnalyzer(BaseAnalyzer):
 
     def _chat(self, messages: list, *, label: str = "", max_tokens: int = 4096) -> object:
         """Single completions call with exponential backoff retries on
-        transient failures (429 rate limit, connection reset, timeouts).
-
-        Returns the response object or None if every attempt failed and keeps
-        the last error in self._last_error for the caller to report.
-        """
-        base_delay = AI_BACKOFF_BASE_S
-        max_retries = AI_BACKOFF_MAX_RETRIES
-        delay = base_delay
+        transient failures (429, connection reset, timeouts)."""
+        delay = AI_BACKOFF_BASE_S
         last_exc = None
-        for attempt in range(max_retries + 1):
+        for attempt in range(AI_BACKOFF_MAX_RETRIES + 1):
             try:
                 return self.client.chat.completions.create(
                     model=_cfg.OPENAI_MODEL,
@@ -303,7 +332,7 @@ class AIAnalyzer(BaseAnalyzer):
                     temperature=0.1,
                     max_tokens=max_tokens,
                 )
-            except Exception as e:  # noqa: BLE001 - normalized below for retry decision
+            except Exception as e:  # noqa: BLE001
                 last_exc = e
                 msg = str(e).lower()
                 status = getattr(getattr(e, "status_code", None), "value", None)
@@ -320,9 +349,9 @@ class AIAnalyzer(BaseAnalyzer):
                     or "timeout" in msg
                     or "temporarily unavailable" in msg
                 )
-                if attempt < max_retries and transient:
+                if attempt < AI_BACKOFF_MAX_RETRIES and transient:
                     self._record_error(
-                        f"AI {label.strip()} rate-limit/transient error (attempt {attempt + 1}/{max_retries + 1}): {e} — retrying in {delay:.1f}s",
+                        f"AI {label.strip()} rate-limit/transient error (attempt {attempt + 1}/{AI_BACKOFF_MAX_RETRIES + 1}): {e} — retrying in {delay:.1f}s",
                         warn=True,
                     )
                     time.sleep(delay)
@@ -333,18 +362,18 @@ class AIAnalyzer(BaseAnalyzer):
         logger.error("AI %s call failed after retries: %s", label or "llm", self._last_error)
         return None
 
-    def _build_context_header(self, lines: list[str], chunk_start: int, chunk_len: int) -> str:
-        """Inline contract/function structure above the chunk so the model sees
-        the security-relevant skeleton even when the chunk is mid-file."""
+    def _build_context_header(self, lines: list[str], chunk_start: int, chunk_len: int,
+                              language: str = "solidity") -> str:
+        """Inline enclosing function/class structure above the chunk."""
+        markers = _HEADER_MARKERS.get(language, _DEFAULT_MARKERS)
         header_lines = []
         seen = set()
-        # scan backwards up to _MAX_CONTEXT_LINES for the enclosing struct/func of chunk start
         scan_start = max(0, chunk_start - _MAX_CONTEXT_LINES)
         for i in range(scan_start, chunk_start + chunk_len):
             stripped = lines[i].strip()
             if not stripped:
                 continue
-            if any(stripped.startswith(k) for k in ("contract ", "library ", "interface ", "function ", "modifier ", "abstract contract ")):
+            if any(stripped.startswith(k) for k in markers):
                 key = stripped[:60]
                 if key in seen:
                     continue
@@ -356,7 +385,7 @@ class AIAnalyzer(BaseAnalyzer):
         try:
             response = self._chat(
                 [
-                    {"role": "system", "content": SYSTEM_PROMPT},
+                    {"role": "system", "content": _select_system_prompt(f.language)},
                     {"role": "user", "content": prompt},
                 ],
                 label=f"audit {f.relative_path}:{chunk_start + 1}",
@@ -364,7 +393,7 @@ class AIAnalyzer(BaseAnalyzer):
             if response is None:
                 return []
             text = response.choices[0].message.content.strip()
-        except Exception as e:  # noqa: BLE001 - logged below
+        except Exception as e:  # noqa: BLE001
             self._record_error(f"AI audit call error in {f.relative_path}:{chunk_start + 1}: {e}")
             return []
 
@@ -421,22 +450,36 @@ class AIAnalyzer(BaseAnalyzer):
                 bugs.append(bug)
 
             return bugs
-        except Exception as e:  # noqa: BLE001 - logged below
+        except Exception as e:  # noqa: BLE001
             self._record_error(f"AI result parsing error in {f.relative_path}:{chunk_start + 1}: {e}")
             return []
+
+
+def _select_system_prompt(language: str) -> str:
+    return SYSTEM_PROMPT_SOLIDITY if _is_solidity(language) else SYSTEM_PROMPT_GENERIC
+
+
+def _select_audit_prompt(language: str) -> str:
+    return AUDIT_PROMPT_SOLIDITY if _is_solidity(language) else AUDIT_PROMPT_GENERIC
+
+
+def _select_retry_prompt(language: str) -> str:
+    return RETRY_PROMPT_SOLIDITY if _is_solidity(language) else RETRY_PROMPT_GENERIC
 
 
 def dictlist(data):
     return [d for d in data if isinstance(d, dict)]
 
 
-def _render(template: str, code: str, hints: str, file_relpath: str) -> str:
-    """Render a prompt template without .format() so literal { } in Solidity
+def _render(template: str, code: str, hints: str, file_relpath: str, language: str = "") -> str:
+    """Render a prompt template without .format() so literal { } in code
     examples are preserved."""
     return (
         template
         .replace("{hints}", hints)
         .replace("{file_relpath}", file_relpath)
+        .replace("{language}", language or "source")
+        .replace("{lang_tag}", language or "")
         .replace("{code}", code)
     )
 
@@ -452,19 +495,11 @@ def _strip_code_fences(text: str) -> str:
 
 
 def _extract_json_issues(text: str) -> list:
-    """Robustly extract a list of finding dicts from a model response.
-
-    1. Strip code fences.
-    2. Find the outermost [...] array anywhere in the text.
-    3. If the response is a JSON object (not an array), look for a
-       'findings' / 'issues' / 'response' key and unwrap it.
-    4. Fall back to finding the first balanced [...] block.
-    """
+    """Robustly extract a list of finding dicts from a model response."""
     text = _strip_code_fences(text)
     if not text:
         return []
 
-    # Try the whole text as JSON first.
     try:
         data = json.loads(text)
         if isinstance(data, list):
@@ -478,7 +513,6 @@ def _extract_json_issues(text: str) -> list:
     except (json.JSONDecodeError, ValueError):
         pass
 
-    # Search for a balanced [...] array in the raw text.
     start = text.find("[")
     while start != -1:
         depth = 0
@@ -511,7 +545,6 @@ def _extract_json_issues(text: str) -> list:
                     break
         start = text.find("[", start + 1)
 
-    # Last resort: unwrap a { "response": "<json string>" } wrapper.
     try:
         data = json.loads(text)
         if isinstance(data, dict):
@@ -574,9 +607,6 @@ def _extract_single_json(text: str) -> dict:
 
 
 def _split_into_chunks(lines: list[str], max_lines: int, overlap: int = 0) -> list[tuple[int, list[str]]]:
-    """Split `lines` into chunks of up to `max_lines` lines with a `overlap`-line
-    overlap between consecutive chunks (so a state-write / call pair spanning a
-    chunk boundary is still seen together by the model)."""
     if overlap < 0:
         overlap = 0
     overlap = min(overlap, max_lines - 1)

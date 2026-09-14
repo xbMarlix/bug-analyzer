@@ -1,19 +1,19 @@
 import argparse
+import os
 import sys
 import time
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).parent))
-
-from scanner import scan_project, get_project_stats
-from analyzer.static import StaticAnalyzer
-from analyzer.ast_analyzer import ASTAnalyzer
-from analyzer.solidity_analyzer import SolidityAnalyzer
-from analyzer.ai_analyzer import AIAnalyzer
-from analyzer.base import AnalysisResult
-from reporters import generate_report
-from reporters.html_report import generate_html_report
-import config
+from .scanner import scan_project, get_project_stats
+from .analyzer.static import StaticAnalyzer
+from .analyzer.ast_analyzer import ASTAnalyzer
+from .analyzer.solidity_analyzer import SolidityAnalyzer
+from .analyzer.ai_analyzer import AIAnalyzer
+from .analyzer.base import AnalysisResult
+from .analyzer.dedup import dedup_bugs
+from .reporters import generate_report
+from .reporters.html_report import generate_html_report
+from . import config
 
 
 def main():
@@ -38,7 +38,6 @@ Examples:
 
     args = parser.parse_args()
 
-    import os
     if args.model:
         os.environ["OPENAI_MODEL"] = args.model
         config.OPENAI_MODEL = args.model
@@ -55,7 +54,7 @@ Examples:
 
     print(f"[*] Scanning project: {project_path}")
     start = time.time()
-    files = scan_project(project_path)
+    files = scan_project(project_path, extra_ignored=config.IGNORED_DIRS)
     scan_time = time.time() - start
 
     if not files:
@@ -129,10 +128,15 @@ Examples:
                     print(f"[!] {err}", flush=True)
             print(f"[+] AI analysis: {len(ai_result.bugs)} issues found ({time.time() - start:.2f}s)", flush=True)
 
+    before_dedup = len(result.bugs)
+    result.bugs = dedup_bugs(result.bugs)
+    if len(result.bugs) < before_dedup:
+        print(f"[+] Deduplication: {before_dedup} -> {len(result.bugs)} issues")
+
     print()
 
     if args.report_dir:
-        import reporters
+        from . import reporters
         reporters.REPORT_DIR = Path(args.report_dir)
 
     report_path = generate_report(result, str(project_path), stats, analyzers_used)

@@ -31,7 +31,7 @@ class AnalysisResult:
         self.errors.extend(other.errors)
 
     def sorted_bugs(self, by: str = "severity") -> list[Bug]:
-        from config import SEVERITY_ORDER
+        from ..config import SEVERITY_ORDER
         return sorted(self.bugs, key=lambda b: SEVERITY_ORDER.get(b.severity, 99))
 
 

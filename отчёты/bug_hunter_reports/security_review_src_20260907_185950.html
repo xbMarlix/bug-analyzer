@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Security Review — src</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background:#0d1117; color:#c9d1d9; padding: 32px; }
+  .page { max-width: 980px; margin: 0 auto; }
+  .header { border-bottom: 1px solid #21262d; padding-bottom: 20px; margin-bottom: 24px; }
+  h1 { font-size: 26px; color: #f0f6fc; }
+  .sub { color: #8b949e; margin-top: 6px; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; }
+  .card { background:#161b22; border: 1px solid #21262d; border-radius: 8px; padding: 18px; }
+  .card h3 { color:#f0f6fc; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; }
+  .score { font-size: 52px; font-weight: 700; color: #188038; }
+  .grade { font-size: 22px; color: #188038; font-weight: 600; display:block; margin-top: 4px; }
+  .sev-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+  .sev-dot { width: 10px; height: 10px; border-radius: 50%; display:inline-block; flex: 0 0 10px; }
+  .sev-label { width: 90px; color: #c9d1d9; }
+  .sev-bar { flex: 1; background:#21262d; border-radius: 4px; height: 10px; overflow:hidden; }
+  .sev-fill { height: 100%; border-radius: 4px; }
+  .sev-count { width: 30px; text-align:right; color:#8b949e; }
+  .metrics { display: flex; gap: 28px; flex-wrap: wrap; color:#8b949e; font-size: 13px; margin-bottom: 8px; }
+  .finding { background:#161b22; border: 1px solid #21262d; border-left: 4px solid #30363d; border-radius: 8px; padding: 16px 18px; margin-bottom: 14px; }
+  .finding-head { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+  .badge { color:#fff; font-size: 11px; font-weight:700; padding: 3px 9px; border-radius: 20px; text-transform: uppercase; letter-spacing: .5px; }
+  .finding-title { font-size: 15px; font-weight:600; color:#f0f6fc; }
+  .conf { margin-left:auto; font-size: 11px; color:#8b949e; }
+  .finding-meta { margin-top:6px; font-size: 12px; color:#8b949e; }
+  code { background:#21262d; padding: 2px 6px; border-radius: 4px; font-size: 12px; font-family: Consolas, monospace; }
+  .analyzer { background:#1f6feb22; color:#58a6ff; padding: 2px 8px; border-radius: 4px; margin-left: 8px; }
+  .finding-desc { margin-top: 10px; font-size: 13.5px; color:#c9d1d9; }
+  .finding-fix { margin-top: 6px; font-size: 13px; color:#8b949e; }
+  .code { background:#0d1117; border:1px solid #21262d; border-radius: 6px; padding: 12px; margin-top: 10px; font-family: Consolas, monospace; font-size: 12px; overflow-x:auto; color:#a5d6ff; }
+  details summary { cursor:pointer; color:#58a6ff; font-size:12px; margin-top:8px; }
+  .footer { color:#484f58; font-size: 11px; margin-top: 28px; text-align:center; }
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="header">
+    <h1>Security Review — src</h1>
+    <div class="sub">Generated 2026-09-07 18:59:50 &nbsp;·&nbsp; Analyzers: static, ast, solidity_semantic</div>
+    <div class="sub">Path: <code>C:\Users\123123\Desktop\BugHunter_Work\протоколы\lambda\contracts\src</code></div>
+  </div>
+
+  <div class="grid">
+    <div class="card">
+      <h3>Security Score</h3>
+      <span class="score">91</span><span class="grade">Grade B</span>
+      <div class="metrics" style="margin-top:12px">
+        <span>Bugs: 2</span>
+        <span>Files: 14</span>
+        <span>Lines: 2,231</span>
+      </div>
+    </div>
+    <div class="card">
+      <h3>Findings Breakdown</h3>
+      <div class="sev-row"><span class="sev-dot" style="background:#d93025"></span><span class="sev-label">Critical</span><div class="sev-bar"><div class="sev-fill" style="width:0.0%;background:#d93025"></div></div><span class="sev-count">0</span></div>
+<div class="sev-row"><span class="sev-dot" style="background:#ea4335"></span><span class="sev-label">High</span><div class="sev-bar"><div class="sev-fill" style="width:50.0%;background:#ea4335"></div></div><span class="sev-count">1</span></div>
+<div class="sev-row"><span class="sev-dot" style="background:#f9ab00"></span><span class="sev-label">Medium</span><div class="sev-bar"><div class="sev-fill" style="width:50.0%;background:#f9ab00"></div></div><span class="sev-count">1</span></div>
+<div class="sev-row"><span class="sev-dot" style="background:#1a73e8"></span><span class="sev-label">Low</span><div class="sev-bar"><div class="sev-fill" style="width:0.0%;background:#1a73e8"></div></div><span class="sev-count">0</span></div>
+<div class="sev-row"><span class="sev-dot" style="background:#5f6368"></span><span class="sev-label">Info</span><div class="sev-bar"><div class="sev-fill" style="width:0.0%;background:#5f6368"></div></div><span class="sev-count">0</span></div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-bottom:24px">
+    <h3>Scope</h3>
+    <b>solidity</b>: 14 files
+  </div>
+
+  <h2 style="font-size:20px;color:#f0f6fc;margin-bottom:16px">Findings (2)</h2>
+  
+            <div class="finding">
+              <div class="finding-head">
+                <span class="badge" style="background:#ea4335">High</span>
+                <span class="finding-title">Full-Balance Sweep in Payout</span>
+                <span class="conf">confidence 80%</span>
+              </div>
+              <div class="finding-meta">
+                <code>LambdaHook.sol</code>:437
+                <span class="analyzer">solidity_semantic</span>
+              </div>
+              <div class="finding-desc"><b>Problem:</b> A payout path sends the full contract balance instead of the exact amount owed. If the contract holds other users' funds or uncollected fees, any caller triggers this path and drains everything parked in the contract. This is a confirmed High/Critical class in competitive audits (refund-all / sweep-all).</div>
+              <div class="finding-fix"><b>Recommendation:</b> Pay the caller's exact tracked entitlement; never use address(this).balance or balanceOf(address(this)) as the payout amount.</div>
+              <details><summary>Code</summary><pre class="code">     435 | <br>     436 |         // Refund any native surplus (token0 paid from msg.value).<br>&gt;&gt;&gt;  437 |         if (address(this).balance &gt; 0) SafeTransferLib.safeTransferETH(msg.sender, address(this).balance);<br>     438 | <br>     439 |         emit Deposited(id, to, liquidity, shares, amount0, amount1);</pre></details>
+            </div>
+            
+            <div class="finding">
+              <div class="finding-head">
+                <span class="badge" style="background:#f9ab00">Medium</span>
+                <span class="finding-title">Balance Comparison</span>
+                <span class="conf">confidence 70%</span>
+              </div>
+              <div class="finding-meta">
+                <code>LambdaHook.sol</code>:437
+                <span class="analyzer">static</span>
+              </div>
+              <div class="finding-desc"><b>Problem:</b> Comparing contract balance to determine behavior can be exploited by forced ETH sends.</div>
+              <div class="finding-fix"><b>Recommendation:</b> Track balances internally instead of relying on contract.balance.</div>
+              <details><summary>Code</summary><pre class="code">     435 | <br>     436 |         // Refund any native surplus (token0 paid from msg.value).<br>&gt;&gt;&gt;  437 |         if (address(this).balance &gt; 0) SafeTransferLib.safeTransferETH(msg.sender, address(this).balance);<br>     438 | <br>     439 |         emit Deposited(id, to, liquidity, shares, amount0, amount1);</pre></details>
+            </div>
+            
+
+  <div class="footer">Generated by BugHunter · AI-assisted automated security review · For auditing purposes only</div>
+</div>
+</body>
+</html>

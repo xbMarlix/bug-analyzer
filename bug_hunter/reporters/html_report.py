@@ -1,8 +1,8 @@
 from datetime import datetime
 from pathlib import Path
 
-import reporters
-from config import SEVERITY_ORDER
+from .. import reporters
+from ..config import SEVERITY_ORDER
 
 SEVERITY_WEIGHT = {"critical": 10, "high": 6, "medium": 3, "low": 1, "info": 0.5}
 SEVERITY_LABEL = {"critical": "Critical", "high": "High", "medium": "Medium", "low": "Low", "info": "Info"}
@@ -82,7 +82,7 @@ def escape(s: str) -> str:
 
 
 def generate_html_report(result, project_path: str, project_stats: dict, analyzers_used: list[str]) -> Path:
-    REPORT_DIR = reporters.REPORT_DIR
+    REPORT_DIR = reporters.REPORT_DIR  # noqa: F821
     REPORT_DIR.mkdir(exist_ok=True)
 
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")

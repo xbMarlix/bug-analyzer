@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from config import (
+from .config import (
     EXTENSION_LANGUAGE_MAP,
     IGNORED_DIRS,
     IGNORED_FILES,
@@ -23,16 +23,24 @@ def detect_language(file_path: Path) -> str | None:
     return EXTENSION_LANGUAGE_MAP.get(file_path.suffix.lower())
 
 
-def should_ignore(path: Path) -> bool:
+def should_ignore(path: Path, ignored_dirs: set[str] | None = None) -> bool:
+    ignored = IGNORED_DIRS | set(ignored_dirs or ())
     for part in path.parts:
-        if part in IGNORED_DIRS:
+        if part in ignored:
             return True
     if path.name in IGNORED_FILES:
         return True
     return False
 
 
-def scan_project(project_path: str | Path) -> list[ScannedFile]:
+def scan_project(
+    project_path: str | Path,
+    extra_ignored: set[str] | None = None,
+) -> list[ScannedFile]:
+    """Recursively scan a project for supported source files.
+
+    extra_ignored: additional directory names to skip (merged with config.IGNORED_DIRS).
+    """
     project = Path(project_path).resolve()
     if not project.is_dir():
         raise FileNotFoundError(f"Project not found: {project}")
@@ -41,7 +49,7 @@ def scan_project(project_path: str | Path) -> list[ScannedFile]:
     for file_path in project.rglob("*"):
         if not file_path.is_file():
             continue
-        if should_ignore(file_path.relative_to(project)):
+        if should_ignore(file_path.relative_to(project), extra_ignored):
             continue
 
         language = detect_language(file_path)
