@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Security Review — src</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background:#0d1117; color:#c9d1d9; padding: 32px; }
+  .page { max-width: 980px; margin: 0 auto; }
+  .header { border-bottom: 1px solid #21262d; padding-bottom: 20px; margin-bottom: 24px; }
+  h1 { font-size: 26px; color: #f0f6fc; }
+  .sub { color: #8b949e; margin-top: 6px; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; }
+  .card { background:#161b22; border: 1px solid #21262d; border-radius: 8px; padding: 18px; }
+  .card h3 { color:#f0f6fc; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; }
+  .score { font-size: 52px; font-weight: 700; color: #e8710a; }
+  .grade { font-size: 22px; color: #e8710a; font-weight: 600; display:block; margin-top: 4px; }
+  .sev-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+  .sev-dot { width: 10px; height: 10px; border-radius: 50%; display:inline-block; flex: 0 0 10px; }
+  .sev-label { width: 90px; color: #c9d1d9; }
+  .sev-bar { flex: 1; background:#21262d; border-radius: 4px; height: 10px; overflow:hidden; }
+  .sev-fill { height: 100%; border-radius: 4px; }
+  .sev-count { width: 30px; text-align:right; color:#8b949e; }
+  .metrics { display: flex; gap: 28px; flex-wrap: wrap; color:#8b949e; font-size: 13px; margin-bottom: 8px; }
+  .finding { background:#161b22; border: 1px solid #21262d; border-left: 4px solid #30363d; border-radius: 8px; padding: 16px 18px; margin-bottom: 14px; }
+  .finding-head { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+  .badge { color:#fff; font-size: 11px; font-weight:700; padding: 3px 9px; border-radius: 20px; text-transform: uppercase; letter-spacing: .5px; }
+  .finding-title { font-size: 15px; font-weight:600; color:#f0f6fc; }
+  .conf { margin-left:auto; font-size: 11px; color:#8b949e; }
+  .finding-meta { margin-top:6px; font-size: 12px; color:#8b949e; }
+  code { background:#21262d; padding: 2px 6px; border-radius: 4px; font-size: 12px; font-family: Consolas, monospace; }
+  .analyzer { background:#1f6feb22; color:#58a6ff; padding: 2px 8px; border-radius: 4px; margin-left: 8px; }
+  .finding-desc { margin-top: 10px; font-size: 13.5px; color:#c9d1d9; }
+  .finding-fix { margin-top: 6px; font-size: 13px; color:#8b949e; }
+  .code { background:#0d1117; border:1px solid #21262d; border-radius: 6px; padding: 12px; margin-top: 10px; font-family: Consolas, monospace; font-size: 12px; overflow-x:auto; color:#a5d6ff; }
+  .err { background:#d9302511; border:1px solid #d9302555; border-radius:6px; padding:10px 12px; margin:6px 0; font-family:Consolas,monospace; font-size:12px; color:#f85149; white-space:pre-wrap; }
+  details summary { cursor:pointer; color:#58a6ff; font-size:12px; margin-top:8px; }
+  .footer { color:#484f58; font-size: 11px; margin-top: 28px; text-align:center; }
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="header">
+    <h1>Security Review — src</h1>
+    <div class="sub">Generated 2026-09-08 20:18:48 &nbsp;·&nbsp; Analyzers: static, solidity_semantic</div>
+    <div class="sub">Path: <code>C:\Users\123123\AppData\Local\Temp\opencode\ico-vesting\src</code></div>
+  </div>
+
+  <div class="grid">
+    <div class="card">
+      <h3>Security Score</h3>
+      <span class="score">74</span><span class="grade">Grade C</span>
+      <div class="metrics" style="margin-top:12px">
+        <span>Bugs: 15</span>
+        <span>Files: 6</span>
+        <span>Lines: 1,816</span>
+      </div>
+    </div>
+    <div class="card">
+      <h3>Findings Breakdown</h3>
+      <div class="sev-row"><span class="sev-dot" style="background:#d93025"></span><span class="sev-label">Critical</span><div class="sev-bar"><div class="sev-fill" style="width:0.0%;background:#d93025"></div></div><span class="sev-count">0</span></div>
+<div class="sev-row"><span class="sev-dot" style="background:#ea4335"></span><span class="sev-label">High</span><div class="sev-bar"><div class="sev-fill" style="width:13.3%;background:#ea4335"></div></div><span class="sev-count">2</span></div>
+<div class="sev-row"><span class="sev-dot" style="background:#f9ab00"></span><span class="sev-label">Medium</span><div class="sev-bar"><div class="sev-fill" style="width:6.7%;background:#f9ab00"></div></div><span class="sev-count">1</span></div>
+<div class="sev-row"><span class="sev-dot" style="background:#1a73e8"></span><span class="sev-label">Low</span><div class="sev-bar"><div class="sev-fill" style="width:73.3%;background:#1a73e8"></div></div><span class="sev-count">11</span></div>
+<div class="sev-row"><span class="sev-dot" style="background:#5f6368"></span><span class="sev-label">Info</span><div class="sev-bar"><div class="sev-fill" style="width:6.7%;background:#5f6368"></div></div><span class="sev-count">1</span></div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-bottom:24px">
+    <h3>Scope</h3>
+    <b>solidity</b>: 6 files
+  </div>
+
+  
+
+  <h2 style="font-size:20px;color:#f0f6fc;margin-bottom:16px">Findings (15)</h2>
+  
+            <div class="finding">
+              <div class="finding-head">
+                <span class="badge" style="background:#ea4335">High</span>
+                <span class="finding-title">Oracle Price Missing Positive Check</span>
+                <span class="conf">confidence 65%</span>
+              </div>
+              <div class="finding-meta">
+                <code>ICO_directSell.sol</code>:127
+                <span class="analyzer">solidity_semantic</span>
+              </div>
+              <div class="finding-desc"><b>Problem:</b> latestRoundData() at line 127 reads a signed int256 price that is cast to uint256 WITHOUT a price &gt; 0 guard. If the feed ever returns a negative value (feed governor compromise, aggregator malfunction, or a manipulated L2 sequencer feed), uint256(price) wraps to a huge number: a buyer then receives an enormous amount of tokens for a tiny payment, draining the entire sale supply. validate price &lt;= 0 and staleness before use.</div>
+              <div class="finding-fix"><b>Recommendation:</b> Add `if (price &lt;= 0) revert();` before any uint256(price) cast, and check round completeness + updatedAt freshness.</div>
+              <details><summary>Code</summary><pre class="code">     125 |         // chainlink oracle to get tokens price<br>     126 |         AggregatorV3Interface feed = AggregatorV3Interface(feedAddress);<br>&gt;&gt;&gt;  127 |         (, int256 price, , , ) = feed.latestRoundData();<br>     128 |         uint256 tokenPrice = uint256(price);<br>     129 |         uint8 decimals = feed.decimals();</pre></details>
+            </div>
+            
+            <div class="finding">
+              <div class="finding-head">
+                <span class="badge" style="background:#ea4335">High</span>
+                <span class="finding-title">Reentrancy Vector (External Call with Value)</span>
+                <span class="conf">confidence 55%</span>
+              </div>
+              <div class="finding-meta">
+                <code>ICO_vesting.sol</code>:832
+                <span class="analyzer">solidity_semantic</span>
+              </div>
+              <div class="finding-desc"><b>Problem:</b> External .call{value:...} detected. If state is updated after this call, an attacker can re-enter.</div>
+              <div class="finding-fix"><b>Recommendation:</b> Follow checks-effects-interactions: update state before external calls, or use a reentrancy guard.</div>
+              <details><summary>Code</summary><pre class="code">     830 | <br>     831 |         if (paymentToken == address(0) &amp;&amp; paymentToSpend &gt; 0) {<br>&gt;&gt;&gt;  832 |             (bool success, ) = buyer.call{value: paymentToSpend}(&quot;&quot;);<br>     833 |             if (!success) revert ETHTransferFailed();<br>     834 |             emit RefundedPayment(buyer, paymentToSpend);</pre></details>
+            </div>
+            
+            <div class="finding">
+              <div class="finding-head">
+                <span class="badge" style="background:#f9ab00">Medium</span>
+                <span class="finding-title">Fixed-Gas Transfer</span>
+                <span class="conf">confidence 70%</span>
+              </div>
+              <div class="finding-meta">
+                <code>ICO_directSell.sol</code>:149
+                <span class="analyzer">static</span>
+              </div>
+              <div class="finding-desc"><b>Problem:</b> transfer()/send() has a fixed 2300 gas stipend which may fail for contracts with complex receive functions.</div>
+              <div class="finding-fix"><b>Recommendation:</b> Use .call{value: amount} with proper error handling (checks-effects-interactions).</div>
+              <details><summary>Code</summary><pre class="code">     147 |     ) public onlyRole(DEFAULT_ADMIN_ROLE) {<br>     148 |         require(address(this).balance &gt;= amount, &quot;Insufficient ETH balance&quot;);<br>&gt;&gt;&gt;  149 |         payable(to).transfer(amount);<br>     150 |         emit WithdrawnETH(to, amount);<br>     151 |     }</pre></details>
+            </div>
+            
+            <div class="finding">
+              <div class="finding-head">
+                <span class="badge" style="background:#1a73e8">Low</span>
+                <span class="finding-title">UNCLEAR require Error Message</span>
+                <span class="conf">confidence 70%</span>
+              </div>
+              <div class="finding-meta">
+                <code>ICO_directSell.sol</code>:64
+                <span class="analyzer">static</span>
+              </div>
+              <div class="finding-desc"><b>Problem:</b> require() with a generic/empty revert message makes debugging harder.</div>
+              <div class="finding-fix"><b>Recommendation:</b> Use custom errors (Solidity 0.8.4+) with specific names for better error handling.</div>
+              <details><summary>Code</summary><pre class="code">      62 |             &quot;ICO inactive&quot;<br>      63 |         );<br>&gt;&gt;&gt;   64 |         require(_paymentTokenAmount &gt; 0, &quot;Amount zero&quot;);<br>      65 | <br>      66 |         address feedAddress = tokenPriceFeeds[_paymentToken];</pre></details>
+            </div>
+            
+            <div class="finding">
+              <div class="finding-head">
+                <span class="badge" style="background:#1a73e8">Low</span>
+                <span class="finding-title">UNCLEAR require Error Message</span>
+                <span class="conf">confidence 70%</span>
+              </div>
+              <div class="finding-meta">
+                <code>ICO_directSell.sol</code>:103
+                <span class="analyzer">static</span>
+              </div>
+              <div class="finding-desc"><b>Problem:</b> require() with a generic/empty revert message makes debugging harder.</div>
+              <div class="finding-fix"><b>Recommendation:</b> Use custom errors (Solidity 0.8.4+) with specific names for better error handling.</div>
+              <details><summary>Code</summary><pre class="code">     101 |             &quot;ICO inactive&quot;<br>     102 |         );<br>&gt;&gt;&gt;  103 |         require(msg.value &gt; 0, &quot;Amount zero&quot;);<br>     104 | <br>     105 |         (uint256 price, uint256 oracleDecimals) = getTokenPrice(address(0));</pre></details>
+            </div>
+            
+            <div class="finding">
+              <div class="finding-head">
+                <span class="badge" style="background:#1a73e8">Low</span>
+                <span class="finding-title">Unoptimized Loop</span>
+                <span class="conf">confidence 70%</span>
+              </div>
+              <div class="finding-meta">
+                <code>ICO_directSell.sol</code>:25
+                <span class="analyzer">static</span>
+              </div>
+              <div class="finding-desc"><b>Problem:</b> Loops in Solidity cost gas per iteration. Consider bounds and caching state variables in memory.</div>
+              <div class="finding-fix"><b>Recommendation:</b> Cache state variables in memory before the loop, and consider if the loop can be avoided.</div>
+              <details><summary>Code</summary><pre class="code">      23 |         icoToken = IERC20(_icoToken);<br>      24 |         icoPrice = pricePerToken;<br>&gt;&gt;&gt;   25 |         for (uint256 i = 0; i &lt; _configs.length; i++) {<br>      26 |             _setPaymentTokenPricefeed(_configs[i].token, _configs[i].priceFeed);<br>      27 |         }</pre></details>
+            </div>
+            
+            <div class="finding">
+              <div class="finding-head">
+                <span class="badge" style="background:#1a73e8">Low</span>
+                <span class="finding-title">Balance Comparison</span>
+                <span class="conf">confidence 70%</span>
+              </div>
+              <div class="finding-meta">
+                <code>ICO_directSell.sol</code>:148
+                <span class="analyzer">static</span>
+              </div>
+              <div class="finding-desc"><b>Problem:</b> Comparing contract balance to determine behavior can be exploited by forced ETH sends. Note: in admin-only withdraw paths this is usually benign.</div>
+              <div class="finding-fix"><b>Recommendation:</b> Track balances internally instead of relying on contract.balance.</div>
+              <details><summary>Code</summary><pre class="code">     146 |         address to<br>     147 |     ) public onlyRole(DEFAULT_ADMIN_ROLE) {<br>&gt;&gt;&gt;  148 |         require(address(this).balance &gt;= amount, &quot;Insufficient ETH balance&quot;);<br>     149 |         payable(to).transfer(amount);<br>     150 |         emit WithdrawnETH(to, amount);</pre></details>
+            </div>
+            
+            <div class="finding">
+              <div class="finding-head">
+                <span class="badge" style="background:#1a73e8">Low</span>
+                <span class="finding-title">Unoptimized Loop</span>
+                <span class="conf">confidence 70%</span>
+              </div>
+              <div class="finding-meta">
+                <code>ICO_vesting.sol</code>:250
+                <span class="analyzer">static</span>
+              </div>
+              <div class="finding-desc"><b>Problem:</b> Loops in Solidity cost gas per iteration. Consider bounds and caching state variables in memory.</div>
+              <div class="finding-fix"><b>Recommendation:</b> Cache state variables in memory before the loop, and consider if the loop can be avoided.</div>
+              <details><summary>Code</summary><pre class="code">     248 |         numStages = _stages.length;<br>     249 | <br>&gt;&gt;&gt;  250 |         for (uint256 i = 0; i &lt; _configs.length; i++) {<br>     251 |             _setPaymentToken(_configs[i].token, _configs[i].priceFeed);<br>     252 |         }</pre></details>
+            </div>
+            
+            <div class="finding">
+              <div class="finding-head">
+                <span class="badge" style="background:#1a73e8">Low</span>
+                <span class="finding-title">Unoptimized Loop</span>
+                <span class="conf">confidence 70%</span>
+              </div>
+              <div class="finding-meta">
+                <code>ICO_vesting.sol</code>:255
+                <span class="analyzer">static</span>
+              </div>
+              <div class="finding-desc"><b>Problem:</b> Loops in Solidity cost gas per iteration. Consider bounds and caching state variables in memory.</div>
+              <div class="finding-fix"><b>Recommendation:</b> Cache state variables in memory before the loop, and consider if the loop can be avoided.</div>
+              <details><summary>Code</summary><pre class="code">     253 | <br>     254 |         uint32 lastEndTime;<br>&gt;&gt;&gt;  255 |         for (uint256 i = 0; i &lt; _stages.length; i++) {<br>     256 |             Stage memory cfg = _stages[i];<br>     257 |             if (cfg.cap == 0 || cfg.price == 0 || cfg.minPurchase == 0) {</pre></details>
+            </div>
+            
+            <div class="finding">
+              <div class="finding-head">
+                <span class="badge" style="background:#1a73e8">Low</span>
+                <span class="finding-title">Unoptimized Loop</span>
+                <span class="conf">confidence 70%</span>
+              </div>
+              <div class="finding-meta">
+                <code>ICO_vesting.sol</code>:624
+                <span class="analyzer">static</span>
+              </div>
+              <div class="finding-desc"><b>Problem:</b> Loops in Solidity cost gas per iteration. Consider bounds and caching state variables in memory.</div>
+              <div class="finding-fix"><b>Recommendation:</b> Cache state variables in memory before the loop, and consider if the loop can be avoided.</div>
+              <details><summary>Code</summary><pre class="code">     622 |         returns (uint256 totalSoldGlobal, uint256 totalCapGlobal)<br>     623 |     {<br>&gt;&gt;&gt;  624 |         for (uint256 i = 0; i &lt; numStages; i++) {<br>     625 |             totalSoldGlobal += stages[i].sold;<br>     626 |             totalCapGlobal += stages[i].cap;</pre></details>
+            </div>
+            
+            <div class="finding">
+              <div class="finding-head">
+                <span class="badge" style="background:#1a73e8">Low</span>
+                <span class="finding-title">Unoptimized Loop</span>
+                <span class="conf">confidence 70%</span>
+              </div>
+              <div class="finding-meta">
+                <code>ICO_vesting.sol</code>:636
+                <span class="analyzer">static</span>
+              </div>
+              <div class="finding-desc"><b>Problem:</b> Loops in Solidity cost gas per iteration. Consider bounds and caching state variables in memory.</div>
+              <div class="finding-fix"><b>Recommendation:</b> Cache state variables in memory before the loop, and consider if the loop can be avoided.</div>
+              <details><summary>Code</summary><pre class="code">     634 |     function getAllStages() external view returns (Stage[] memory) {<br>     635 |         Stage[] memory stagesArray = new Stage[](numStages);<br>&gt;&gt;&gt;  636 |         for (uint256 i = 0; i &lt; numStages; i++) {<br>     637 |             stagesArray[i] = stages[i];<br>     638 |         }</pre></details>
+            </div>
+            
+            <div class="finding">
+              <div class="finding-head">
+                <span class="badge" style="background:#1a73e8">Low</span>
+                <span class="finding-title">Balance Comparison</span>
+                <span class="conf">confidence 70%</span>
+              </div>
+              <div class="finding-meta">
+                <code>ICO_vesting.sol</code>:463
+                <span class="analyzer">static</span>
+              </div>
+              <div class="finding-desc"><b>Problem:</b> Comparing contract balance to determine behavior can be exploited by forced ETH sends. Note: in admin-only withdraw paths this is usually benign.</div>
+              <div class="finding-fix"><b>Recommendation:</b> Track balances internally instead of relying on contract.balance.</div>
+              <details><summary>Code</summary><pre class="code">     461 |     ) external onlyRole(DEFAULT_ADMIN_ROLE) nonReentrant {<br>     462 |         if (to == address(0)) revert InvalidRecipient();<br>&gt;&gt;&gt;  463 |         if (address(this).balance &lt; amount) revert InsufficientETHBalance();<br>     464 |         (bool success, ) = to.call{value: amount}(&quot;&quot;);<br>     465 |         if (!success) revert ETHTransferFailed();</pre></details>
+            </div>
+            
+            <div class="finding">
+              <div class="finding-head">
+                <span class="badge" style="background:#1a73e8">Low</span>
+                <span class="finding-title">Address Is Contract Check</span>
+                <span class="conf">confidence 70%</span>
+              </div>
+              <div class="finding-meta">
+                <code>TeamVestingLock.sol</code>:71
+                <span class="analyzer">static</span>
+              </div>
+              <div class="finding-desc"><b>Problem:</b> .code.length == 0 is unreliable for confirming an address is EOA, especially after deployment.</div>
+              <div class="finding-fix"><b>Recommendation:</b> Consider upgrading to a better EOA detection or avoiding this check entirely.</div>
+              <details><summary>Code</summary><pre class="code">      69 |     constructor(address _teamToken, uint256 _founderAllocation) Ownable(msg.sender) {<br>      70 |         if (_teamToken == address(0)) revert InvalidToken();<br>&gt;&gt;&gt;   71 |         if (_teamToken.code.length == 0) revert InvalidToken();<br>      72 |         if (_founderAllocation == 0) revert ZeroAmount();<br>      73 | </pre></details>
+            </div>
+            
+            <div class="finding">
+              <div class="finding-head">
+                <span class="badge" style="background:#1a73e8">Low</span>
+                <span class="finding-title">Unoptimized Loop</span>
+                <span class="conf">confidence 70%</span>
+              </div>
+              <div class="finding-meta">
+                <code>Vesting.sol</code>:157
+                <span class="analyzer">static</span>
+              </div>
+              <div class="finding-desc"><b>Problem:</b> Loops in Solidity cost gas per iteration. Consider bounds and caching state variables in memory.</div>
+              <div class="finding-fix"><b>Recommendation:</b> Cache state variables in memory before the loop, and consider if the loop can be avoided.</div>
+              <details><summary>Code</summary><pre class="code">     155 |         roundCount = _roundConfigs.length;<br>     156 | <br>&gt;&gt;&gt;  157 |         for (uint256 i = 0; i &lt; _roundConfigs.length; i++) {<br>     158 |             RoundConfig memory config = _roundConfigs[i];<br>     159 |             if (config.initialUnlockBps &gt; 10000) {</pre></details>
+            </div>
+            
+            <div class="finding">
+              <div class="finding-head">
+                <span class="badge" style="background:#5f6368">Info</span>
+                <span class="finding-title">Reentrancy Vector (External Call with Value, Guard Present)</span>
+                <span class="conf">confidence 25%</span>
+              </div>
+              <div class="finding-meta">
+                <code>ICO_vesting.sol</code>:464
+                <span class="analyzer">solidity_semantic</span>
+              </div>
+              <div class="finding-desc"><b>Problem:</b> External .call{value:...} detected at line 464. The enclosing function carries a reentrancy-guard modifier, so re-entering this function is blocked; flag kept for review only (state writes before/after the call are not re-entrant here).</div>
+              <div class="finding-fix"><b>Recommendation:</b> Verify the guard actually precedes the call and that no cross-function re-entry path exists.</div>
+              <details><summary>Code</summary><pre class="code">     462 |         if (to == address(0)) revert InvalidRecipient();<br>     463 |         if (address(this).balance &lt; amount) revert InsufficientETHBalance();<br>&gt;&gt;&gt;  464 |         (bool success, ) = to.call{value: amount}(&quot;&quot;);<br>     465 |         if (!success) revert ETHTransferFailed();<br>     466 |         emit ETHWithdrawn(to, amount);</pre></details>
+            </div>
+            
+
+  <div class="footer">Generated by BugHunter · AI-assisted automated security review · For auditing purposes only</div>
+</div>
+</body>
+</html>

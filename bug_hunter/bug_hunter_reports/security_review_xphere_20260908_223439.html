@@ -1,0 +1,893 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Security Review — xphere</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background:#0d1117; color:#c9d1d9; padding: 32px; }
+  .page { max-width: 980px; margin: 0 auto; }
+  .header { border-bottom: 1px solid #21262d; padding-bottom: 20px; margin-bottom: 24px; }
+  h1 { font-size: 26px; color: #f0f6fc; }
+  .sub { color: #8b949e; margin-top: 6px; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; }
+  .card { background:#161b22; border: 1px solid #21262d; border-radius: 8px; padding: 18px; }
+  .card h3 { color:#f0f6fc; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; }
+  .score { font-size: 52px; font-weight: 700; color: #d93025; }
+  .grade { font-size: 22px; color: #d93025; font-weight: 600; display:block; margin-top: 4px; }
+  .sev-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+  .sev-dot { width: 10px; height: 10px; border-radius: 50%; display:inline-block; flex: 0 0 10px; }
+  .sev-label { width: 90px; color: #c9d1d9; }
+  .sev-bar { flex: 1; background:#21262d; border-radius: 4px; height: 10px; overflow:hidden; }
+  .sev-fill { height: 100%; border-radius: 4px; }
+  .sev-count { width: 30px; text-align:right; color:#8b949e; }
+  .metrics { display: flex; gap: 28px; flex-wrap: wrap; color:#8b949e; font-size: 13px; margin-bottom: 8px; }
+  .finding { background:#161b22; border: 1px solid #21262d; border-left: 4px solid #30363d; border-radius: 8px; padding: 16px 18px; margin-bottom: 14px; }
+  .finding-head { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+  .badge { color:#fff; font-size: 11px; font-weight:700; padding: 3px 9px; border-radius: 20px; text-transform: uppercase; letter-spacing: .5px; }
+  .finding-title { font-size: 15px; font-weight:600; color:#f0f6fc; }
+  .conf { margin-left:auto; font-size: 11px; color:#8b949e; }
+  .finding-meta { margin-top:6px; font-size: 12px; color:#8b949e; }
+  code { background:#21262d; padding: 2px 6px; border-radius: 4px; font-size: 12px; font-family: Consolas, monospace; }
+  .analyzer { background:#1f6feb22; color:#58a6ff; padding: 2px 8px; border-radius: 4px; margin-left: 8px; }
+  .finding-desc { margin-top: 10px; font-size: 13.5px; color:#c9d1d9; }
+  .finding-fix { margin-top: 6px; font-size: 13px; color:#8b949e; }
+  .code { background:#0d1117; border:1px solid #21262d; border-radius: 6px; padding: 12px; margin-top: 10px; font-family: Consolas, monospace; font-size: 12px; overflow-x:auto; color:#a5d6ff; }
+  .err { background:#d9302511; border:1px solid #d9302555; border-radius:6px; padding:10px 12px; margin:6px 0; font-family:Consolas,monospace; font-size:12px; color:#f85149; white-space:pre-wrap; }
+  details summary { cursor:pointer; color:#58a6ff; font-size:12px; margin-top:8px; }
+  .footer { color:#484f58; font-size: 11px; margin-top: 28px; text-align:center; }
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="header">
+    <h1>Security Review — xphere</h1>
+    <div class="sub">Generated 2026-09-08 22:34:39 &nbsp;·&nbsp; Analyzers: static, solidity_semantic</div>
+    <div class="sub">Path: <code>C:\Users\123123\AppData\Local\Temp\opencode\xphere</code></div>
+  </div>
+
+  <div class="grid">
+    <div class="card">
+      <h3>Security Score</h3>
+      <span class="score">0</span><span class="grade">Grade F</span>
+      <div class="metrics" style="margin-top:12px">
+        <span>Bugs: 54</span>
+        <span>Files: 29</span>
+        <span>Lines: 8,507</span>
+      </div>
+    </div>
+    <div class="card">
+      <h3>Findings Breakdown</h3>
+      <div class="sev-row"><span class="sev-dot" style="background:#d93025"></span><span class="sev-label">Critical</span><div class="sev-bar"><div class="sev-fill" style="width:0.0%;background:#d93025"></div></div><span class="sev-count">0</span></div>
+<div class="sev-row"><span class="sev-dot" style="background:#ea4335"></span><span class="sev-label">High</span><div class="sev-bar"><div class="sev-fill" style="width:59.3%;background:#ea4335"></div></div><span class="sev-count">32</span></div>
+<div class="sev-row"><span class="sev-dot" style="background:#f9ab00"></span><span class="sev-label">Medium</span><div class="sev-bar"><div class="sev-fill" style="width:1.9%;background:#f9ab00"></div></div><span class="sev-count">1</span></div>
+<div class="sev-row"><span class="sev-dot" style="background:#1a73e8"></span><span class="sev-label">Low</span><div class="sev-bar"><div class="sev-fill" style="width:29.6%;background:#1a73e8"></div></div><span class="sev-count">16</span></div>
+<div class="sev-row"><span class="sev-dot" style="background:#5f6368"></span><span class="sev-label">Info</span><div class="sev-bar"><div class="sev-fill" style="width:9.3%;background:#5f6368"></div></div><span class="sev-count">5</span></div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-bottom:24px">
+    <h3>Scope</h3>
+    <b>javascript</b>: 8 files<br><b>bash</b>: 7 files<br><b>solidity</b>: 6 files<br><b>html</b>: 6 files<br><b>python</b>: 1 files<br><b>css</b>: 1 files
+  </div>
+
+  
+
+  <h2 style="font-size:20px;color:#f0f6fc;margin-bottom:16px">Findings (54)</h2>
+  
+            <div class="finding">
+              <div class="finding-head">
+                <span class="badge" style="background:#ea4335">High</span>
+                <span class="finding-title">Possible XSS Vulnerability</span>
+                <span class="conf">confidence 70%</span>
+              </div>
+              <div class="finding-meta">
+                <code>web\app.js</code>:185
+                <span class="analyzer">static</span>
+              </div>
+              <div class="finding-desc"><b>Problem:</b> Direct HTML injection detected. User-controlled data may be executed as HTML/JS.</div>
+              <div class="finding-fix"><b>Recommendation:</b> Sanitize input or use textContent/innerText instead of innerHTML.</div>
+              <details><summary>Code</summary><pre class="code">     183 |       const rl = $('[data-metric=&quot;burnRate&quot;]');<br>     184 |       if (rl)<br>&gt;&gt;&gt;  185 |         rl.innerHTML =<br>     186 |           accrued &gt;= cap<br>     187 |             ? `today's burn fully accrued — &lt;b&gt;waiting for the settlement&lt;/b&gt; 🔥`</pre></details>
+            </div>
+            
+            <div class="finding">
+              <div class="finding-head">
+                <span class="badge" style="background:#ea4335">High</span>
+                <span class="finding-title">Possible XSS Vulnerability</span>
+                <span class="conf">confidence 70%</span>
+              </div>
+              <div class="finding-meta">
+                <code>web\app.js</code>:231
+                <span class="analyzer">static</span>
+              </div>
+              <div class="finding-desc"><b>Problem:</b> Direct HTML injection detected. User-controlled data may be executed as HTML/JS.</div>
+              <div class="finding-fix"><b>Recommendation:</b> Sanitize input or use textContent/innerText instead of innerHTML.</div>
+              <details><summary>Code</summary><pre class="code">     229 |       const s = burnNextTs - Math.floor(Date.now() / 1000);<br>     230 |       if (s &lt;= 0) {<br>&gt;&gt;&gt;  231 |         el.innerHTML = `🔥 settling now…`;<br>     232 |         return;<br>     233 |       }</pre></details>
+            </div>
+            
+            <div class="finding">
+              <div class="finding-head">
+                <span class="badge" style="background:#ea4335">High</span>
+                <span class="finding-title">Possible XSS Vulnerability</span>
+                <span class="conf">confidence 70%</span>
+              </div>
+              <div class="finding-meta">
+                <code>web\app.js</code>:237
+                <span class="analyzer">static</span>
+              </div>
+              <div class="finding-desc"><b>Problem:</b> Direct HTML injection detected. User-controlled data may be executed as HTML/JS.</div>
+              <div class="finding-fix"><b>Recommendation:</b> Sanitize input or use textContent/innerText instead of innerHTML.</div>
+              <details><summary>Code</summary><pre class="code">     235 |       const m = String(Math.floor((s % 3600) / 60)).padStart(2, &quot;0&quot;);<br>     236 |       const sec = String(s % 60).padStart(2, &quot;0&quot;);<br>&gt;&gt;&gt;  237 |       el.innerHTML = `burns in &lt;b&gt;${h}:${m}:${sec}&lt;/b&gt; 🔥`;<br>     238 |     }, 1000);<br>     239 |   }</pre></details>
+            </div>
+            
+            <div class="finding">
+              <div class="finding-head">
+                <span class="badge" style="background:#ea4335">High</span>
+                <span class="finding-title">Possible XSS Vulnerability</span>
+                <span class="conf">confidence 70%</span>
+              </div>
+              <div class="finding-meta">
+                <code>web\app.js</code>:339
+                <span class="analyzer">static</span>
+              </div>
+              <div class="finding-desc"><b>Problem:</b> Direct HTML injection detected. User-controlled data may be executed as HTML/JS.</div>
+              <div class="finding-fix"><b>Recommendation:</b> Sanitize input or use textContent/innerText instead of innerHTML.</div>
+              <details><summary>Code</summary><pre class="code">     337 |         burnAnchorTs = Number(lastS.settledAt);<br>     338 |         const rl = $('[data-metric=&quot;burnRate&quot;]');<br>&gt;&gt;&gt;  339 |         if (rl) rl.innerHTML = `burning &lt;b&gt;\u2248${burnRatePerSec.toFixed(5)} XP&lt;/b&gt; every second, right now`;<br>     340 |       }<br>     341 |       renderMetrics({</pre></details>
+            </div>
+            
+            <div class="finding">
+              <div class="finding-head">
+                <span class="badge" style="background:#ea4335">High</span>
+                <span class="finding-title">Possible XSS Vulnerability</span>
+                <span class="conf">confidence 70%</span>
+              </div>
+              <div class="finding-meta">
+                <code>web\app.js</code>:927
+                <span class="analyzer">static</span>
+              </div>
+              <div class="finding-desc"><b>Problem:</b> Direct HTML injection detected. User-controlled data may be executed as HTML/JS.</div>
+              <div class="finding-fix"><b>Recommendation:</b> Sanitize input or use textContent/innerText instead of innerHTML.</div>
+              <details><summary>Code</summary><pre class="code">     925 |   async function renderRequests(vault, ids) {<br>     926 |     const box = $(&quot;#requestList&quot;);<br>&gt;&gt;&gt;  927 |     box.innerHTML = &quot;&quot;;<br>     928 |     for (const id of ids) {<br>     929 |       try {</pre></details>
+            </div>
+            
+            <div class="finding">
+              <div class="finding-head">
+                <span class="badge" style="background:#ea4335">High</span>
+                <span class="finding-title">Possible XSS Vulnerability</span>
+                <span class="conf">confidence 70%</span>
+              </div>
+              <div class="finding-meta">
+                <code>web\app.js</code>:941
+                <span class="analyzer">static</span>
+              </div>
+              <div class="finding-desc"><b>Problem:</b> Direct HTML injection detected. User-controlled data may be executed as HTML/JS.</div>
+              <div class="finding-fix"><b>Recommendation:</b> Sanitize input or use textContent/innerText instead of innerHTML.</div>
+              <details><summary>Code</summary><pre class="code">     939 |         el.className = &quot;req&quot;;<br>     940 |         const when = new Date(Number(r.claimableAt) * 1000);<br>&gt;&gt;&gt;  941 |         el.innerHTML = `&lt;div class=&quot;req-top&quot;&gt;&lt;span&gt;#${id} · ${fmtXP(r.assets)} XP&lt;/span&gt;<br>     942 |           &lt;span class=&quot;${ready ? &quot;ready&quot; : &quot;wait&quot;}&quot;&gt;${<br>     943 |             ready ? &quot;ready to claim ✓&quot; : `D-${daysLeft} · matures ${when.toLocaleDateString()}`</pre></details>
+            </div>
+            
+            <div class="finding">
+              <div class="finding-head">
+                <span class="badge" style="background:#ea4335">High</span>
+                <span class="finding-title">Possible XSS Vulnerability</span>
+                <span class="conf">confidence 70%</span>
+              </div>
+              <div class="finding-meta">
+                <code>web\app.js</code>:1166
+                <span class="analyzer">static</span>
+              </div>
+              <div class="finding-desc"><b>Problem:</b> Direct HTML injection detected. User-controlled data may be executed as HTML/JS.</div>
+              <div class="finding-fix"><b>Recommendation:</b> Sanitize input or use textContent/innerText instead of innerHTML.</div>
+              <details><summary>Code</summary><pre class="code">    1164 |       [&quot;WXP&quot;, CFG.contracts.wxp],<br>    1165 |     ].filter(([, a]) =&gt; a &amp;&amp; a !== ZERO);<br>&gt;&gt;&gt; 1166 |     box.innerHTML =<br>    1167 |       items<br>    1168 |         .map(</pre></details>
+            </div>
+            
+            <div class="finding">
+              <div class="finding-head">
+                <span class="badge" style="background:#ea4335">High</span>
+                <span class="finding-title">Empty Catch Block</span>
+                <span class="conf">confidence 70%</span>
+              </div>
+              <div class="finding-meta">
+                <code>web\app.js</code>:662
+                <span class="analyzer">static</span>
+              </div>
+              <div class="finding-desc"><b>Problem:</b> Empty catch block silently swallows errors.</div>
+              <div class="finding-fix"><b>Recommendation:</b> Handle the error or re-throw it. At minimum, log the error.</div>
+              <details><summary>Code</summary><pre class="code">     660 |     try {<br>     661 |       gasPrice = BigInt(await readProvider.send(&quot;eth_gasPrice&quot;, [])).toString();<br>&gt;&gt;&gt;  662 |     } catch (_) {}<br>     663 |     const res = await window.ZigapBridge.sendTx(<br>     664 |       {</pre></details>
+            </div>
+            
+            <div class="finding">
+              <div class="finding-head">
+                <span class="badge" style="background:#ea4335">High</span>
+                <span class="finding-title">Empty Catch Block</span>
+                <span class="conf">confidence 70%</span>
+              </div>
+              <div class="finding-meta">
+                <code>web\app.js</code>:743
+                <span class="analyzer">static</span>
+              </div>
+              <div class="finding-desc"><b>Problem:</b> Empty catch block silently swallows errors.</div>
+              <div class="finding-fix"><b>Recommendation:</b> Handle the error or re-throw it. At minimum, log the error.</div>
+              <details><summary>Code</summary><pre class="code">     741 |       try {<br>     742 |         r = await readProvider.send(&quot;eth_getTransactionReceipt&quot;, [hash]);<br>&gt;&gt;&gt;  743 |       } catch (_) {}<br>     744 |       if (r) {<br>     745 |         if (BigInt(r.status ?? 0) !== 1n) throw new Error(&quot;Transaction reverted on-chain&quot;);</pre></details>
+            </div>
+            
+            <div class="finding">
+              <div class="finding-head">
+                <span class="badge" style="background:#ea4335">High</span>
+                <span class="finding-title">Empty Catch Block</span>
+                <span class="conf">confidence 70%</span>
+              </div>
+              <div class="finding-meta">
+                <code>web\app.js</code>:947
+                <span class="analyzer">static</span>
+              </div>
+              <div class="finding-desc"><b>Problem:</b> Empty catch block silently swallows errors.</div>
+              <div class="finding-fix"><b>Recommendation:</b> Handle the error or re-throw it. At minimum, log the error.</div>
+              <details><summary>Code</summary><pre class="code">     945 |           &lt;div class=&quot;req-track&quot;&gt;&lt;i style=&quot;width:${pct}%&quot;&gt;&lt;/i&gt;&lt;/div&gt;`;<br>     946 |         box.appendChild(el);<br>&gt;&gt;&gt;  947 |       } catch (_) {}<br>     948 |     }<br>     949 |   }</pre></details>
+            </div>
+            
+            <div class="finding">
+              <div class="finding-head">
+                <span class="badge" style="background:#ea4335">High</span>
+                <span class="finding-title">Empty Catch Block</span>
+                <span class="conf">confidence 70%</span>
+              </div>
+              <div class="finding-meta">
+                <code>web\app.js</code>:1219
+                <span class="analyzer">static</span>
+              </div>
+              <div class="finding-desc"><b>Problem:</b> Empty catch block silently swallows errors.</div>
+              <div class="finding-fix"><b>Recommendation:</b> Handle the error or re-throw it. At minimum, log the error.</div>
+              <details><summary>Code</summary><pre class="code">    1217 |           input.value = E.formatEther(usable);<br>    1218 |           updateEstimate();<br>&gt;&gt;&gt; 1219 |         } catch (_) {}<br>    1220 |       });<br>    1221 |   }</pre></details>
+            </div>
+            
+            <div class="finding">
+              <div class="finding-head">
+                <span class="badge" style="background:#ea4335">High</span>
+                <span class="finding-title">Possible XSS Vulnerability</span>
+                <span class="conf">confidence 70%</span>
+              </div>
+              <div class="finding-meta">
+                <code>web\burn.js</code>:57
+                <span class="analyzer">static</span>
+              </div>
+              <div class="finding-desc"><b>Problem:</b> Direct HTML injection detected. User-controlled data may be executed as HTML/JS.</div>
+              <div class="finding-fix"><b>Recommendation:</b> Sanitize input or use textContent/innerText instead of innerHTML.</div>
+              <details><summary>Code</summary><pre class="code">      55 |         rate = (fe(lastS.totalAmount) * burnShare) / 86400;<br>      56 |         anchor = Number(lastS.settledAt);<br>&gt;&gt;&gt;   57 |         $(&quot;rateLine&quot;).innerHTML = `growing &lt;b&gt;≈${rate.toFixed(5)} XP&lt;/b&gt; every second`;<br>      58 |       }<br>      59 |       if (burnAddr) $(&quot;burnAddrLink&quot;).href = `${CFG.chain.blockExplorerUrl}/address/${burnAddr}`;</pre></details>
+            </div>
+            
+            <div class="finding">
+              <div class="finding-head">
+                <span class="badge" style="background:#ea4335">High</span>
+                <span class="finding-title">Possible XSS Vulnerability</span>
+                <span class="conf">confidence 70%</span>
+              </div>
+              <div class="finding-meta">
+                <code>web\burn.js</code>:70
+                <span class="analyzer">static</span>
+              </div>
+              <div class="finding-desc"><b>Problem:</b> Direct HTML injection detected. User-controlled data may be executed as HTML/JS.</div>
+              <div class="finding-fix"><b>Recommendation:</b> Sanitize input or use textContent/innerText instead of innerHTML.</div>
+              <details><summary>Code</summary><pre class="code">      68 |     const cap = rate * 86400;<br>      69 |     const accrued = Math.min(rate * elapsed, cap);<br>&gt;&gt;&gt;   70 |     $(&quot;rateLine&quot;).innerHTML =<br>      71 |       accrued &gt;= cap<br>      72 |         ? &quot;today's burn fully accrued — &lt;b&gt;waiting for the settlement&lt;/b&gt; 🔥&quot;</pre></details>
+            </div>
+            
+            <div class="finding">
+              <div class="finding-head">
+                <span class="badge" style="background:#ea4335">High</span>
+                <span class="finding-title">Possible XSS Vulnerability</span>
+                <span class="conf">confidence 70%</span>
+              </div>
+              <div class="finding-meta">
+                <code>web\burn.js</code>:104
+                <span class="analyzer">static</span>
+              </div>
+              <div class="finding-desc"><b>Problem:</b> Direct HTML injection detected. User-controlled data may be executed as HTML/JS.</div>
+              <div class="finding-fix"><b>Recommendation:</b> Sanitize input or use textContent/innerText instead of innerHTML.</div>
+              <details><summary>Code</summary><pre class="code">     102 |     const log = $(&quot;log&quot;);<br>     103 |     if (!days.length) {<br>&gt;&gt;&gt;  104 |       chart.innerHTML = '&lt;span class=&quot;chart-empty&quot;&gt;history will appear after the next settlement&lt;/span&gt;';<br>     105 |       log.innerHTML = '&lt;div class=&quot;row&quot;&gt;&lt;span class=&quot;d&quot;&gt;—&lt;/span&gt;&lt;span class=&quot;note&quot;&gt;no settlements recorded yet&lt;/span&gt;&lt;/div&gt;';<br>     106 |       return;</pre></details>
+            </div>
+            
+            <div class="finding">
+              <div class="finding-head">
+                <span class="badge" style="background:#ea4335">High</span>
+                <span class="finding-title">Possible XSS Vulnerability</span>
+                <span class="conf">confidence 70%</span>
+              </div>
+              <div class="finding-meta">
+                <code>web\burn.js</code>:105
+                <span class="analyzer">static</span>
+              </div>
+              <div class="finding-desc"><b>Problem:</b> Direct HTML injection detected. User-controlled data may be executed as HTML/JS.</div>
+              <div class="finding-fix"><b>Recommendation:</b> Sanitize input or use textContent/innerText instead of innerHTML.</div>
+              <details><summary>Code</summary><pre class="code">     103 |     if (!days.length) {<br>     104 |       chart.innerHTML = '&lt;span class=&quot;chart-empty&quot;&gt;history will appear after the next settlement&lt;/span&gt;';<br>&gt;&gt;&gt;  105 |       log.innerHTML = '&lt;div class=&quot;row&quot;&gt;&lt;span class=&quot;d&quot;&gt;—&lt;/span&gt;&lt;span class=&quot;note&quot;&gt;no settlements recorded yet&lt;/span&gt;&lt;/div&gt;';<br>     106 |       return;<br>     107 |     }</pre></details>
+            </div>
+            
+            <div class="finding">
+              <div class="finding-head">
+                <span class="badge" style="background:#ea4335">High</span>
+                <span class="finding-title">Possible XSS Vulnerability</span>
+                <span class="conf">confidence 70%</span>
+              </div>
+              <div class="finding-meta">
+                <code>web\burn.js</code>:110
+                <span class="analyzer">static</span>
+              </div>
+              <div class="finding-desc"><b>Problem:</b> Direct HTML injection detected. User-controlled data may be executed as HTML/JS.</div>
+              <div class="finding-fix"><b>Recommendation:</b> Sanitize input or use textContent/innerText instead of innerHTML.</div>
+              <details><summary>Code</summary><pre class="code">     108 |     const recent = days.slice(-30);<br>     109 |     const max = Math.max(...recent.map((d) =&gt; d.burned), 1);<br>&gt;&gt;&gt;  110 |     chart.innerHTML = recent<br>     111 |       .map((d) =&gt; {<br>     112 |         const h = Math.max(2, (d.burned / max) * 100);</pre></details>
+            </div>
+            
+            <div class="finding">
+              <div class="finding-head">
+                <span class="badge" style="background:#ea4335">High</span>
+                <span class="finding-title">Possible XSS Vulnerability</span>
+                <span class="conf">confidence 70%</span>
+              </div>
+              <div class="finding-meta">
+                <code>web\burn.js</code>:120
+                <span class="analyzer">static</span>
+              </div>
+              <div class="finding-desc"><b>Problem:</b> Direct HTML injection detected. User-controlled data may be executed as HTML/JS.</div>
+              <div class="finding-fix"><b>Recommendation:</b> Sanitize input or use textContent/innerText instead of innerHTML.</div>
+              <details><summary>Code</summary><pre class="code">     118 |       })<br>     119 |       .join(&quot;&quot;);<br>&gt;&gt;&gt;  120 |     log.innerHTML = [...recent]<br>     121 |       .reverse()<br>     122 |       .map(</pre></details>
+            </div>
+            
+            <div class="finding">
+              <div class="finding-head">
+                <span class="badge" style="background:#ea4335">High</span>
+                <span class="finding-title">Empty Catch Block</span>
+                <span class="conf">confidence 70%</span>
+              </div>
+              <div class="finding-meta">
+                <code>web\burn.js</code>:100
+                <span class="analyzer">static</span>
+              </div>
+              <div class="finding-desc"><b>Problem:</b> Empty catch block silently swallows errors.</div>
+              <div class="finding-fix"><b>Recommendation:</b> Handle the error or re-throw it. At minimum, log the error.</div>
+              <details><summary>Code</summary><pre class="code">      98 |       const res = await fetch(&quot;data/stats.json&quot;, { cache: &quot;no-store&quot; });<br>      99 |       days = (await res.json()).days || [];<br>&gt;&gt;&gt;  100 |     } catch (_) {}<br>     101 |     const chart = $(&quot;chart&quot;);<br>     102 |     const log = $(&quot;log&quot;);</pre></details>
+            </div>
+            
+            <div class="finding">
+              <div class="finding-head">
+                <span class="badge" style="background:#ea4335">High</span>
+                <span class="finding-title">Possible XSS Vulnerability</span>
+                <span class="conf">confidence 70%</span>
+              </div>
+              <div class="finding-meta">
+                <code>web\partners.js</code>:38
+                <span class="analyzer">static</span>
+              </div>
+              <div class="finding-desc"><b>Problem:</b> Direct HTML injection detected. User-controlled data may be executed as HTML/JS.</div>
+              <div class="finding-fix"><b>Recommendation:</b> Sanitize input or use textContent/innerText instead of innerHTML.</div>
+              <details><summary>Code</summary><pre class="code">      36 |         .sort((a, b) =&gt; b.tvl - a.tvl);<br>      37 |       const maxT = Math.max(...rows.map((r) =&gt; r.tvl), 1e-9);<br>&gt;&gt;&gt;   38 |       document.getElementById(&quot;rows&quot;).innerHTML = rows<br>      39 |         .map(<br>      40 |           (r) =&gt; `&lt;div class=&quot;b-row&quot;&gt;</pre></details>
+            </div>
+            
+            <div class="finding">
+              <div class="finding-head">
+                <span class="badge" style="background:#ea4335">High</span>
+                <span class="finding-title">Possible XSS Vulnerability</span>
+                <span class="conf">confidence 70%</span>
+              </div>
+              <div class="finding-meta">
+                <code>web\status.js</code>:157
+                <span class="analyzer">static</span>
+              </div>
+              <div class="finding-desc"><b>Problem:</b> Direct HTML injection detected. User-controlled data may be executed as HTML/JS.</div>
+              <div class="finding-fix"><b>Recommendation:</b> Sanitize input or use textContent/innerText instead of innerHTML.</div>
+              <details><summary>Code</summary><pre class="code">     155 |         ? '&lt;span class=&quot;pill warn&quot;&gt;DUE&lt;/span&gt;'<br>     156 |         : '&lt;span class=&quot;pill ok&quot;&gt;ON SCHEDULE&lt;/span&gt;';<br>&gt;&gt;&gt;  157 |     $(&quot;components&quot;).innerHTML = `<br>     158 |       &lt;div class=&quot;comp&quot;&gt;&lt;span class=&quot;name&quot;&gt;Vault solvency&lt;/span&gt;&lt;span class=&quot;spacer&quot;&gt;&lt;/span&gt;<br>     159 |         &lt;span class=&quot;desc&quot;&gt;surplus ${solvent ? fn(fe(held - oblig)) : &quot;—&quot;} XP&lt;/span&gt;</pre></details>
+            </div>
+            
+            <div class="finding">
+              <div class="finding-head">
+                <span class="badge" style="background:#ea4335">High</span>
+                <span class="finding-title">Possible XSS Vulnerability</span>
+                <span class="conf">confidence 70%</span>
+              </div>
+              <div class="finding-meta">
+                <code>web\status.js</code>:171
+                <span class="analyzer">static</span>
+              </div>
+              <div class="finding-desc"><b>Problem:</b> Direct HTML injection detected. User-controlled data may be executed as HTML/JS.</div>
+              <div class="finding-fix"><b>Recommendation:</b> Sanitize input or use textContent/innerText instead of innerHTML.</div>
+              <details><summary>Code</summary><pre class="code">     169 | <br>     170 |     // ── metrics ──<br>&gt;&gt;&gt;  171 |     $(&quot;metrics&quot;).innerHTML =<br>     172 |       card(&quot;Total value locked&quot;, `${fn(fe(tvl))} &lt;small&gt;XP&lt;/small&gt;`, &quot;&quot;, `${fn(utilization, 2)}% of ${fn(fe(cap), 0)} XP cap`) +<br>     173 |       card(&quot;Staking APR&quot;, stakingApr !== null ? stakingApr.toFixed(2) + &quot; &lt;small&gt;%&lt;/small&gt;&quot; : &quot;—&quot;, &quot;&quot;,</pre></details>
+            </div>
+            
+            <div class="finding">
+              <div class="finding-head">
+                <span class="badge" style="background:#ea4335">High</span>
+                <span class="finding-title">Possible XSS Vulnerability</span>
+                <span class="conf">confidence 70%</span>
+              </div>
+              <div class="finding-meta">
+                <code>web\status.js</code>:188
+                <span class="analyzer">static</span>
+              </div>
+              <div class="finding-desc"><b>Problem:</b> Direct HTML injection detected. User-controlled data may be executed as HTML/JS.</div>
+              <div class="finding-fix"><b>Recommendation:</b> Sanitize input or use textContent/innerText instead of innerHTML.</div>
+              <details><summary>Code</summary><pre class="code">     186 |     $(&quot;pBarOwe&quot;).style.width = (obligN / maxN) * 100 + &quot;%&quot;;<br>     187 |     $(&quot;proof&quot;).className = &quot;proof&quot; + (solvent ? &quot;&quot; : &quot; bad&quot;);<br>&gt;&gt;&gt;  188 |     $(&quot;pVerdict&quot;).innerHTML = solvent<br>     189 |       ? `&lt;b class=&quot;ok&quot;&gt;✓ SOLVENT&lt;/b&gt; — holdings cover obligations with ${fn(holdN - obligN)} XP to spare`<br>     190 |       : `&lt;b class=&quot;bad&quot;&gt;✗ CHECK FAILED&lt;/b&gt; — holdings below obligations`;</pre></details>
+            </div>
+            
+            <div class="finding">
+              <div class="finding-head">
+                <span class="badge" style="background:#ea4335">High</span>
+                <span class="finding-title">Possible XSS Vulnerability</span>
+                <span class="conf">confidence 70%</span>
+              </div>
+              <div class="finding-meta">
+                <code>web\status.js</code>:195
+                <span class="analyzer">static</span>
+              </div>
+              <div class="finding-desc"><b>Problem:</b> Direct HTML injection detected. User-controlled data may be executed as HTML/JS.</div>
+              <div class="finding-fix"><b>Recommendation:</b> Sanitize input or use textContent/innerText instead of innerHTML.</div>
+              <details><summary>Code</summary><pre class="code">     193 |     if (lastS &amp;&amp; Number(lastS.settledAt) &gt; 0) {<br>     194 |       const when = new Date(Number(lastS.settledAt) * 1000);<br>&gt;&gt;&gt;  195 |       $(&quot;lastSettle&quot;).innerHTML =<br>     196 |         card(&quot;Settled at&quot;, when.toISOString().slice(0, 16).replace(&quot;T&quot;, &quot; &quot;) + &quot; &lt;small&gt;UTC&lt;/small&gt;&quot;) +<br>     197 |         card(&quot;Amount settled&quot;, `${fn(fe(lastS.totalAmount))} &lt;small&gt;XP&lt;/small&gt;`) +</pre></details>
+            </div>
+            
+            <div class="finding">
+              <div class="finding-head">
+                <span class="badge" style="background:#ea4335">High</span>
+                <span class="finding-title">Possible XSS Vulnerability</span>
+                <span class="conf">confidence 70%</span>
+              </div>
+              <div class="finding-meta">
+                <code>web\status.js</code>:201
+                <span class="analyzer">static</span>
+              </div>
+              <div class="finding-desc"><b>Problem:</b> Direct HTML injection detected. User-controlled data may be executed as HTML/JS.</div>
+              <div class="finding-fix"><b>Recommendation:</b> Sanitize input or use textContent/innerText instead of innerHTML.</div>
+              <details><summary>Code</summary><pre class="code">     199 |         card(&quot;To stakers&quot;, `${fn(fe(lastS.distributed))} &lt;small&gt;XP&lt;/small&gt;`, &quot;ok&quot;);<br>     200 |     } else {<br>&gt;&gt;&gt;  201 |       $(&quot;lastSettle&quot;).innerHTML = card(&quot;Settled at&quot;, &quot;—&quot;, &quot;&quot;, &quot;no settlement yet&quot;);<br>     202 |     }<br>     203 | </pre></details>
+            </div>
+            
+            <div class="finding">
+              <div class="finding-head">
+                <span class="badge" style="background:#ea4335">High</span>
+                <span class="finding-title">Possible XSS Vulnerability</span>
+                <span class="conf">confidence 70%</span>
+              </div>
+              <div class="finding-meta">
+                <code>web\status.js</code>:205
+                <span class="analyzer">static</span>
+              </div>
+              <div class="finding-desc"><b>Problem:</b> Direct HTML injection detected. User-controlled data may be executed as HTML/JS.</div>
+              <div class="finding-fix"><b>Recommendation:</b> Sanitize input or use textContent/innerText instead of innerHTML.</div>
+              <details><summary>Code</summary><pre class="code">     203 | <br>     204 |     // ── parameters ──<br>&gt;&gt;&gt;  205 |     $(&quot;params&quot;).innerHTML =<br>     206 |       kv(&quot;Stake cap&quot;, fn(fe(cap), 0) + &quot; XP&quot;) +<br>     207 |       kv(&quot;Unstake cooldown&quot;, dur(cooldown)) +</pre></details>
+            </div>
+            
+            <div class="finding">
+              <div class="finding-head">
+                <span class="badge" style="background:#ea4335">High</span>
+                <span class="finding-title">Possible XSS Vulnerability</span>
+                <span class="conf">confidence 70%</span>
+              </div>
+              <div class="finding-meta">
+                <code>web\status.js</code>:240
+                <span class="analyzer">static</span>
+              </div>
+              <div class="finding-desc"><b>Problem:</b> Direct HTML injection detected. User-controlled data may be executed as HTML/JS.</div>
+              <div class="finding-fix"><b>Recommendation:</b> Sanitize input or use textContent/innerText instead of innerHTML.</div>
+              <details><summary>Code</summary><pre class="code">     238 |       /* role reads unavailable — links above still render */<br>     239 |     }<br>&gt;&gt;&gt;  240 |     $(&quot;gov&quot;).innerHTML = rows.join(&quot;&quot;);<br>     241 | <br>     242 |     $(&quot;footLeft&quot;).textContent =</pre></details>
+            </div>
+            
+            <div class="finding">
+              <div class="finding-head">
+                <span class="badge" style="background:#ea4335">High</span>
+                <span class="finding-title">Possible XSS Vulnerability</span>
+                <span class="conf">confidence 70%</span>
+              </div>
+              <div class="finding-meta">
+                <code>web\zigap.js</code>:70
+                <span class="analyzer">static</span>
+              </div>
+              <div class="finding-desc"><b>Problem:</b> Direct HTML injection detected. User-controlled data may be executed as HTML/JS.</div>
+              <div class="finding-fix"><b>Recommendation:</b> Sanitize input or use textContent/innerText instead of innerHTML.</div>
+              <details><summary>Code</summary><pre class="code">      68 |     overlay.className = &quot;zg-overlay&quot;;<br>      69 |     overlay.hidden = true;<br>&gt;&gt;&gt;   70 |     overlay.innerHTML = `<br>      71 |       &lt;div class=&quot;zg-card&quot;&gt;<br>      72 |         &lt;div class=&quot;zg-head&quot;&gt;&lt;b id=&quot;zgTitle&quot;&gt;&lt;img class=&quot;zg-logo&quot; src=&quot;assets/brand/zigap_symbol.svg&quot; alt=&quot;&quot; /&gt;ZIGAP&lt;/b&gt;</pre></details>
+            </div>
+            
+            <div class="finding">
+              <div class="finding-head">
+                <span class="badge" style="background:#ea4335">High</span>
+                <span class="finding-title">Possible XSS Vulnerability</span>
+                <span class="conf">confidence 70%</span>
+              </div>
+              <div class="finding-meta">
+                <code>web\zigap.js</code>:106
+                <span class="analyzer">static</span>
+              </div>
+              <div class="finding-desc"><b>Problem:</b> Direct HTML injection detected. User-controlled data may be executed as HTML/JS.</div>
+              <div class="finding-fix"><b>Recommendation:</b> Sanitize input or use textContent/innerText instead of innerHTML.</div>
+              <details><summary>Code</summary><pre class="code">     104 |     ensureOverlay();<br>     105 |     overlay.hidden = false;<br>&gt;&gt;&gt;  106 |     overlay.querySelector(&quot;#zgTitle&quot;).innerHTML =<br>     107 |       '&lt;img class=&quot;zg-logo&quot; src=&quot;assets/brand/zigap_symbol.svg&quot; alt=&quot;&quot; /&gt;' + title;<br>     108 |     overlay.querySelector(&quot;#zgNote&quot;).innerHTML = note;</pre></details>
+            </div>
+            
+            <div class="finding">
+              <div class="finding-head">
+                <span class="badge" style="background:#ea4335">High</span>
+                <span class="finding-title">Possible XSS Vulnerability</span>
+                <span class="conf">confidence 70%</span>
+              </div>
+              <div class="finding-meta">
+                <code>web\zigap.js</code>:108
+                <span class="analyzer">static</span>
+              </div>
+              <div class="finding-desc"><b>Problem:</b> Direct HTML injection detected. User-controlled data may be executed as HTML/JS.</div>
+              <div class="finding-fix"><b>Recommendation:</b> Sanitize input or use textContent/innerText instead of innerHTML.</div>
+              <details><summary>Code</summary><pre class="code">     106 |     overlay.querySelector(&quot;#zgTitle&quot;).innerHTML =<br>     107 |       '&lt;img class=&quot;zg-logo&quot; src=&quot;assets/brand/zigap_symbol.svg&quot; alt=&quot;&quot; /&gt;' + title;<br>&gt;&gt;&gt;  108 |     overlay.querySelector(&quot;#zgNote&quot;).innerHTML = note;<br>     109 |     const mountEl = overlay.querySelector(&quot;#zgMount&quot;);<br>     110 |     mountEl.innerHTML = '&lt;span class=&quot;zg-loading&quot;&gt;loading ZIGAP…&lt;/span&gt;';</pre></details>
+            </div>
+            
+            <div class="finding">
+              <div class="finding-head">
+                <span class="badge" style="background:#ea4335">High</span>
+                <span class="finding-title">Possible XSS Vulnerability</span>
+                <span class="conf">confidence 70%</span>
+              </div>
+              <div class="finding-meta">
+                <code>web\zigap.js</code>:110
+                <span class="analyzer">static</span>
+              </div>
+              <div class="finding-desc"><b>Problem:</b> Direct HTML injection detected. User-controlled data may be executed as HTML/JS.</div>
+              <div class="finding-fix"><b>Recommendation:</b> Sanitize input or use textContent/innerText instead of innerHTML.</div>
+              <details><summary>Code</summary><pre class="code">     108 |     overlay.querySelector(&quot;#zgNote&quot;).innerHTML = note;<br>     109 |     const mountEl = overlay.querySelector(&quot;#zgMount&quot;);<br>&gt;&gt;&gt;  110 |     mountEl.innerHTML = '&lt;span class=&quot;zg-loading&quot;&gt;loading ZIGAP…&lt;/span&gt;';<br>     111 |     const { createRoot } = await loadLibs();<br>     112 |     return new Promise((resolve, reject) =&gt; {</pre></details>
+            </div>
+            
+            <div class="finding">
+              <div class="finding-head">
+                <span class="badge" style="background:#ea4335">High</span>
+                <span class="finding-title">Possible XSS Vulnerability</span>
+                <span class="conf">confidence 70%</span>
+              </div>
+              <div class="finding-meta">
+                <code>web\zigap.js</code>:114
+                <span class="analyzer">static</span>
+              </div>
+              <div class="finding-desc"><b>Problem:</b> Direct HTML injection detected. User-controlled data may be executed as HTML/JS.</div>
+              <div class="finding-fix"><b>Recommendation:</b> Sanitize input or use textContent/innerText instead of innerHTML.</div>
+              <details><summary>Code</summary><pre class="code">     112 |     return new Promise((resolve, reject) =&gt; {<br>     113 |       rejectOpen = reject;<br>&gt;&gt;&gt;  114 |       mountEl.innerHTML = &quot;&quot;;<br>     115 |       root = createRoot(mountEl);<br>     116 |       root.render(makeElement(resolve));</pre></details>
+            </div>
+            
+            <div class="finding">
+              <div class="finding-head">
+                <span class="badge" style="background:#ea4335">High</span>
+                <span class="finding-title">Empty Catch Block</span>
+                <span class="conf">confidence 70%</span>
+              </div>
+              <div class="finding-meta">
+                <code>web\zigap.js</code>:92
+                <span class="analyzer">static</span>
+              </div>
+              <div class="finding-desc"><b>Problem:</b> Empty catch block silently swallows errors.</div>
+              <div class="finding-fix"><b>Recommendation:</b> Handle the error or re-throw it. At minimum, log the error.</div>
+              <details><summary>Code</summary><pre class="code">      90 |   function close(reason) {<br>      91 |     if (root) {<br>&gt;&gt;&gt;   92 |       try { root.unmount(); } catch (_) {}<br>      93 |       root = null;<br>      94 |     }</pre></details>
+            </div>
+            
+            <div class="finding">
+              <div class="finding-head">
+                <span class="badge" style="background:#f9ab00">Medium</span>
+                <span class="finding-title">Fixed-Gas Transfer</span>
+                <span class="conf">confidence 70%</span>
+              </div>
+              <div class="finding-meta">
+                <code>src\RewardDistributor.sol</code>:192
+                <span class="analyzer">static</span>
+              </div>
+              <div class="finding-desc"><b>Problem:</b> transfer()/send() has a fixed 2300 gas stipend which may fail for contracts with complex receive functions.</div>
+              <div class="finding-fix"><b>Recommendation:</b> Use .call{value: amount} with proper error handling (checks-effects-interactions).</div>
+              <details><summary>Code</summary><pre class="code">     190 |         if (distributed &gt; 0) {<br>     191 |             wxp.deposit{value: distributed}();<br>&gt;&gt;&gt;  192 |             require(wxp.transfer(address(vault), distributed), &quot;WXP transfer failed&quot;);<br>     193 |             vault.notifyRewardAmount(distributed);<br>     194 |         }</pre></details>
+            </div>
+            
+            <div class="finding">
+              <div class="finding-head">
+                <span class="badge" style="background:#1a73e8">Low</span>
+                <span class="finding-title">Hardcoded Sleep</span>
+                <span class="conf">confidence 70%</span>
+              </div>
+              <div class="finding-meta">
+                <code>ops\vault-activity.py</code>:77
+                <span class="analyzer">static</span>
+              </div>
+              <div class="finding-desc"><b>Problem:</b> Using sleep() in code can cause performance issues and race conditions.</div>
+              <div class="finding-fix"><b>Recommendation:</b> Use proper synchronization primitives, event loops, or polling with backoff.</div>
+              <details><summary>Code</summary><pre class="code">      75 |         except Exception as e:  # noqa: BLE001 — retry anything, the RPC rate-limits<br>      76 |             last = e<br>&gt;&gt;&gt;   77 |             time.sleep(1.5 * (attempt + 1))<br>      78 |     raise RuntimeError(f&quot;RPC {method} failed after {tries} tries: {last}&quot;)<br>      79 | </pre></details>
+            </div>
+            
+            <div class="finding">
+              <div class="finding-head">
+                <span class="badge" style="background:#1a73e8">Low</span>
+                <span class="finding-title">Hardcoded Sleep</span>
+                <span class="conf">confidence 70%</span>
+              </div>
+              <div class="finding-meta">
+                <code>ops\vault-activity.py</code>:337
+                <span class="analyzer">static</span>
+              </div>
+              <div class="finding-desc"><b>Problem:</b> Using sleep() in code can cause performance issues and race conditions.</div>
+              <div class="finding-fix"><b>Recommendation:</b> Use proper synchronization primitives, event loops, or polling with backoff.</div>
+              <details><summary>Code</summary><pre class="code">     335 |         write_checkpoint(end)<br>     336 |         cur = end + 1<br>&gt;&gt;&gt;  337 |         time.sleep(0.15)<br>     338 | <br>     339 |     print(f&quot;scanned {frm}..{head}, {seen} event(s)&quot;)</pre></details>
+            </div>
+            
+            <div class="finding">
+              <div class="finding-head">
+                <span class="badge" style="background:#1a73e8">Low</span>
+                <span class="finding-title">Unoptimized Loop</span>
+                <span class="conf">confidence 70%</span>
+              </div>
+              <div class="finding-meta">
+                <code>src\PartnerCommissionDistributor.sol</code>:144
+                <span class="analyzer">static</span>
+              </div>
+              <div class="finding-desc"><b>Problem:</b> Loops in Solidity cost gas per iteration. Consider bounds and caching state variables in memory.</div>
+              <div class="finding-fix"><b>Recommendation:</b> Cache state variables in memory before the loop, and consider if the loop can be avoided.</div>
+              <details><summary>Code</summary><pre class="code">     142 |         p.registered = false;<br>     143 |         uint256 n = partnerList.length;<br>&gt;&gt;&gt;  144 |         for (uint256 i = 0; i &lt; n; i++) {<br>     145 |             if (partnerList[i] == partnerId) {<br>     146 |                 partnerList[i] = partnerList[n - 1];</pre></details>
+            </div>
+            
+            <div class="finding">
+              <div class="finding-head">
+                <span class="badge" style="background:#1a73e8">Low</span>
+                <span class="finding-title">Unoptimized Loop</span>
+                <span class="conf">confidence 70%</span>
+              </div>
+              <div class="finding-meta">
+                <code>src\PartnerCommissionDistributor.sol</code>:166
+                <span class="analyzer">static</span>
+              </div>
+              <div class="finding-desc"><b>Problem:</b> Loops in Solidity cost gas per iteration. Consider bounds and caching state variables in memory.</div>
+              <div class="finding-fix"><b>Recommendation:</b> Cache state variables in memory before the loop, and consider if the loop can be avoided.</div>
+              <details><summary>Code</summary><pre class="code">     164 |         uint256 n = partnerList.length;<br>     165 |         uint256 totalTvl;<br>&gt;&gt;&gt;  166 |         for (uint256 i = 0; i &lt; n; i++) {<br>     167 |             totalTvl += vault.partnerTVL(partnerList[i]);<br>     168 |         }</pre></details>
+            </div>
+            
+            <div class="finding">
+              <div class="finding-head">
+                <span class="badge" style="background:#1a73e8">Low</span>
+                <span class="finding-title">Unoptimized Loop</span>
+                <span class="conf">confidence 70%</span>
+              </div>
+              <div class="finding-meta">
+                <code>src\PartnerCommissionDistributor.sol</code>:171
+                <span class="analyzer">static</span>
+              </div>
+              <div class="finding-desc"><b>Problem:</b> Loops in Solidity cost gas per iteration. Consider bounds and caching state variables in memory.</div>
+              <div class="finding-fix"><b>Recommendation:</b> Cache state variables in memory before the loop, and consider if the loop can be avoided.</div>
+              <details><summary>Code</summary><pre class="code">     169 |         if (totalTvl == 0) revert NoPartnerTVL();<br>     170 | <br>&gt;&gt;&gt;  171 |         for (uint256 i = 0; i &lt; n; i++) {<br>     172 |             bytes32 pid = partnerList[i];<br>     173 |             uint256 tvl = vault.partnerTVL(pid);</pre></details>
+            </div>
+            
+            <div class="finding">
+              <div class="finding-head">
+                <span class="badge" style="background:#1a73e8">Low</span>
+                <span class="finding-title">Unoptimized Loop</span>
+                <span class="conf">confidence 70%</span>
+              </div>
+              <div class="finding-meta">
+                <code>src\PartnerCommissionDistributor.sol</code>:248
+                <span class="analyzer">static</span>
+              </div>
+              <div class="finding-desc"><b>Problem:</b> Loops in Solidity cost gas per iteration. Consider bounds and caching state variables in memory.</div>
+              <div class="finding-fix"><b>Recommendation:</b> Cache state variables in memory before the loop, and consider if the loop can be avoided.</div>
+              <details><summary>Code</summary><pre class="code">     246 |         shares = new uint256[](n);<br>     247 |         uint256 totalTvl;<br>&gt;&gt;&gt;  248 |         for (uint256 i = 0; i &lt; n; i++) {<br>     249 |             totalTvl += vault.partnerTVL(partnerList[i]);<br>     250 |         }</pre></details>
+            </div>
+            
+            <div class="finding">
+              <div class="finding-head">
+                <span class="badge" style="background:#1a73e8">Low</span>
+                <span class="finding-title">Unoptimized Loop</span>
+                <span class="conf">confidence 70%</span>
+              </div>
+              <div class="finding-meta">
+                <code>src\PartnerCommissionDistributor.sol</code>:251
+                <span class="analyzer">static</span>
+              </div>
+              <div class="finding-desc"><b>Problem:</b> Loops in Solidity cost gas per iteration. Consider bounds and caching state variables in memory.</div>
+              <div class="finding-fix"><b>Recommendation:</b> Cache state variables in memory before the loop, and consider if the loop can be avoided.</div>
+              <details><summary>Code</summary><pre class="code">     249 |             totalTvl += vault.partnerTVL(partnerList[i]);<br>     250 |         }<br>&gt;&gt;&gt;  251 |         for (uint256 i = 0; i &lt; n; i++) {<br>     252 |             ids[i] = partnerList[i];<br>     253 |             if (totalTvl == 0) continue;</pre></details>
+            </div>
+            
+            <div class="finding">
+              <div class="finding-head">
+                <span class="badge" style="background:#1a73e8">Low</span>
+                <span class="finding-title">Balance Comparison</span>
+                <span class="conf">confidence 70%</span>
+              </div>
+              <div class="finding-meta">
+                <code>src\PartnerCommissionDistributor.sol</code>:23
+                <span class="analyzer">static</span>
+              </div>
+              <div class="finding-desc"><b>Problem:</b> Comparing contract balance to determine behavior can be exploited by forced ETH sends. Note: in admin-only withdraw paths this is usually benign.</div>
+              <div class="finding-fix"><b>Recommendation:</b> Track balances internally instead of relying on contract.balance.</div>
+              <details><summary>Code</summary><pre class="code">      21 | ///      split across registered partners in proportion to their current vault TVL snapshot and<br>      22 | ///      accrued to each partner's pull-claimable balance. Partners `claim()` to their payout<br>&gt;&gt;&gt;   23 | ///      address. Solvency invariant: address(this).balance &gt;= totalAccrued at all times.<br>      24 | contract PartnerCommissionDistributor is AccessControl, ReentrancyGuard {<br>      25 |     /// @notice Role allowed to register partners, fund the budget, and distribute commission.</pre></details>
+            </div>
+            
+            <div class="finding">
+              <div class="finding-head">
+                <span class="badge" style="background:#1a73e8">Low</span>
+                <span class="finding-title">Comparison with Boolean Literal</span>
+                <span class="conf">confidence 70%</span>
+              </div>
+              <div class="finding-meta">
+                <code>web\app.js</code>:726
+                <span class="analyzer">static</span>
+              </div>
+              <div class="finding-desc"><b>Problem:</b> Direct comparison with true/false is usually redundant and may hide type coercion bugs.</div>
+              <div class="finding-fix"><b>Recommendation:</b> Use the value directly as a boolean: 'if (value)' instead of 'if (value === true)'.</div>
+              <details><summary>Code</summary><pre class="code">     724 |   function reportClaim(receipt) {<br>     725 |     const amt = claimedAmount(receipt);<br>&gt;&gt;&gt;  726 |     if (amt === null) {<br>     727 |       setTx(&quot;Rewards claimed \u2713&quot;, &quot;ok&quot;);<br>     728 |     } else if (amt === 0n) {</pre></details>
+            </div>
+            
+            <div class="finding">
+              <div class="finding-head">
+                <span class="badge" style="background:#1a73e8">Low</span>
+                <span class="finding-title">Comparison with Boolean Literal</span>
+                <span class="conf">confidence 70%</span>
+              </div>
+              <div class="finding-meta">
+                <code>web\app.js</code>:1234
+                <span class="analyzer">static</span>
+              </div>
+              <div class="finding-desc"><b>Problem:</b> Direct comparison with true/false is usually redundant and may hide type coercion bugs.</div>
+              <div class="finding-fix"><b>Recommendation:</b> Use the value directly as a boolean: 'if (value)' instead of 'if (value === true)'.</div>
+              <details><summary>Code</summary><pre class="code">    1232 | <br>    1233 |     // At launch: flip CFG.launch.live = true → hide the modal/ribbon and restore LIVE.<br>&gt;&gt;&gt; 1234 |     if (launch.live === true) {<br>    1235 |       if (modal) {<br>    1236 |         modal.hidden = true;</pre></details>
+            </div>
+            
+            <div class="finding">
+              <div class="finding-head">
+                <span class="badge" style="background:#1a73e8">Low</span>
+                <span class="finding-title">Comparison with Boolean Literal</span>
+                <span class="conf">confidence 70%</span>
+              </div>
+              <div class="finding-meta">
+                <code>web\status.js</code>:119
+                <span class="analyzer">static</span>
+              </div>
+              <div class="finding-desc"><b>Problem:</b> Direct comparison with true/false is usually redundant and may hide type coercion bugs.</div>
+              <div class="finding-fix"><b>Recommendation:</b> Use the value directly as a boolean: 'if (value)' instead of 'if (value === true)'.</div>
+              <details><summary>Code</summary><pre class="code">     117 |     // figures are shown here — this card is the headline, the raw on-chain<br>     118 |     // value sits underneath it, so the difference is visible rather than hidden.<br>&gt;&gt;&gt;  119 |     let stakingApr = apr !== null ? Number(apr) / 1e16 : null;<br>     120 |     if (lastS &amp;&amp; Number(lastS.settledAt) &gt; 0 &amp;&amp; ratioBps &amp;&amp; epoch) {<br>     121 |       const denom = Math.max(fe(tvl), fe(cap));</pre></details>
+            </div>
+            
+            <div class="finding">
+              <div class="finding-head">
+                <span class="badge" style="background:#1a73e8">Low</span>
+                <span class="finding-title">Comparison with Boolean Literal</span>
+                <span class="conf">confidence 70%</span>
+              </div>
+              <div class="finding-meta">
+                <code>web\status.js</code>:129
+                <span class="analyzer">static</span>
+              </div>
+              <div class="finding-desc"><b>Problem:</b> Direct comparison with true/false is usually redundant and may hide type coercion bugs.</div>
+              <div class="finding-fix"><b>Recommendation:</b> Use the value directly as a boolean: 'if (value)' instead of 'if (value === true)'.</div>
+              <details><summary>Code</summary><pre class="code">     127 |     // ── health checks ──<br>     128 |     const oblig = (tvl ?? 0n) + (pendingRedeem ?? 0n) + (reserves ?? 0n);<br>&gt;&gt;&gt;  129 |     const solvent = held !== null &amp;&amp; held &gt;= oblig;<br>     130 |     const settleOver = nextSettle ? now - Number(nextSettle) : 0;<br>     131 |     const settleDelayed = settleOver &gt; SETTLE_GRACE_S &amp;&amp; pending !== null &amp;&amp; fe(pending) &gt; 0;</pre></details>
+            </div>
+            
+            <div class="finding">
+              <div class="finding-head">
+                <span class="badge" style="background:#1a73e8">Low</span>
+                <span class="finding-title">Comparison with Boolean Literal</span>
+                <span class="conf">confidence 70%</span>
+              </div>
+              <div class="finding-meta">
+                <code>web\status.js</code>:131
+                <span class="analyzer">static</span>
+              </div>
+              <div class="finding-desc"><b>Problem:</b> Direct comparison with true/false is usually redundant and may hide type coercion bugs.</div>
+              <div class="finding-fix"><b>Recommendation:</b> Use the value directly as a boolean: 'if (value)' instead of 'if (value === true)'.</div>
+              <details><summary>Code</summary><pre class="code">     129 |     const solvent = held !== null &amp;&amp; held &gt;= oblig;<br>     130 |     const settleOver = nextSettle ? now - Number(nextSettle) : 0;<br>&gt;&gt;&gt;  131 |     const settleDelayed = settleOver &gt; SETTLE_GRACE_S &amp;&amp; pending !== null &amp;&amp; fe(pending) &gt; 0;<br>     132 |     const streaming = periodFinish &amp;&amp; Number(periodFinish) &gt; now;<br>     133 |     const issues = [];</pre></details>
+            </div>
+            
+            <div class="finding">
+              <div class="finding-head">
+                <span class="badge" style="background:#1a73e8">Low</span>
+                <span class="finding-title">Comparison with Boolean Literal</span>
+                <span class="conf">confidence 70%</span>
+              </div>
+              <div class="finding-meta">
+                <code>web\status.js</code>:149
+                <span class="analyzer">static</span>
+              </div>
+              <div class="finding-desc"><b>Problem:</b> Direct comparison with true/false is usually redundant and may hide type coercion bugs.</div>
+              <div class="finding-fix"><b>Recommendation:</b> Use the value directly as a boolean: 'if (value)' instead of 'if (value === true)'.</div>
+              <details><summary>Code</summary><pre class="code">     147 |       cap &amp;&amp; fe(cap) &gt; 0 ? 1 - (Number(ratioBps ?? 6000) / 10000) * Math.min(1, fe(tvl) / fe(cap)) : 1;<br>     148 |     queuedTxt =<br>&gt;&gt;&gt;  149 |       pending !== null &amp;&amp; fe(pending) &gt; 0<br>     150 |         ? ` · ≈${fn(fe(pending))} XP queued (≈${fn(fe(pending) * burnShare)} to burn)`<br>     151 |         : &quot;&quot;;</pre></details>
+            </div>
+            
+            <div class="finding">
+              <div class="finding-head">
+                <span class="badge" style="background:#1a73e8">Low</span>
+                <span class="finding-title">Comparison with Boolean Literal</span>
+                <span class="conf">confidence 70%</span>
+              </div>
+              <div class="finding-meta">
+                <code>web\status.js</code>:173
+                <span class="analyzer">static</span>
+              </div>
+              <div class="finding-desc"><b>Problem:</b> Direct comparison with true/false is usually redundant and may hide type coercion bugs.</div>
+              <div class="finding-fix"><b>Recommendation:</b> Use the value directly as a boolean: 'if (value)' instead of 'if (value === true)'.</div>
+              <details><summary>Code</summary><pre class="code">     171 |     $(&quot;metrics&quot;).innerHTML =<br>     172 |       card(&quot;Total value locked&quot;, `${fn(fe(tvl))} &lt;small&gt;XP&lt;/small&gt;`, &quot;&quot;, `${fn(utilization, 2)}% of ${fn(fe(cap), 0)} XP cap`) +<br>&gt;&gt;&gt;  173 |       card(&quot;Staking APR&quot;, stakingApr !== null ? stakingApr.toFixed(2) + &quot; &lt;small&gt;%&lt;/small&gt;&quot; : &quot;—&quot;, &quot;&quot;,<br>     174 |            apr !== null ? `on-chain currentAPR() reads ${(Number(apr) / 1e16).toFixed(2)}%` : &quot;from real validator revenue&quot;) +<br>     175 |       card(&quot;Burned forever&quot;, `${fn(fe(burned))} &lt;small&gt;XP&lt;/small&gt;`, &quot;burn&quot;, &quot;removed from supply&quot;) +</pre></details>
+            </div>
+            
+            <div class="finding">
+              <div class="finding-head">
+                <span class="badge" style="background:#1a73e8">Low</span>
+                <span class="finding-title">Comparison with Boolean Literal</span>
+                <span class="conf">confidence 70%</span>
+              </div>
+              <div class="finding-meta">
+                <code>web\status.js</code>:174
+                <span class="analyzer">static</span>
+              </div>
+              <div class="finding-desc"><b>Problem:</b> Direct comparison with true/false is usually redundant and may hide type coercion bugs.</div>
+              <div class="finding-fix"><b>Recommendation:</b> Use the value directly as a boolean: 'if (value)' instead of 'if (value === true)'.</div>
+              <details><summary>Code</summary><pre class="code">     172 |       card(&quot;Total value locked&quot;, `${fn(fe(tvl))} &lt;small&gt;XP&lt;/small&gt;`, &quot;&quot;, `${fn(utilization, 2)}% of ${fn(fe(cap), 0)} XP cap`) +<br>     173 |       card(&quot;Staking APR&quot;, stakingApr !== null ? stakingApr.toFixed(2) + &quot; &lt;small&gt;%&lt;/small&gt;&quot; : &quot;—&quot;, &quot;&quot;,<br>&gt;&gt;&gt;  174 |            apr !== null ? `on-chain currentAPR() reads ${(Number(apr) / 1e16).toFixed(2)}%` : &quot;from real validator revenue&quot;) +<br>     175 |       card(&quot;Burned forever&quot;, `${fn(fe(burned))} &lt;small&gt;XP&lt;/small&gt;`, &quot;burn&quot;, &quot;removed from supply&quot;) +<br>     176 |       card(&quot;Paid to stakers&quot;, `${fn(fe(distributed))} &lt;small&gt;XP&lt;/small&gt;`, &quot;ok&quot;, &quot;lifetime distributed&quot;) +</pre></details>
+            </div>
+            
+            <div class="finding">
+              <div class="finding-head">
+                <span class="badge" style="background:#5f6368">Info</span>
+                <span class="finding-title">Reentrancy Vector (External Call with Value, Guard Present)</span>
+                <span class="conf">confidence 25%</span>
+              </div>
+              <div class="finding-meta">
+                <code>src\PartnerCommissionDistributor.sol</code>:201
+                <span class="analyzer">solidity_semantic</span>
+              </div>
+              <div class="finding-desc"><b>Problem:</b> External .call{value:...} detected at line 201. The enclosing function carries a reentrancy-guard modifier, so re-entering this function is blocked; flag kept for review only (state writes before/after the call are not re-entrant here).</div>
+              <div class="finding-fix"><b>Recommendation:</b> Verify the guard actually precedes the call and that no cross-function re-entry path exists.</div>
+              <details><summary>Code</summary><pre class="code">     199 |         totalAccrued -= amount;<br>     200 | <br>&gt;&gt;&gt;  201 |         (bool ok,) = payout.call{value: amount}(&quot;&quot;);<br>     202 |         if (!ok) revert NativeTransferFailed();<br>     203 |         emit CommissionClaimed(partnerId, payout, amount);</pre></details>
+            </div>
+            
+            <div class="finding">
+              <div class="finding-head">
+                <span class="badge" style="background:#5f6368">Info</span>
+                <span class="finding-title">Reentrancy Vector (External Call with Value, Guard Present)</span>
+                <span class="conf">confidence 25%</span>
+              </div>
+              <div class="finding-meta">
+                <code>src\RewardDistributor.sol</code>:185
+                <span class="analyzer">solidity_semantic</span>
+              </div>
+              <div class="finding-desc"><b>Problem:</b> External .call{value:...} detected at line 185. The enclosing function carries a reentrancy-guard modifier, so re-entering this function is blocked; flag kept for review only (state writes before/after the call are not re-entrant here).</div>
+              <div class="finding-fix"><b>Recommendation:</b> Verify the guard actually precedes the call and that no cross-function re-entry path exists.</div>
+              <details><summary>Code</summary><pre class="code">     183 |         // (1) burn share -&gt; permanent sink<br>     184 |         if (burned &gt; 0) {<br>&gt;&gt;&gt;  185 |             (bool ok,) = burnAddress.call{value: burned}(&quot;&quot;);<br>     186 |             if (!ok) revert NativeTransferFailed();<br>     187 |         }</pre></details>
+            </div>
+            
+            <div class="finding">
+              <div class="finding-head">
+                <span class="badge" style="background:#5f6368">Info</span>
+                <span class="finding-title">Reentrancy Vector (External Call with Value, CEI Respected)</span>
+                <span class="conf">confidence 20%</span>
+              </div>
+              <div class="finding-meta">
+                <code>src\WXP.sol</code>:44
+                <span class="analyzer">solidity_semantic</span>
+              </div>
+              <div class="finding-desc"><b>Problem:</b> External .call{value:...} at line 44 has no storage write after it, so the checks-effects-interactions pattern effectively prevents reentrant state corruption; flag kept for review only.</div>
+              <div class="finding-fix"><b>Recommendation:</b> Verify no cross-function re-entry path or later setter can be reached via the callee.</div>
+              <details><summary>Code</summary><pre class="code">      42 |         if (balanceOf[msg.sender] &lt; wad) revert InsufficientBalance();<br>      43 |         balanceOf[msg.sender] -= wad;<br>&gt;&gt;&gt;   44 |         (bool ok,) = msg.sender.call{value: wad}(&quot;&quot;);<br>      45 |         if (!ok) revert NativeTransferFailed();<br>      46 |         emit Withdrawal(msg.sender, wad);</pre></details>
+            </div>
+            
+            <div class="finding">
+              <div class="finding-head">
+                <span class="badge" style="background:#5f6368">Info</span>
+                <span class="finding-title">Reentrancy Vector (External Call with Value, Guard Present)</span>
+                <span class="conf">confidence 25%</span>
+              </div>
+              <div class="finding-meta">
+                <code>src\XPStakingVault.sol</code>:531
+                <span class="analyzer">solidity_semantic</span>
+              </div>
+              <div class="finding-desc"><b>Problem:</b> External .call{value:...} detected at line 531. The enclosing function carries a reentrancy-guard modifier, so re-entering this function is blocked; flag kept for review only (state writes before/after the call are not re-entrant here).</div>
+              <div class="finding-fix"><b>Recommendation:</b> Verify the guard actually precedes the call and that no cross-function re-entry path exists.</div>
+              <details><summary>Code</summary><pre class="code">     529 |         rewardReserves -= amount;<br>     530 |         wxp.withdraw(amount);<br>&gt;&gt;&gt;  531 |         (bool ok,) = distributor.call{value: amount}(abi.encodeWithSignature(&quot;receiveSweep()&quot;));<br>     532 |         if (!ok) revert NativeTransferFailed();<br>     533 |         emit UnallocatedRewardsSwept(amount);</pre></details>
+            </div>
+            
+            <div class="finding">
+              <div class="finding-head">
+                <span class="badge" style="background:#5f6368">Info</span>
+                <span class="finding-title">Reentrancy Vector (External Call with Value, CEI Respected)</span>
+                <span class="conf">confidence 20%</span>
+              </div>
+              <div class="finding-meta">
+                <code>src\XPStakingVault.sol</code>:739
+                <span class="analyzer">solidity_semantic</span>
+              </div>
+              <div class="finding-desc"><b>Problem:</b> External .call{value:...} at line 739 has no storage write after it, so the checks-effects-interactions pattern effectively prevents reentrant state corruption; flag kept for review only.</div>
+              <div class="finding-fix"><b>Recommendation:</b> Verify no cross-function re-entry path or later setter can be reached via the callee.</div>
+              <details><summary>Code</summary><pre class="code">     737 | <br>     738 |     function _sendNative(address to, uint256 amount) private {<br>&gt;&gt;&gt;  739 |         (bool ok,) = to.call{value: amount}(&quot;&quot;);<br>     740 |         if (!ok) revert NativeTransferFailed();<br>     741 |     }</pre></details>
+            </div>
+            
+
+  <div class="footer">Generated by BugHunter · AI-assisted automated security review · For auditing purposes only</div>
+</div>
+</body>
+</html>
