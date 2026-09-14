@@ -1,0 +1,216 @@
+From a4a27c20f3b4d9134f82ec7e4c8fc08fca264b6c Mon Sep 17 00:00:00 2001
+From: xbMarlix <acc777qwe@gmail.com>
+Date: Mon, 14 Sep 2026 16:24:05 +0000
+Subject: [PATCH] Add ignore mechanism: inline bug-hunter-ignore marker,
+ .bughunterignore globs, self-exclusion of rule files
+
+---
+ bug_hunter.egg-info/SOURCES.txt |   1 +
+ bug_hunter/ignore.py            | 107 ++++++++++++++++++++++++++++++++
+ bug_hunter/main.py              |   8 +++
+ tests/test_universal.py         |  37 +++++++++++
+ 4 files changed, 153 insertions(+)
+ create mode 100644 bug_hunter/ignore.py
+
+diff --git a/bug_hunter.egg-info/SOURCES.txt b/bug_hunter.egg-info/SOURCES.txt
+index be984b2..1e2c700 100644
+--- a/bug_hunter.egg-info/SOURCES.txt
++++ b/bug_hunter.egg-info/SOURCES.txt
+@@ -1,6 +1,7 @@
+ pyproject.toml
+ bug_hunter/__init__.py
+ bug_hunter/config.py
++bug_hunter/ignore.py
+ bug_hunter/main.py
+ bug_hunter/scanner.py
+ bug_hunter.egg-info/PKG-INFO
+diff --git a/bug_hunter/ignore.py b/bug_hunter/ignore.py
+new file mode 100644
+index 0000000..28a141b
+--- /dev/null
++++ b/bug_hunter/ignore.py
+@@ -0,0 +1,107 @@
++"""Ignore mechanism for bug_hunter findings.
++
++Three layers:
++
++1. Inline: a line ending with a ``bug-hunter-ignore`` comment suppresses any
++   finding on that line. Optionally name a rule title:
++   ``# bug-hunter-ignore: Hardcoded Secret``.
++
++2. Project file: ``.bughunterignore`` in the scanned project root.
++   One glob per line; a finding is suppressed when its file matches.
++   ``#`` starts a comment. A trailing ``:Rule Title`` limits the suppression
++   to one rule title, e.g.::
++
++       # skip vendored code entirely
++       third_party/**
++       # only the secret rule in this config sample
++       config/example.py:Hardcoded Secret
++
++3. Built-in self-exclusion: bug_hunter's own rule/pattern source files
++   (rules/*.yaml, static.py pattern table) contain the very strings the rules
++   search for, so findings on them are always false positives and are dropped.
++"""
++from __future__ import annotations
++
++from fnmatch import fnmatch
++from pathlib import Path
++
++INLINE_MARKER = "bug-hunter-ignore"
++
++# Files inside the bug_hunter package itself whose content is rule definitions
++# (regex source), not real code under audit.
++_SELF_EXCLUDED = (
++    "rules/",
++    "analyzer/static.py",
++    "analyzer/patterns.py",
++)
++
++
++class IgnoreRules:
++    def __init__(self, project_path: str | Path | None = None):
++        self._file_globs: list[tuple[str, str | None]] = []
++        if project_path:
++            self._load(Path(project_path) / ".bughunterignore")
++
++    def _load(self, path: Path):
++        if not path.is_file():
++            return
++        try:
++            lines = path.read_text(encoding="utf-8").splitlines()
++        except OSError:
++            return
++        for raw in lines:
++            line = raw.strip()
++            if not line or line.startswith("#"):
++                continue
++            glob, _, title = line.partition(":")
++            title = title.strip() or None
++            self._file_globs.append((glob.strip(), title))
++
++    def is_ignored(self, file: str, line_no: int, title: str,
++                   line_content: str | None = None) -> bool:
++        # Layer 1: inline marker
++        if line_content and INLINE_MARKER in line_content:
++            after = line_content.split(INLINE_MARKER, 1)[1].lstrip(" :")
++            # bare marker, or marker naming this rule
++            if not after or title.lower().startswith(after.lower()):
++                return True
++
++        # Layer 3: bug_hunter's own rule files
++        normalized = file.replace("\\", "/")
++        for prefix in _SELF_EXCLUDED:
++            if normalized.endswith(prefix.rstrip("/")) or f"/{prefix}" in normalized:
++                return True
++
++        # Layer 2: .bughunterignore globs
++        for glob, rule_title in self._file_globs:
++            if rule_title and rule_title.lower() != title.lower():
++                continue
++            if fnmatch(normalized, glob) or fnmatch(Path(normalized).name, glob):
++                return True
++        return False
++
++
++def apply_ignores(bugs: list, ignore: IgnoreRules,
++                  file_lines: dict[str, list[str]] | None = None) -> list:
++    """Drop bugs suppressed by the ignore rules.
++
++    file_lines: optional {relative_path: [line, ...]} for inline-marker lookup;
++    when absent, inline markers are still honored if the bug's code_snippet
++    carries the flagged line (it does, marked with '>>>').
++    """
++    kept = []
++    for bug in bugs:
++        line_content = None
++        if file_lines and bug.file in file_lines:
++            idx = int(bug.line or 0) - 1
++            lines = file_lines[bug.file]
++            if 0 <= idx < len(lines):
++                line_content = lines[idx]
++        elif bug.code_snippet:
++            for snip_line in bug.code_snippet.splitlines():
++                if snip_line.startswith(">>>"):
++                    line_content = snip_line.split("|", 1)[-1]
++                    break
++        if not ignore.is_ignored(bug.file, bug.line, bug.title, line_content):
++            kept.append(bug)
++    return kept
+diff --git a/bug_hunter/main.py b/bug_hunter/main.py
+index a3b5d97..1a272dc 100644
+--- a/bug_hunter/main.py
++++ b/bug_hunter/main.py
+@@ -11,6 +11,7 @@ from .analyzer.solidity_analyzer import SolidityAnalyzer
+ from .analyzer.ai_analyzer import AIAnalyzer
+ from .analyzer.base import AnalysisResult
+ from .analyzer.dedup import dedup_bugs
++from .ignore import IgnoreRules, apply_ignores
+ from .reporters import generate_report
+ from .reporters.html_report import generate_html_report
+ from . import config
+@@ -133,6 +134,13 @@ Examples:
+     if len(result.bugs) < before_dedup:
+         print(f"[+] Deduplication: {before_dedup} -> {len(result.bugs)} issues")
+ 
++    ignore = IgnoreRules(project_path)
++    file_lines = {str(f.relative_path): f.content.split("\n") for f in files}
++    before_ignore = len(result.bugs)
++    result.bugs = apply_ignores(result.bugs, ignore, file_lines)
++    if len(result.bugs) < before_ignore:
++        print(f"[+] Ignore rules: {before_ignore} -> {len(result.bugs)} issues")
++
+     print()
+ 
+     if args.report_dir:
+diff --git a/tests/test_universal.py b/tests/test_universal.py
+index a26fb46..ff1ab00 100644
+--- a/tests/test_universal.py
++++ b/tests/test_universal.py
+@@ -100,6 +100,43 @@ def test_default_ignored_still_works(tmp_path):
+     assert files == []
+ 
+ 
++# ---- ignore mechanism ----
++
++def test_inline_ignore_marker():
++    from bug_hunter.ignore import IgnoreRules, apply_ignores
++    bugs = [_bug("a.py", 5, "secrets", "static")]
++    out = apply_ignores(bugs, IgnoreRules(), {"a.py": ["x = 1"] * 4 + ["token = 'abc'  # bug-hunter-ignore"]})
++    assert out == []
++
++
++def test_inline_ignore_named_rule():
++    from bug_hunter.ignore import IgnoreRules, apply_ignores
++    bug = _bug("a.py", 1, "secrets", "static")
++    bug.title = "Hardcoded Secret"
++    kept = apply_ignores([bug], IgnoreRules(), {"a.py": ["t = 'x'  # bug-hunter-ignore: Other Rule"]})
++    assert len(kept) == 1
++
++
++def test_self_exclusion_rules_files():
++    from bug_hunter.ignore import IgnoreRules, apply_ignores
++    bug = _bug("bug_hunter/rules/python.yaml", 3, "secrets", "static")
++    assert apply_ignores([bug], IgnoreRules()) == []
++    bug2 = _bug("bug_hunter/analyzer/static.py", 34, "injection", "static")
++    assert apply_ignores([bug2], IgnoreRules()) == []
++
++
++def test_bughunterignore_file(tmp_path):
++    from bug_hunter.ignore import IgnoreRules, apply_ignores
++    (tmp_path / ".bughunterignore").write_text("vendored/**\nconfig/example.py:Hardcoded Secret\n")
++    ignore = IgnoreRules(tmp_path)
++    b1 = _bug("vendored/lib/x.py", 1, "injection", "static")
++    b2 = _bug("config/example.py", 1, "secrets", "static"); b2.title = "Hardcoded Secret"
++    b3 = _bug("config/example.py", 2, "xss", "static")
++    b4 = _bug("src/main.py", 1, "injection", "static")
++    out = apply_ignores([b1, b2, b3, b4], ignore)
++    assert len(out) == 2 and out[0] is b3 and out[1] is b4
++
++
+ # ---- package import ----
+ 
+ def test_package_imports():
+-- 
+2.52.0
+
