@@ -1,0 +1,265 @@
+From 62d96240c4eed847dca42249845d20fade9046d0 Mon Sep 17 00:00:00 2001
+From: xbMarlix <acc777qwe@gmail.com>
+Date: Mon, 14 Sep 2026 18:27:56 +0000
+Subject: [PATCH] Add Java/Rust rule packs, top-findings table, collapsed INFO
+ section in reports
+
+---
+ bug_hunter/reporters/__init__.py | 28 +++++++++-
+ bug_hunter/rules/java.yaml       | 96 ++++++++++++++++++++++++++++++++
+ bug_hunter/rules/rust.yaml       | 80 ++++++++++++++++++++++++++
+ 3 files changed, 203 insertions(+), 1 deletion(-)
+ create mode 100644 bug_hunter/rules/java.yaml
+ create mode 100644 bug_hunter/rules/rust.yaml
+
+diff --git a/bug_hunter/reporters/__init__.py b/bug_hunter/reporters/__init__.py
+index cb7ad8c..ac6d54e 100644
+--- a/bug_hunter/reporters/__init__.py
++++ b/bug_hunter/reporters/__init__.py
+@@ -29,6 +29,8 @@ def generate_report(result, project_path: str, project_stats: dict, analyzers_us
+     report_file = REPORT_DIR / f"bug_report_{project_name}_{timestamp}.md"
+ 
+     sorted_bugs = result.sorted_bugs()
++    main_bugs = [b for b in sorted_bugs if b.severity != "info"]
++    info_bugs = [b for b in sorted_bugs if b.severity == "info"]
+ 
+     lines = []
+     lines.append(f"# BugHunter Report: {project_name}")
+@@ -60,6 +62,17 @@ def generate_report(result, project_path: str, project_stats: dict, analyzers_us
+ 
+     lines.append(f"")
+ 
++    # Top findings table: attention goes to what matters first.
++    top = [b for b in main_bugs if b.severity in ("critical", "high")][:10]
++    if top:
++        lines.append(f"## Top Findings ({len(top)})")
++        lines.append(f"")
++        lines.append(f"| Severity | File | Issue |")
++        lines.append(f"|----------|------|-------|")
++        for bug in top:
++            lines.append(f"| {bug.severity.upper()} | `{bug.file}:{bug.line}` | {bug.title} |")
++        lines.append(f"")
++
+     if project_stats.get("languages"):
+         lines.append(f"### Languages Detected")
+         lines.append(f"")
+@@ -75,7 +88,7 @@ def generate_report(result, project_path: str, project_stats: dict, analyzers_us
+         lines.append(f"")
+ 
+     category_groups = {}
+-    for bug in sorted_bugs:
++    for bug in main_bugs:
+         cat = bug.category
+         if cat not in category_groups:
+             category_groups[cat] = []
+@@ -127,6 +140,19 @@ def generate_report(result, project_path: str, project_stats: dict, analyzers_us
+                 lines.append(f"---")
+             lines.append(f"")
+ 
++    # INFO findings (TODOs, debug prints) are collapsed to keep the report focused.
++    if info_bugs:
++        lines.append(f"<details>")
++        lines.append(f"<summary>Informational findings ({len(info_bugs)}) — TODOs, debug prints, minor notes</summary>")
++        lines.append(f"")
++        lines.append(f"| File | Issue |")
++        lines.append(f"|------|-------|")
++        for bug in info_bugs:
++            lines.append(f"| `{bug.file}:{bug.line}` | {bug.title} |")
++        lines.append(f"")
++        lines.append(f"</details>")
++        lines.append(f"")
++
+     if not sorted_bugs:
+         lines.append(f"## No Bugs Found")
+         lines.append(f"")
+diff --git a/bug_hunter/rules/java.yaml b/bug_hunter/rules/java.yaml
+new file mode 100644
+index 0000000..6085aa4
+--- /dev/null
++++ b/bug_hunter/rules/java.yaml
+@@ -0,0 +1,96 @@
++# Pattern rules for Java.
++- id: java-runtime-exec
++  pattern: 'Runtime\.getRuntime\(\)\.exec\s*\('
++  severity: high
++  category: injection
++  title: Runtime.exec usage
++  description: Runtime.exec with interpolated strings is command injection.
++  suggestion: Use ProcessBuilder with an argument list; never concatenate user input.
++
++- id: java-sql-concat
++  pattern: '(createStatement|prepareStatement)\s*\([^)]*\+'
++  severity: high
++  category: sqli
++  title: SQL built by string concatenation
++  description: Concatenated SQL is SQL injection.
++  suggestion: Use PreparedStatement with ? placeholders.
++
++- id: java-hardcoded-secret
++  pattern: '(?i)(apiKey|secret|password|token)\s*=\s*"[^"]{8,}"'
++  severity: high
++  category: secrets
++  title: Hardcoded credential
++  description: A secret/password/token is hardcoded in source.
++  suggestion: Load from environment or a config/secrets service.
++
++- id: java-md5-sha1
++  pattern: 'MessageDigest\.getInstance\s*\(\s*"(MD5|SHA-?1)"'
++  severity: medium
++  category: crypto
++  title: Weak hash algorithm
++  description: MD5/SHA-1 are broken for security use.
++  suggestion: Use SHA-256+ for integrity, bcrypt/argon2 for passwords.
++
++- id: java-des-cipher
++  pattern: 'Cipher\.getInstance\s*\(\s*"(DES|DESede|AES/ECB)'
++  severity: high
++  category: crypto
++  title: Weak/unsafe cipher mode
++  description: DES is deprecated; AES/ECB leaks patterns in the plaintext.
++  suggestion: Use AES/GCM/NoPadding.
++
++- id: java-insecure-random
++  pattern: 'new\s+(java\.util\.)?Random\s*\('
++  severity: medium
++  category: crypto
++  title: java.util.Random for security-sensitive value
++  description: java.util.Random is predictable; tokens/keys must not use it.
++  suggestion: Use java.security.SecureRandom.
++
++- id: java-trust-all-certs
++  pattern: 'X509TrustManager|TrustManager\[\]\s*\{|checkServerTrusted[^{]*\{\s*\}'
++  severity: high
++  category: crypto
++  title: Custom TrustManager (possible trust-all)
++  description: A permissive TrustManager accepts any certificate — MITM.
++  suggestion: Use the default trust store; pin certificates if needed.
++
++- id: java-hostname-verifier-off
++  pattern: 'HostnameVerifier[^{]*\{\s*public boolean verify\([^)]*\)\s*\{\s*return true'
++  severity: high
++  category: crypto
++  title: Hostname verification disabled
++  description: verify() returning true disables hostname checks — MITM.
++  suggestion: Remove the custom verifier.
++
++- id: java-object-input-stream
++  pattern: 'new\s+ObjectInputStream\s*\('
++  severity: high
++  category: deserialization
++  title: Java native deserialization
++  description: Deserializing untrusted data with ObjectInputStream allows RCE (gadget chains).
++  suggestion: Use JSON (Jackson) or filter classes with ObjectInputFilter.
++
++- id: java-xml-no-xxe
++  pattern: 'DocumentBuilderFactory\.newInstance\(\)|SAXParserFactory\.newInstance\(\)'
++  severity: medium
++  category: xxe
++  title: XML parser without XXE hardening
++  description: Default XML parsers resolve external entities — XXE/file disclosure.
++  suggestion: Disable DTDs and external entities (FEATURE_SECURE_PROCESSING).
++
++- id: java-print-stack-trace
++  pattern: '\.printStackTrace\s*\(\s*\)'
++  severity: low
++  category: error-handling
++  title: printStackTrace in production code
++  description: Stack traces to stdout leak internals and bypass log frameworks.
++  suggestion: Log via a logger with proper level.
++
++- id: java-empty-catch
++  pattern: 'catch\s*\([^)]*\)\s*\{\s*\}'
++  severity: high
++  category: error-handling
++  title: Empty catch block
++  description: Silently swallowed exceptions hide failures.
++  suggestion: Log and handle or rethrow.
+diff --git a/bug_hunter/rules/rust.yaml b/bug_hunter/rules/rust.yaml
+new file mode 100644
+index 0000000..9e32a95
+--- /dev/null
++++ b/bug_hunter/rules/rust.yaml
+@@ -0,0 +1,80 @@
++# Pattern rules for Rust.
++- id: rust-unsafe-block
++  pattern: '^\s*unsafe\s*\{'
++  severity: low
++  category: memory-safety
++  title: unsafe block
++  description: unsafe code bypasses the borrow checker; memory bugs must be justified manually.
++  suggestion: Minimize unsafe surface; document the safety invariants.
++
++- id: rust-unwrap
++  pattern: '\.unwrap\s*\(\s*\)'
++  severity: medium
++  category: error-handling
++  title: unwrap() — panic on error
++  description: unwrap panics on Err/None — a reachable crash in production.
++  suggestion: Use ?, unwrap_or, or expect with a justification.
++
++- id: rust-expect
++  pattern: '\.expect\s*\('
++  severity: low
++  category: error-handling
++  title: expect() — panic on error
++  description: expect panics on failure; fine in tests, risky in request paths.
++  suggestion: Propagate with ? where a panic is unacceptable.
++
++- id: rust-command-arg-shell
++  pattern: 'Command::new\s*\(\s*"(sh|bash|cmd)"\s*\)'
++  severity: high
++  category: injection
++  title: Shell command execution
++  description: Invoking a shell with formatted arguments is command injection.
++  suggestion: Call the binary directly with .arg() per argument.
++
++- id: rust-hardcoded-secret
++  pattern: '(?i)(api_key|secret|password|token)\s*(:&str)?\s*=\s*"[^"]{8,}"'
++  severity: high
++  category: secrets
++  title: Hardcoded credential
++  description: A secret/password/token is hardcoded in source.
++  suggestion: Load from environment (std::env) or a secrets store.
++
++- id: rust-openssl-no-verify
++  pattern: 'set_verify\s*\(\s*SslVerifyMode::NONE\s*\)|danger_accept_invalid_certs\s*\(\s*true\s*\)'
++  severity: high
++  category: crypto
++  title: TLS verification disabled
++  description: Accepting any certificate enables MITM.
++  suggestion: Keep verification on; pin roots if needed.
++
++- id: rust-md5
++  pattern: 'md5::compute|Md5::new'
++  severity: medium
++  category: crypto
++  title: MD5 hash usage
++  description: MD5 is broken for security use.
++  suggestion: Use SHA-256+ or argon2/bcrypt for passwords.
++
++- id: rust-todo-unimplemented
++  pattern: '(todo!|unimplemented!)\s*\(\s*\)'
++  severity: low
++  category: code-quality
++  title: todo!/unimplemented! macro
++  description: Unfinished code path panics at runtime.
++  suggestion: Implement or return a proper error.
++
++- id: rust-dbg-println
++  pattern: '(dbg!|println!|eprintln!)\s*\('
++  severity: info
++  category: code-quality
++  title: Debug print left in code
++  description: println!/dbg! output may leak internals in production.
++  suggestion: Use the log or tracing crate with levels.
++
++- id: rust-transmute
++  pattern: '(std::mem::)?transmute'
++  severity: medium
++  category: memory-safety
++  title: mem::transmute usage
++  description: transmute reinterprets bits with no checks — easy UB.
++  suggestion: Prefer safe conversions (From/Into, bytemuck, zerocopy).
+-- 
+2.52.0
+
