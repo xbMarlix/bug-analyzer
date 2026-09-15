@@ -1,0 +1,68 @@
+name: 'BugHunter Security Scan'
+description: 'AI-powered universal bug finder — scans your codebase for security vulnerabilities and bugs on every push'
+author: 'xbMarlix'
+branding:
+  icon: 'shield'
+  color: 'red'
+
+inputs:
+  path:
+    description: 'Path to scan (relative to repo root)'
+    required: false
+    default: '.'
+  mode:
+    description: 'Analysis mode: static (free, no API key), ast, or full (needs OPENAI_API_KEY secret)'
+    required: false
+    default: 'static'
+  fail-on:
+    description: 'Fail the check when findings of this severity or higher exist: critical, high, medium, low, never'
+    required: false
+    default: 'critical'
+  report-artifact:
+    description: 'Upload markdown + HTML reports as workflow artifacts'
+    required: false
+    default: 'true'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Checkout BugHunter
+      uses: actions/checkout@v4
+      with:
+        repository: 'xbMarlix/bug-analyzer'
+        path: '.bughunter-tool'
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+
+    - name: Install BugHunter
+      shell: bash
+      run: pip install -e .bughunter-tool/
+
+    - name: Run scan
+      shell: bash
+      env:
+        OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        BH_MODE: ${{ inputs.mode }}
+      run: |
+        ARGS=""
+        if [ "$BH_MODE" = "static" ]; then ARGS="--static-only"; fi
+        if [ "$BH_MODE" = "ast" ]; then ARGS="--no-ai"; fi
+        bug-hunter "${{ inputs.path }}" $ARGS --report-dir bughunter-out || echo "BH_EXIT=$?" >> "$GITHUB_ENV"
+
+    - name: Upload report
+      if: inputs.report-artifact == 'true'
+      uses: actions/upload-artifact@v4
+      with:
+        name: bughunter-report
+        path: bughunter-out/
+        if-no-files-found: ignore
+
+    - name: Evaluate threshold
+      shell: bash
+      env:
+        FAIL_ON: ${{ inputs.fail-on }}
+      run: |
+        python .bughunter-tool/.github/scripts/check_threshold.py bughunter-out "$FAIL_ON"

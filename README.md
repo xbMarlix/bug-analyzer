@@ -1,0 +1,58 @@
+# BugHunter
+
+AI-powered universal bug finder — scans any codebase for security vulnerabilities and bugs.
+Supports Python, JavaScript/TypeScript, Go, Java, Rust, Solidity and more.
+
+## Quick start
+
+```bash
+pip install -e .
+bug-hunter /path/to/project --static-only      # free, no API key
+bug-hunter /path/to/project                    # full mode (needs OPENAI_API_KEY)
+```
+
+Modes: `--static-only` (pattern rules), `--no-ai` (static + AST), default (static + AST + AI), `--hybrid-only` (rules + AI verification only).
+
+## GitHub Action
+
+Add `.github/workflows/security.yml` to your repository:
+
+```yaml
+name: Security Scan
+on: [push, pull_request]
+jobs:
+  bughunter:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: xbMarlix/bug-analyzer@main
+        with:
+          mode: static     # static = free, no API key needed
+          fail-on: high    # fail the check on high/critical findings
+```
+
+Reports are uploaded as workflow artifacts (`bughunter-report`).
+For AI mode set `mode: full` and add an `OPENAI_API_KEY` secret in repo settings.
+
+## Features
+
+- Pattern rules per language (YAML packs — easy to extend)
+- AST analysis (Python)
+- AI deep audit (any language, OpenAI-compatible API)
+- Hybrid mode: AI verifies rule candidates, cutting false positives
+- Deduplication across analyzers
+- Ignore via `# bug-hunter-ignore` comments and `.bughunterignore` file
+- Markdown + HTML reports with top-findings summary
+
+## Suppressing findings
+
+```python
+api_key = "dev-key"  # bug-hunter-ignore
+```
+
+`.bughunterignore` in project root:
+
+```
+vendored/**
+config/example.py:Hardcoded Secret
+```
