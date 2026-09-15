@@ -34,6 +34,11 @@ jobs:
 Reports are uploaded as workflow artifacts (`bughunter-report`).
 For AI mode set `mode: full` and add an `OPENAI_API_KEY` secret in repo settings.
 
+## Example reports
+
+Real scans on well-known vulnerable projects — see [`examples/`](examples/README.md):
+DVWA (17 critical found), OWASP Juice Shop (13 critical), WebGoat (47 critical).
+
 ## Features
 
 - Pattern rules per language (YAML packs — easy to extend)
