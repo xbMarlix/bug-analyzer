@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>BugHunter Report</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; }
+    body { font-family: -apple-system, 'Segoe UI', sans-serif; background: #0d1117; color: #e6edf3; }
+    .wrap { max-width: 900px; margin: 0 auto; padding: 40px 24px; }
+    a { color: #58a6ff; }
+    .head { margin-bottom: 28px; }
+    .repo { font-size: 14px; color: #8b949e; word-break: break-all; }
+    h1 { font-size: 30px; margin: 6px 0 4px; }
+    .sevs { display: flex; gap: 12px; flex-wrap: wrap; margin: 24px 0; }
+    .sev { border-radius: 8px; padding: 14px 20px; text-align: center; min-width: 100px; }
+    .sev b { display: block; font-size: 26px; }
+    .critical { background: #3d1519; border: 1px solid #f85149; }
+    .high { background: #3d2415; border: 1px solid #d29922; }
+    .medium { background: #2c2a15; border: 1px solid #bb8009; }
+    .low { background: #15243d; border: 1px solid #58a6ff; }
+    .info { background: #161b22; border: 1px solid #30363d; }
+    .bug { background: #161b22; border: 1px solid #21262d; border-radius: 8px; padding: 16px 20px; margin-bottom: 12px; }
+    .bug .t { font-weight: 700; }
+    .bug .loc { font-family: monospace; font-size: 13px; color: #8b949e; margin: 4px 0 8px; }
+    .bug .d { font-size: 14px; color: #b8c0c8; }
+    .badge { display: inline-block; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 10px; margin-right: 8px; vertical-align: middle; }
+    .b-critical { background: #f85149; color: #fff; }
+    .b-high { background: #d29922; color: #000; }
+    .footer { margin-top: 32px; font-size: 13px; color: #8b949e; }
+    .back { display: inline-block; margin-bottom: 20px; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <a class="back" href="/">← New scan</a>
+    <div class="head">
+      <div class="repo">{{ repo_url }}</div>
+      <h1>Security Report</h1>
+      <div class="repo">{{ stats.total_files }} files · {{ "{:,}".format(stats.total_lines) }} lines · {{ stats.languages|join(", ") }}</div>
+    </div>
+
+    <div class="sevs">
+      {% for sev in ["critical", "high", "medium", "low", "info"] %}
+      {% if sev_counts.get(sev, 0) > 0 %}
+      <div class="sev {{ sev }}"><b>{{ sev_counts[sev] }}</b>{{ sev.upper() }}</div>
+      {% endif %}
+      {% endfor %}
+    </div>
+
+    {% if top_bugs %}
+    <h2 style="margin-bottom:14px">Top findings</h2>
+    {% for bug in top_bugs %}
+    <div class="bug">
+      <div class="t"><span class="badge b-{{ bug.severity }}">{{ bug.severity.upper() }}</span>{{ bug.title }}</div>
+      <div class="loc">{{ bug.file }}:{{ bug.line }}</div>
+      <div class="d">{{ bug.description[:400] }}</div>
+    </div>
+    {% endfor %}
+    {% else %}
+    <p>No critical/high findings. {{ total }} lower-severity notes in full report.</p>
+    {% endif %}
+
+    <div class="footer">
+      Total findings: {{ total }} · Free scans left today: {{ remaining }}/{{ limit }} ·
+      Powered by <a href="https://github.com/xbMarlix/bug-analyzer">BugHunter</a>
+    </div>
+  </div>
+</body>
+</html>

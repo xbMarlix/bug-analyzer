@@ -103,6 +103,13 @@ Examples:
             b for b in result.bugs
             if b.severity in ("high", "medium") and b.analyzer != "ai"
         ]
+        max_verify = int(os.environ.get("BH_MAX_VERIFY", "100"))
+        if len(candidates) > max_verify:
+            print(f"[!] {len(candidates)} rule candidates — verifying top {max_verify} by severity "
+                  f"(raise limit with BH_MAX_VERIFY)", flush=True)
+            sev_rank = {"high": 0, "medium": 1}
+            candidates.sort(key=lambda b: (sev_rank.get(b.severity, 2), -b.confidence))
+            candidates = candidates[:max_verify]
         if candidates:
             ai = AIAnalyzer()
             verified = ai.verify_candidates(candidates, files, errors=result.errors)

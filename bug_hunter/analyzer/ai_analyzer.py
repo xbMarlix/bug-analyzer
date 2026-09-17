@@ -228,6 +228,8 @@ class AIAnalyzer(BaseAnalyzer):
             errors = self._errors
         self._errors = errors
 
+        import os as _os
+        verify_delay = float(_os.environ.get("BH_VERIFY_DELAY", "1.0"))
         by_path = {str(f.relative_path): f for f in files}
         result = []
         for cand in candidates:
@@ -279,7 +281,7 @@ class AIAnalyzer(BaseAnalyzer):
                 cand.severity = "info"
                 cand.description = (cand.description or "") + "\n[AI REJECTED] " + fix
                 result.append(cand)
-            time.sleep(0.3)
+            time.sleep(verify_delay)
         return result
 
     @staticmethod
@@ -335,6 +337,12 @@ class AIAnalyzer(BaseAnalyzer):
             except Exception as e:  # noqa: BLE001
                 last_exc = e
                 msg = str(e).lower()
+                status = getattr(e, "status_code", None)
+                if status is None and hasattr(e, "response"):
+                    try:
+                        status = e.response.status_code
+                    except Exception:
+                        status = None
                 status = getattr(getattr(e, "status_code", None), "value", None)
                 if status is None and hasattr(e, "response"):
                     try:
@@ -342,8 +350,9 @@ class AIAnalyzer(BaseAnalyzer):
                     except Exception:
                         status = None
                 transient = (
-                    status == 429
+                    status in (429, 500, 502, 503, 504)
                     or "rate limit" in msg
+                    or "internal" in msg
                     or "too many requests" in msg
                     or "connection" in msg
                     or "timeout" in msg
