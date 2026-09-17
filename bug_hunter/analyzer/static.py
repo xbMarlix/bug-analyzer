@@ -27,7 +27,8 @@ class StaticAnalyzer(BaseAnalyzer):
             "languages": ["javascript", "typescript"],
         },
         {
-            "pattern": r"eval\s*\(|exec\s*\(|subprocess\.call\s*\(\s*f[\"']|os\.system\s*\(",
+            # \beval( / \bexec( as calls, but NOT method calls like regex.exec()
+            "pattern": r"(?<![.\w])eval\s*\(|(?<![.\w])exec\s*\(|subprocess\.call\s*\(\s*f[\"']|os\.system\s*\(",
             "category": "security",
             "title": "Dangerous Code Execution",
             "description": "Dynamic code execution detected. This can lead to remote code execution vulnerabilities.",
@@ -321,6 +322,8 @@ class StaticAnalyzer(BaseAnalyzer):
                 m = compiled_re.search(line)
                 if m and _in_comment(f.language, m, line):
                     m = None
+                if m and pattern_info["title"] == "Hardcoded Secret" and _is_placeholder_secret(line):
+                    m = None
                 if m is not None:
                     snippet = _get_snippet(lines, i - 1)
                     bug = Bug(
@@ -389,6 +392,29 @@ def load_yaml_rules(rules_dir=None) -> list[dict]:
     if rules_dir is None:
         _RULES_CACHE = rules
     return rules
+
+
+_PLACEHOLDER_VALUES = {
+    "token", "authToken", "auth_token", "api_key", "apiKey", "secret", "password",
+    "passwd", "key", "fake-token", "test", "placeholder", "example", "changeme",
+    "your-api-key", "your_api_key", "xxx", "asdfghjk",
+}
+
+
+def _is_placeholder_secret(line: str) -> bool:
+    """True when the 'secret' is clearly a placeholder: the value equals the
+    variable name (enum style: TOKEN = 'token'), is a known dummy value, or
+    lives in a test file with a trivial value."""
+    import re as _re
+    m = _re.search(r"(\w+)\s*[:=]\s*[\"']([^\"']+)[\"']", line)
+    if not m:
+        return False
+    name, value = m.group(1), m.group(2)
+    vlow = value.lower().replace("-", "").replace("_", "")
+    nlow = name.lower().replace("-", "").replace("_", "")
+    if vlow == nlow or vlow in {v.replace("-", "").replace("_", "") for v in _PLACEHOLDER_VALUES}:
+        return True
+    return False
 
 
 def _in_comment(language: str, m, line: str) -> bool:

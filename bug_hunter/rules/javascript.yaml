@@ -1,6 +1,6 @@
 # Pattern rules for JavaScript / TypeScript.
 - id: js-eval
-  pattern: '\beval\s*\('
+  pattern: '(?<![.\w])eval\s*\('
   severity: high
   category: injection
   title: eval() usage

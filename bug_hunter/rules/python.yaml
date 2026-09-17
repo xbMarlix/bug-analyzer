@@ -32,7 +32,7 @@
   suggestion: Use subprocess with an argument list.
 
 - id: py-exec-eval
-  pattern: '\b(exec|eval)\s*\('
+  pattern: '(?<![.\w])(exec|eval)\s*\('
   severity: high
   category: injection
   title: exec/eval usage
