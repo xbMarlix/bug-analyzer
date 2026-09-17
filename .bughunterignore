@@ -1,0 +1,3 @@
+# Intentional broad excepts in the AI retry layer: every API failure mode must
+# be caught and retried/recorded; narrowing the exception list would break retries.
+analyzer/ai_analyzer.py:Bare Exception Handler

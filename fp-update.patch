@@ -1,0 +1,39 @@
+From 9021f2f34379db0b98d81da1418b66f430567b6d Mon Sep 17 00:00:00 2001
+From: xbMarlix <acc777qwe@gmail.com>
+Date: Thu, 17 Sep 2026 13:56:55 +0000
+Subject: [PATCH] Reduce false positives: print() rule skips CLI entrypoints,
+ .bughunterignore for intentional broad excepts in AI retry layer
+
+---
+ .bughunterignore                    | 3 +++
+ bug_hunter/analyzer/ast_analyzer.py | 4 ++++
+ 2 files changed, 7 insertions(+)
+ create mode 100644 .bughunterignore
+
+diff --git a/.bughunterignore b/.bughunterignore
+new file mode 100644
+index 0000000..83745f0
+--- /dev/null
++++ b/.bughunterignore
+@@ -0,0 +1,3 @@
++# Intentional broad excepts in the AI retry layer: every API failure mode must
++# be caught and retried/recorded; narrowing the exception list would break retries.
++analyzer/ai_analyzer.py:Bare Exception Handler
+diff --git a/bug_hunter/analyzer/ast_analyzer.py b/bug_hunter/analyzer/ast_analyzer.py
+index f3db91a..d444671 100644
+--- a/bug_hunter/analyzer/ast_analyzer.py
++++ b/bug_hunter/analyzer/ast_analyzer.py
+@@ -148,6 +148,10 @@ class _PythonChecker(ast.NodeVisitor):
+         self.generic_visit(node)
+ 
+     def visit_Call(self, node):
++        # CLI entry points legitimately print to stdout; don't flag them.
++        if self.f.path.name in ("main.py", "cli.py", "__main__.py"):
++            self.generic_visit(node)
++            return
+         if isinstance(node.func, ast.Name) and node.func.id == "print":
+             if not any(
+                 isinstance(p, ast.Constant) and "debug" in str(p.value).lower()
+-- 
+2.52.0
+

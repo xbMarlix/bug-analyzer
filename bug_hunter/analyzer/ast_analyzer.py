@@ -148,6 +148,10 @@ class _PythonChecker(ast.NodeVisitor):
         self.generic_visit(node)
 
     def visit_Call(self, node):
+        # CLI entry points legitimately print to stdout; don't flag them.
+        if self.f.path.name in ("main.py", "cli.py", "__main__.py"):
+            self.generic_visit(node)
+            return
         if isinstance(node.func, ast.Name) and node.func.id == "print":
             if not any(
                 isinstance(p, ast.Constant) and "debug" in str(p.value).lower()
