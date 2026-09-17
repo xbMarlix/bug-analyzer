@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: bughunter-web
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements-webapp.txt && apt-get update -qq && (apt-get install -y -qq git || true)
+    startCommand: uvicorn webapp.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: BH_DAILY_LIMIT
+        value: "5"
+      - key: PYTHON_VERSION
+        value: "3.11.9"

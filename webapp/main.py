@@ -77,8 +77,8 @@ def _run_scan(project: Path) -> tuple[AnalysisResult, dict]:
 @app.get("/", response_class=HTMLResponse)
 async def index(request: Request):
     remaining = _check_limit(request.client.host)
-    return templates.TemplateResponse("index.html", {
-        "request": request, "remaining": remaining, "limit": DAILY_LIMIT,
+    return templates.TemplateResponse(request, "index.html", {
+        "remaining": remaining, "limit": DAILY_LIMIT, "error": None,
     })
 
 
@@ -108,8 +108,7 @@ async def scan(request: Request, repo_url: str = Form(...)):
 
         top = [b for b in result.sorted_bugs() if b.severity in ("critical", "high")][:25]
 
-        return templates.TemplateResponse("report.html", {
-            "request": request,
+        return templates.TemplateResponse(request, "report.html", {
             "repo_url": repo_url,
             "stats": stats,
             "sev_counts": sev_counts,

@@ -1,0 +1,47 @@
+From 0eb6ff168e1e521cb8299ad75950375c95c2f718 Mon Sep 17 00:00:00 2001
+From: xbMarlix <acc777qwe@gmail.com>
+Date: Thu, 17 Sep 2026 18:15:08 +0000
+Subject: [PATCH] Add Render deployment config (render.yaml,
+ requirements-webapp.txt)
+
+---
+ render.yaml             | 12 ++++++++++++
+ requirements-webapp.txt |  7 +++++++
+ 2 files changed, 19 insertions(+)
+ create mode 100644 render.yaml
+ create mode 100644 requirements-webapp.txt
+
+diff --git a/render.yaml b/render.yaml
+new file mode 100644
+index 0000000..064867b
+--- /dev/null
++++ b/render.yaml
+@@ -0,0 +1,12 @@
++services:
++  - type: web
++    name: bughunter-web
++    runtime: python
++    plan: free
++    buildCommand: pip install -r requirements-webapp.txt && apt-get update -qq && (apt-get install -y -qq git || true)
++    startCommand: uvicorn webapp.main:app --host 0.0.0.0 --port $PORT
++    envVars:
++      - key: BH_DAILY_LIMIT
++        value: "5"
++      - key: PYTHON_VERSION
++        value: "3.11.9"
+diff --git a/requirements-webapp.txt b/requirements-webapp.txt
+new file mode 100644
+index 0000000..ce0aec6
+--- /dev/null
++++ b/requirements-webapp.txt
+@@ -0,0 +1,7 @@
++# Web app runtime dependencies (Render deployment)
++openai>=1.0.0
++PyYAML>=6.0
++fastapi>=0.110
++uvicorn>=0.29
++jinja2>=3.1
++python-multipart>=0.0.9
+-- 
+2.52.0
+
