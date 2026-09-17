@@ -3,6 +3,10 @@
 AI-powered universal bug finder — scans any codebase for security vulnerabilities and bugs.
 Supports Python, JavaScript/TypeScript, Go, Java, Rust, Solidity and more.
 
+## 🌐 Try it online — no install
+
+**[bughunter web app](https://bug-analyzer.onrender.com)** — paste a public GitHub repo link, get a security report in seconds. Free, no registration.
+
 ## Quick start
 
 ```bash
