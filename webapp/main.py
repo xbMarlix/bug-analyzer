@@ -23,6 +23,7 @@ from bug_hunter.analyzer.ast_analyzer import ASTAnalyzer
 from bug_hunter.analyzer.dedup import dedup_bugs
 from bug_hunter.analyzer.base import AnalysisResult
 from bug_hunter.ignore import IgnoreRules, apply_ignores
+from .wpscanner import scan_wordpress
 
 APP_DIR = Path(__file__).resolve().parent
 REPORTS_DIR = APP_DIR / "reports"
@@ -79,6 +80,36 @@ async def index(request: Request):
     remaining = _check_limit(request.client.host)
     return templates.TemplateResponse(request, "index.html", {
         "remaining": remaining, "limit": DAILY_LIMIT, "error": None,
+    })
+
+
+@app.post("/wpscan", response_class=HTMLResponse)
+async def wpscan(request: Request, site_url: str = Form(...)):
+    ip = request.client.host
+    if _check_limit(ip) <= 0:
+        raise HTTPException(
+            status_code=429,
+            detail=f"Daily limit reached ({DAILY_LIMIT} scans/day). Come back tomorrow!",
+        )
+    site_url = site_url.strip()
+    if not site_url:
+        raise HTTPException(status_code=400, detail="Enter a site URL.")
+
+    import asyncio
+    loop = asyncio.get_event_loop()
+    result = await loop.run_in_executor(None, scan_wordpress, site_url)
+    _record_scan(ip)
+
+    if not result.is_wordpress:
+        return templates.TemplateResponse(request, "index.html", {
+            "remaining": _check_limit(ip), "limit": DAILY_LIMIT,
+            "error": f"{site_url} doesn't look like a WordPress site.",
+        })
+
+    return templates.TemplateResponse(request, "wpreport.html", {
+        "result": result,
+        "remaining": _check_limit(ip),
+        "limit": DAILY_LIMIT,
     })
 
 

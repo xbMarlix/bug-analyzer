@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>WordPress Security Report — BugHunter</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; }
+    body { font-family: -apple-system, 'Segoe UI', sans-serif; background: #0d1117; color: #e6edf3; }
+    .wrap { max-width: 900px; margin: 0 auto; padding: 40px 24px; }
+    a { color: #58a6ff; }
+    .back { display: inline-block; margin-bottom: 20px; }
+    h1 { font-size: 28px; margin: 8px 0; }
+    .url { color: #8b949e; word-break: break-all; font-size: 14px; }
+    .cards { display: flex; gap: 12px; flex-wrap: wrap; margin: 22px 0; }
+    .card { background: #161b22; border: 1px solid #21262d; border-radius: 8px; padding: 14px 20px; text-align: center; min-width: 110px; }
+    .card b { display: block; font-size: 24px; }
+    .crit { border-color: #f85149; } .crit b { color: #f85149; }
+    .good { border-color: #3fb950; } .good b { color: #3fb950; }
+    .item { background: #161b22; border: 1px solid #21262d; border-radius: 8px; padding: 16px 20px; margin-bottom: 12px; }
+    .item .t { font-weight: 700; }
+    .item .d { font-size: 14px; color: #b8c0c8; margin-top: 4px; }
+    .item .fix { font-size: 13px; color: #3fb950; margin-top: 6px; }
+    .badge { display: inline-block; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 10px; margin-right: 8px; }
+    .b-critical { background: #f85149; color: #fff; }
+    .b-high { background: #d29922; color: #000; }
+    .b-medium { background: #bb8009; color: #000; }
+    .b-low { background: #58a6ff; color: #000; }
+    h2 { margin: 28px 0 12px; font-size: 20px; }
+    .meta { color: #8b949e; font-size: 13px; margin-top: 30px; }
+    .cve { font-family: monospace; font-size: 12px; color: #8b949e; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <a class="back" href="/">← New scan</a>
+    <div class="url">{{ result.url }}</div>
+    <h1>WordPress Security Report</h1>
+    <div class="url">
+      WordPress {{ result.wp_version or "version unknown" }}
+      {% if result.theme %} · theme: {{ result.theme }}{% endif %}
+      · {{ result.plugins|length }} plugin(s) detected
+    </div>
+
+    <div class="cards">
+      <div class="card {{ 'crit' if result.vulns|length > 0 else 'good' }}">
+        <b>{{ result.vulns|length }}</b>Known vulnerabilities
+      </div>
+      <div class="card {{ 'crit' if result.findings|selectattr('severity','equalto','critical')|list|length > 0 else 'good' }}">
+        <b>{{ result.findings|length }}</b>Config issues
+      </div>
+      <div class="card">
+        <b>{{ result.plugins|length }}</b>Plugins
+      </div>
+    </div>
+
+    {% if result.vulns %}
+    <h2>🔴 Known vulnerabilities (WPVulnDB)</h2>
+    {% for v in result.vulns[:25] %}
+    <div class="item">
+      <div class="t"><span class="badge b-{{ v.severity }}">{{ v.severity.upper() }}</span>{{ v.title }}</div>
+      <div class="d">{{ v.software }} ({{ v.software_type }}) — affected up to version {{ v.max_affected }}
+        {% if v.cve %}<span class="cve"> · {{ v.cve }}</span>{% endif %}</div>
+      <div class="fix">Fix: update {{ v.software }} to the latest version.</div>
+    </div>
+    {% endfor %}
+    {% endif %}
+
+    {% if result.findings %}
+    <h2>⚠️ Configuration issues</h2>
+    {% for f in result.findings %}
+    <div class="item">
+      <div class="t"><span class="badge b-{{ f.severity }}">{{ f.severity.upper() }}</span>{{ f.title }}</div>
+      <div class="d">{{ f.detail }}</div>
+      <div class="fix">Fix: {{ f.fix }}</div>
+    </div>
+    {% endfor %}
+    {% endif %}
+
+    {% if not result.vulns and not result.findings %}
+    <div class="item"><div class="t">✅ No known vulnerabilities or config issues found</div>
+      <div class="d">Passive checks came back clean. Note: this is a black-box scan — it can't see server-side code or authenticated areas.</div>
+    </div>
+    {% endif %}
+
+    {% if result.plugins %}
+    <h2>Detected plugins</h2>
+    <div class="item"><div class="d">
+      {% for slug, ver in result.plugins.items() %}
+        {{ slug }}{% if ver %} {{ ver }}{% endif %}{{ ", " if not loop.last }}
+      {% endfor %}
+    </div></div>
+    {% endif %}
+
+    <div class="meta">
+      Black-box passive scan (GET requests only, non-intrusive) · Vulnerability data: WPVulnerability.net ·
+      Free scans left today: {{ remaining }}/{{ limit }} ·
+      Powered by <a href="https://github.com/xbMarlix/bug-analyzer">BugHunter</a>
+    </div>
+  </div>
+</body>
+</html>
