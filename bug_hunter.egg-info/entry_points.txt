@@ -1,2 +1,0 @@
-[console_scripts]
-bug-hunter = bug_hunter.main:main

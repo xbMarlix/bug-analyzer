@@ -1,2393 +1,0 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Security Review — axionova</title>
-<style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background:#0d1117; color:#c9d1d9; padding: 32px; }
-  .page { max-width: 980px; margin: 0 auto; }
-  .header { border-bottom: 1px solid #21262d; padding-bottom: 20px; margin-bottom: 24px; }
-  h1 { font-size: 26px; color: #f0f6fc; }
-  .sub { color: #8b949e; margin-top: 6px; }
-  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; }
-  .card { background:#161b22; border: 1px solid #21262d; border-radius: 8px; padding: 18px; }
-  .card h3 { color:#f0f6fc; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; }
-  .score { font-size: 52px; font-weight: 700; color: #d93025; }
-  .grade { font-size: 22px; color: #d93025; font-weight: 600; display:block; margin-top: 4px; }
-  .sev-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
-  .sev-dot { width: 10px; height: 10px; border-radius: 50%; display:inline-block; flex: 0 0 10px; }
-  .sev-label { width: 90px; color: #c9d1d9; }
-  .sev-bar { flex: 1; background:#21262d; border-radius: 4px; height: 10px; overflow:hidden; }
-  .sev-fill { height: 100%; border-radius: 4px; }
-  .sev-count { width: 30px; text-align:right; color:#8b949e; }
-  .metrics { display: flex; gap: 28px; flex-wrap: wrap; color:#8b949e; font-size: 13px; margin-bottom: 8px; }
-  .finding { background:#161b22; border: 1px solid #21262d; border-left: 4px solid #30363d; border-radius: 8px; padding: 16px 18px; margin-bottom: 14px; }
-  .finding-head { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
-  .badge { color:#fff; font-size: 11px; font-weight:700; padding: 3px 9px; border-radius: 20px; text-transform: uppercase; letter-spacing: .5px; }
-  .finding-title { font-size: 15px; font-weight:600; color:#f0f6fc; }
-  .conf { margin-left:auto; font-size: 11px; color:#8b949e; }
-  .finding-meta { margin-top:6px; font-size: 12px; color:#8b949e; }
-  code { background:#21262d; padding: 2px 6px; border-radius: 4px; font-size: 12px; font-family: Consolas, monospace; }
-  .analyzer { background:#1f6feb22; color:#58a6ff; padding: 2px 8px; border-radius: 4px; margin-left: 8px; }
-  .finding-desc { margin-top: 10px; font-size: 13.5px; color:#c9d1d9; }
-  .finding-fix { margin-top: 6px; font-size: 13px; color:#8b949e; }
-  .code { background:#0d1117; border:1px solid #21262d; border-radius: 6px; padding: 12px; margin-top: 10px; font-family: Consolas, monospace; font-size: 12px; overflow-x:auto; color:#a5d6ff; }
-  .err { background:#d9302511; border:1px solid #d9302555; border-radius:6px; padding:10px 12px; margin:6px 0; font-family:Consolas,monospace; font-size:12px; color:#f85149; white-space:pre-wrap; }
-  details summary { cursor:pointer; color:#58a6ff; font-size:12px; margin-top:8px; }
-  .footer { color:#484f58; font-size: 11px; margin-top: 28px; text-align:center; }
-</style>
-</head>
-<body>
-<div class="page">
-  <div class="header">
-    <h1>Security Review — axionova</h1>
-    <div class="sub">Generated 2026-09-08 20:04:27 &nbsp;·&nbsp; Analyzers: static, solidity_semantic</div>
-    <div class="sub">Path: <code>C:\Users\123123\AppData\Local\Temp\opencode\axionova</code></div>
-  </div>
-
-  <div class="grid">
-    <div class="card">
-      <h3>Security Score</h3>
-      <span class="score">62</span><span class="grade">Grade D</span>
-      <div class="metrics" style="margin-top:12px">
-        <span>Bugs: 154</span>
-        <span>Files: 13</span>
-        <span>Lines: 3,761</span>
-      </div>
-    </div>
-    <div class="card">
-      <h3>Findings Breakdown</h3>
-      <div class="sev-row"><span class="sev-dot" style="background:#d93025"></span><span class="sev-label">Critical</span><div class="sev-bar"><div class="sev-fill" style="width:0.0%;background:#d93025"></div></div><span class="sev-count">0</span></div>
-<div class="sev-row"><span class="sev-dot" style="background:#ea4335"></span><span class="sev-label">High</span><div class="sev-bar"><div class="sev-fill" style="width:0.0%;background:#ea4335"></div></div><span class="sev-count">0</span></div>
-<div class="sev-row"><span class="sev-dot" style="background:#f9ab00"></span><span class="sev-label">Medium</span><div class="sev-bar"><div class="sev-fill" style="width:0.0%;background:#f9ab00"></div></div><span class="sev-count">0</span></div>
-<div class="sev-row"><span class="sev-dot" style="background:#1a73e8"></span><span class="sev-label">Low</span><div class="sev-bar"><div class="sev-fill" style="width:100.0%;background:#1a73e8"></div></div><span class="sev-count">154</span></div>
-<div class="sev-row"><span class="sev-dot" style="background:#5f6368"></span><span class="sev-label">Info</span><div class="sev-bar"><div class="sev-fill" style="width:0.0%;background:#5f6368"></div></div><span class="sev-count">0</span></div>
-    </div>
-  </div>
-
-  <div class="card" style="margin-bottom:24px">
-    <h3>Scope</h3>
-    <b>solidity</b>: 13 files
-  </div>
-
-  
-
-  <h2 style="font-size:20px;color:#f0f6fc;margin-bottom:16px">Findings (154)</h2>
-  
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">Unoptimized Loop</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>contracts\AXNVAirdrop.sol</code>:293
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> Loops in Solidity cost gas per iteration. Consider bounds and caching state variables in memory.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Cache state variables in memory before the loop, and consider if the loop can be avoided.</div>
-              <details><summary>Code</summary><pre class="code">     291 |         if (length == 0) revert InvalidArrayLength();<br>     292 | <br>&gt;&gt;&gt;  293 |         for (uint256 i = 0; i &lt; length; i++) {<br>     294 |             address user = users[i];<br>     295 | </pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">Unoptimized Loop</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>contracts\AXNVAirdrop.sol</code>:310
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> Loops in Solidity cost gas per iteration. Consider bounds and caching state variables in memory.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Cache state variables in memory before the loop, and consider if the loop can be avoided.</div>
-              <details><summary>Code</summary><pre class="code">     308 |         if (length == 0) revert InvalidArrayLength();<br>     309 | <br>&gt;&gt;&gt;  310 |         for (uint256 i = 0; i &lt; length; i++) {<br>     311 |             address user = users[i];<br>     312 | </pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">UNCLEAR require Error Message</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>contracts\AXNVBatchDistributor.sol</code>:47
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> require() with a generic/empty revert message makes debugging harder.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Use custom errors (Solidity 0.8.4+) with specific names for better error handling.</div>
-              <details><summary>Code</summary><pre class="code">      45 |         uint256 length = recipients.length;<br>      46 | <br>&gt;&gt;&gt;   47 |         require(length &gt; 0, &quot;Empty recipients&quot;);<br>      48 |         require(length == amounts.length, &quot;Length mismatch&quot;);<br>      49 | </pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">UNCLEAR require Error Message</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>contracts\AXNVBatchDistributor.sol</code>:48
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> require() with a generic/empty revert message makes debugging harder.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Use custom errors (Solidity 0.8.4+) with specific names for better error handling.</div>
-              <details><summary>Code</summary><pre class="code">      46 | <br>      47 |         require(length &gt; 0, &quot;Empty recipients&quot;);<br>&gt;&gt;&gt;   48 |         require(length == amounts.length, &quot;Length mismatch&quot;);<br>      49 | <br>      50 |         uint256 totalAmount;</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">UNCLEAR require Error Message</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>contracts\AXNVBatchDistributor.sol</code>:54
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> require() with a generic/empty revert message makes debugging harder.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Use custom errors (Solidity 0.8.4+) with specific names for better error handling.</div>
-              <details><summary>Code</summary><pre class="code">      52 |         for (uint256 i = 0; i &lt; length; i++) {<br>      53 |             require(recipients[i] != address(0), &quot;Invalid recipient&quot;);<br>&gt;&gt;&gt;   54 |             require(amounts[i] &gt; 0, &quot;Zero amount&quot;);<br>      55 | <br>      56 |             totalAmount += amounts[i];</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">UNCLEAR require Error Message</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>contracts\AXNVBatchDistributor.sol</code>:81
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> require() with a generic/empty revert message makes debugging harder.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Use custom errors (Solidity 0.8.4+) with specific names for better error handling.</div>
-              <details><summary>Code</summary><pre class="code">      79 |     {<br>      80 |         require(to != address(0), &quot;Invalid recipient&quot;);<br>&gt;&gt;&gt;   81 |         require(amount &gt; 0, &quot;Zero amount&quot;);<br>      82 |         require(amount &lt;= axnv.balanceOf(address(this)), &quot;Insufficient AXNV&quot;);<br>      83 | </pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">UNCLEAR require Error Message</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>contracts\AXNVBatchDistributor.sol</code>:97
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> require() with a generic/empty revert message makes debugging harder.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Use custom errors (Solidity 0.8.4+) with specific names for better error handling.</div>
-              <details><summary>Code</summary><pre class="code">      95 |         require(token != address(0), &quot;Invalid token&quot;);<br>      96 |         require(to != address(0), &quot;Invalid recipient&quot;);<br>&gt;&gt;&gt;   97 |         require(amount &gt; 0, &quot;Zero amount&quot;);<br>      98 | <br>      99 |         IERC20(token).safeTransfer(to, amount);</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">Unoptimized Loop</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>contracts\AXNVBatchDistributor.sol</code>:52
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> Loops in Solidity cost gas per iteration. Consider bounds and caching state variables in memory.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Cache state variables in memory before the loop, and consider if the loop can be avoided.</div>
-              <details><summary>Code</summary><pre class="code">      50 |         uint256 totalAmount;<br>      51 | <br>&gt;&gt;&gt;   52 |         for (uint256 i = 0; i &lt; length; i++) {<br>      53 |             require(recipients[i] != address(0), &quot;Invalid recipient&quot;);<br>      54 |             require(amounts[i] &gt; 0, &quot;Zero amount&quot;);</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">Unoptimized Loop</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>contracts\AXNVBatchDistributor.sol</code>:66
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> Loops in Solidity cost gas per iteration. Consider bounds and caching state variables in memory.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Cache state variables in memory before the loop, and consider if the loop can be avoided.</div>
-              <details><summary>Code</summary><pre class="code">      64 |         totalDistributed += totalAmount;<br>      65 | <br>&gt;&gt;&gt;   66 |         for (uint256 i = 0; i &lt; length; i++) {<br>      67 |             axnv.safeTransfer(recipients[i], amounts[i]);<br>      68 | </pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">UNCLEAR require Error Message</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>contracts\AXNVCommunityIncentivesDistributor.sol</code>:59
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> require() with a generic/empty revert message makes debugging harder.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Use custom errors (Solidity 0.8.4+) with specific names for better error handling.</div>
-              <details><summary>Code</summary><pre class="code">      57 | <br>      58 |     function fundVault(uint256 amount) external onlyOwner nonReentrant {<br>&gt;&gt;&gt;   59 |         require(amount &gt; 0, &quot;Zero amount&quot;);<br>      60 |         require(accountedAXNV() + amount &lt;= COMMUNITY_INCENTIVES_CAP, &quot;Cap exceeded&quot;);<br>      61 | </pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">UNCLEAR require Error Message</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>contracts\AXNVCommunityIncentivesDistributor.sol</code>:70
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> require() with a generic/empty revert message makes debugging harder.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Use custom errors (Solidity 0.8.4+) with specific names for better error handling.</div>
-              <details><summary>Code</summary><pre class="code">      68 |     function createCampaign(string calldata name, uint256 allocation) external onlyOwner returns (uint256 campaignId) {<br>      69 |         require(bytes(name).length &gt; 0, &quot;Empty name&quot;);<br>&gt;&gt;&gt;   70 |         require(allocation &gt; 0, &quot;Zero allocation&quot;);<br>      71 |         require(totalCampaignAllocated + allocation &lt;= COMMUNITY_INCENTIVES_CAP, &quot;Cap exceeded&quot;);<br>      72 | </pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">UNCLEAR require Error Message</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>contracts\AXNVCommunityIncentivesDistributor.sol</code>:71
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> require() with a generic/empty revert message makes debugging harder.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Use custom errors (Solidity 0.8.4+) with specific names for better error handling.</div>
-              <details><summary>Code</summary><pre class="code">      69 |         require(bytes(name).length &gt; 0, &quot;Empty name&quot;);<br>      70 |         require(allocation &gt; 0, &quot;Zero allocation&quot;);<br>&gt;&gt;&gt;   71 |         require(totalCampaignAllocated + allocation &lt;= COMMUNITY_INCENTIVES_CAP, &quot;Cap exceeded&quot;);<br>      72 | <br>      73 |         campaignId = campaigns.length;</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">UNCLEAR require Error Message</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>contracts\AXNVCommunityIncentivesDistributor.sol</code>:90
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> require() with a generic/empty revert message makes debugging harder.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Use custom errors (Solidity 0.8.4+) with specific names for better error handling.</div>
-              <details><summary>Code</summary><pre class="code">      88 | <br>      89 |     function decreaseCampaignAllocation(uint256 campaignId, uint256 newAllocation) external onlyOwner {<br>&gt;&gt;&gt;   90 |         require(campaignId &lt; campaigns.length, &quot;Invalid campaign&quot;);<br>      91 | <br>      92 |         Campaign storage c = campaigns[campaignId];</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">UNCLEAR require Error Message</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>contracts\AXNVCommunityIncentivesDistributor.sol</code>:93
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> require() with a generic/empty revert message makes debugging harder.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Use custom errors (Solidity 0.8.4+) with specific names for better error handling.</div>
-              <details><summary>Code</summary><pre class="code">      91 | <br>      92 |         Campaign storage c = campaigns[campaignId];<br>&gt;&gt;&gt;   93 |         require(c.exists, &quot;Campaign missing&quot;);<br>      94 |         require(newAllocation &gt; 0, &quot;Zero allocation&quot;);<br>      95 |         require(newAllocation &lt; c.allocation, &quot;Not decreased&quot;);</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">UNCLEAR require Error Message</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>contracts\AXNVCommunityIncentivesDistributor.sol</code>:94
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> require() with a generic/empty revert message makes debugging harder.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Use custom errors (Solidity 0.8.4+) with specific names for better error handling.</div>
-              <details><summary>Code</summary><pre class="code">      92 |         Campaign storage c = campaigns[campaignId];<br>      93 |         require(c.exists, &quot;Campaign missing&quot;);<br>&gt;&gt;&gt;   94 |         require(newAllocation &gt; 0, &quot;Zero allocation&quot;);<br>      95 |         require(newAllocation &lt; c.allocation, &quot;Not decreased&quot;);<br>      96 |         require(newAllocation &gt;= c.assigned, &quot;Below assigned&quot;);</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">UNCLEAR require Error Message</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>contracts\AXNVCommunityIncentivesDistributor.sol</code>:95
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> require() with a generic/empty revert message makes debugging harder.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Use custom errors (Solidity 0.8.4+) with specific names for better error handling.</div>
-              <details><summary>Code</summary><pre class="code">      93 |         require(c.exists, &quot;Campaign missing&quot;);<br>      94 |         require(newAllocation &gt; 0, &quot;Zero allocation&quot;);<br>&gt;&gt;&gt;   95 |         require(newAllocation &lt; c.allocation, &quot;Not decreased&quot;);<br>      96 |         require(newAllocation &gt;= c.assigned, &quot;Below assigned&quot;);<br>      97 | </pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">UNCLEAR require Error Message</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>contracts\AXNVCommunityIncentivesDistributor.sol</code>:96
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> require() with a generic/empty revert message makes debugging harder.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Use custom errors (Solidity 0.8.4+) with specific names for better error handling.</div>
-              <details><summary>Code</summary><pre class="code">      94 |         require(newAllocation &gt; 0, &quot;Zero allocation&quot;);<br>      95 |         require(newAllocation &lt; c.allocation, &quot;Not decreased&quot;);<br>&gt;&gt;&gt;   96 |         require(newAllocation &gt;= c.assigned, &quot;Below assigned&quot;);<br>      97 | <br>      98 |         uint256 oldAllocation = c.allocation;</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">UNCLEAR require Error Message</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>contracts\AXNVCommunityIncentivesDistributor.sol</code>:108
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> require() with a generic/empty revert message makes debugging harder.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Use custom errors (Solidity 0.8.4+) with specific names for better error handling.</div>
-              <details><summary>Code</summary><pre class="code">     106 | <br>     107 |     function removeCampaign(uint256 campaignId) external onlyOwner {<br>&gt;&gt;&gt;  108 |         require(campaignId &lt; campaigns.length, &quot;Invalid campaign&quot;);<br>     109 | <br>     110 |         Campaign storage c = campaigns[campaignId];</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">UNCLEAR require Error Message</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>contracts\AXNVCommunityIncentivesDistributor.sol</code>:111
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> require() with a generic/empty revert message makes debugging harder.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Use custom errors (Solidity 0.8.4+) with specific names for better error handling.</div>
-              <details><summary>Code</summary><pre class="code">     109 | <br>     110 |         Campaign storage c = campaigns[campaignId];<br>&gt;&gt;&gt;  111 |         require(c.exists, &quot;Campaign missing&quot;);<br>     112 |         require(c.assigned == 0, &quot;Campaign has assigned rewards&quot;);<br>     113 |         require(c.claimed == 0, &quot;Campaign has claimed rewards&quot;);</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">UNCLEAR require Error Message</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>contracts\AXNVCommunityIncentivesDistributor.sol</code>:112
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> require() with a generic/empty revert message makes debugging harder.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Use custom errors (Solidity 0.8.4+) with specific names for better error handling.</div>
-              <details><summary>Code</summary><pre class="code">     110 |         Campaign storage c = campaigns[campaignId];<br>     111 |         require(c.exists, &quot;Campaign missing&quot;);<br>&gt;&gt;&gt;  112 |         require(c.assigned == 0, &quot;Campaign has assigned rewards&quot;);<br>     113 |         require(c.claimed == 0, &quot;Campaign has claimed rewards&quot;);<br>     114 | </pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">UNCLEAR require Error Message</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>contracts\AXNVCommunityIncentivesDistributor.sol</code>:113
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> require() with a generic/empty revert message makes debugging harder.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Use custom errors (Solidity 0.8.4+) with specific names for better error handling.</div>
-              <details><summary>Code</summary><pre class="code">     111 |         require(c.exists, &quot;Campaign missing&quot;);<br>     112 |         require(c.assigned == 0, &quot;Campaign has assigned rewards&quot;);<br>&gt;&gt;&gt;  113 |         require(c.claimed == 0, &quot;Campaign has claimed rewards&quot;);<br>     114 | <br>     115 |         uint256 allocation = c.allocation;</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">UNCLEAR require Error Message</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>contracts\AXNVCommunityIncentivesDistributor.sol</code>:130
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> require() with a generic/empty revert message makes debugging harder.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Use custom errors (Solidity 0.8.4+) with specific names for better error handling.</div>
-              <details><summary>Code</summary><pre class="code">     128 |         uint256[] calldata amounts<br>     129 |     ) external onlyOwner {<br>&gt;&gt;&gt;  130 |         require(campaignId &lt; campaigns.length, &quot;Invalid campaign&quot;);<br>     131 |         require(wallets.length == amounts.length, &quot;Length mismatch&quot;);<br>     132 |         require(wallets.length &gt; 0, &quot;Empty batch&quot;);</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">UNCLEAR require Error Message</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>contracts\AXNVCommunityIncentivesDistributor.sol</code>:131
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> require() with a generic/empty revert message makes debugging harder.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Use custom errors (Solidity 0.8.4+) with specific names for better error handling.</div>
-              <details><summary>Code</summary><pre class="code">     129 |     ) external onlyOwner {<br>     130 |         require(campaignId &lt; campaigns.length, &quot;Invalid campaign&quot;);<br>&gt;&gt;&gt;  131 |         require(wallets.length == amounts.length, &quot;Length mismatch&quot;);<br>     132 |         require(wallets.length &gt; 0, &quot;Empty batch&quot;);<br>     133 | </pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">UNCLEAR require Error Message</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>contracts\AXNVCommunityIncentivesDistributor.sol</code>:132
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> require() with a generic/empty revert message makes debugging harder.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Use custom errors (Solidity 0.8.4+) with specific names for better error handling.</div>
-              <details><summary>Code</summary><pre class="code">     130 |         require(campaignId &lt; campaigns.length, &quot;Invalid campaign&quot;);<br>     131 |         require(wallets.length == amounts.length, &quot;Length mismatch&quot;);<br>&gt;&gt;&gt;  132 |         require(wallets.length &gt; 0, &quot;Empty batch&quot;);<br>     133 | <br>     134 |         Campaign storage c = campaigns[campaignId];</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">UNCLEAR require Error Message</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>contracts\AXNVCommunityIncentivesDistributor.sol</code>:135
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> require() with a generic/empty revert message makes debugging harder.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Use custom errors (Solidity 0.8.4+) with specific names for better error handling.</div>
-              <details><summary>Code</summary><pre class="code">     133 | <br>     134 |         Campaign storage c = campaigns[campaignId];<br>&gt;&gt;&gt;  135 |         require(c.exists, &quot;Campaign missing&quot;);<br>     136 | <br>     137 |         uint256 totalAmount;</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">UNCLEAR require Error Message</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>contracts\AXNVCommunityIncentivesDistributor.sol</code>:144
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> require() with a generic/empty revert message makes debugging harder.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Use custom errors (Solidity 0.8.4+) with specific names for better error handling.</div>
-              <details><summary>Code</summary><pre class="code">     142 | <br>     143 |             require(wallet != address(0), &quot;Invalid wallet&quot;);<br>&gt;&gt;&gt;  144 |             require(amount &gt; 0, &quot;Zero amount&quot;);<br>     145 |             require(!claimed[campaignId][wallet], &quot;Already claimed&quot;);<br>     146 | </pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">UNCLEAR require Error Message</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>contracts\AXNVCommunityIncentivesDistributor.sol</code>:145
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> require() with a generic/empty revert message makes debugging harder.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Use custom errors (Solidity 0.8.4+) with specific names for better error handling.</div>
-              <details><summary>Code</summary><pre class="code">     143 |             require(wallet != address(0), &quot;Invalid wallet&quot;);<br>     144 |             require(amount &gt; 0, &quot;Zero amount&quot;);<br>&gt;&gt;&gt;  145 |             require(!claimed[campaignId][wallet], &quot;Already claimed&quot;);<br>     146 | <br>     147 |             rewards[campaignId][wallet] += amount;</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">UNCLEAR require Error Message</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>contracts\AXNVCommunityIncentivesDistributor.sol</code>:151
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> require() with a generic/empty revert message makes debugging harder.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Use custom errors (Solidity 0.8.4+) with specific names for better error handling.</div>
-              <details><summary>Code</summary><pre class="code">     149 |         }<br>     150 | <br>&gt;&gt;&gt;  151 |         require(c.assigned + totalAmount &lt;= c.allocation, &quot;Campaign allocation exceeded&quot;);<br>     152 | <br>     153 |         c.assigned += totalAmount;</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">UNCLEAR require Error Message</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>contracts\AXNVCommunityIncentivesDistributor.sol</code>:160
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> require() with a generic/empty revert message makes debugging harder.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Use custom errors (Solidity 0.8.4+) with specific names for better error handling.</div>
-              <details><summary>Code</summary><pre class="code">     158 | <br>     159 |     function setCampaignActive(uint256 campaignId, bool active) external onlyOwner {<br>&gt;&gt;&gt;  160 |         require(campaignId &lt; campaigns.length, &quot;Invalid campaign&quot;);<br>     161 | <br>     162 |         Campaign storage c = campaigns[campaignId];</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">UNCLEAR require Error Message</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>contracts\AXNVCommunityIncentivesDistributor.sol</code>:163
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> require() with a generic/empty revert message makes debugging harder.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Use custom errors (Solidity 0.8.4+) with specific names for better error handling.</div>
-              <details><summary>Code</summary><pre class="code">     161 | <br>     162 |         Campaign storage c = campaigns[campaignId];<br>&gt;&gt;&gt;  163 |         require(c.exists, &quot;Campaign missing&quot;);<br>     164 | <br>     165 |         c.active = active;</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">UNCLEAR require Error Message</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>contracts\AXNVCommunityIncentivesDistributor.sol</code>:177
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> require() with a generic/empty revert message makes debugging harder.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Use custom errors (Solidity 0.8.4+) with specific names for better error handling.</div>
-              <details><summary>Code</summary><pre class="code">     175 |     function recoverUnallocatedAXNV(uint256 amount, address to) external onlyOwner nonReentrant {<br>     176 |         require(to != address(0), &quot;Invalid recipient&quot;);<br>&gt;&gt;&gt;  177 |         require(amount &gt; 0, &quot;Zero amount&quot;);<br>     178 | <br>     179 |         uint256 available = unallocatedAXNV();</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">UNCLEAR require Error Message</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>contracts\AXNVCommunityIncentivesDistributor.sol</code>:180
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> require() with a generic/empty revert message makes debugging harder.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Use custom errors (Solidity 0.8.4+) with specific names for better error handling.</div>
-              <details><summary>Code</summary><pre class="code">     178 | <br>     179 |         uint256 available = unallocatedAXNV();<br>&gt;&gt;&gt;  180 |         require(amount &lt;= available, &quot;Exceeds unallocated&quot;);<br>     181 | <br>     182 |         axnv.safeTransfer(to, amount);</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">UNCLEAR require Error Message</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>contracts\AXNVCommunityIncentivesDistributor.sol</code>:191
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> require() with a generic/empty revert message makes debugging harder.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Use custom errors (Solidity 0.8.4+) with specific names for better error handling.</div>
-              <details><summary>Code</summary><pre class="code">     189 |         require(token != address(0), &quot;Invalid token&quot;);<br>     190 |         require(to != address(0), &quot;Invalid recipient&quot;);<br>&gt;&gt;&gt;  191 |         require(amount &gt; 0, &quot;Zero amount&quot;);<br>     192 | <br>     193 |         IERC20(token).safeTransfer(to, amount);</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">UNCLEAR require Error Message</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>contracts\AXNVCommunityIncentivesDistributor.sol</code>:199
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> require() with a generic/empty revert message makes debugging harder.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Use custom errors (Solidity 0.8.4+) with specific names for better error handling.</div>
-              <details><summary>Code</summary><pre class="code">     197 | <br>     198 |     function claim(uint256 campaignId) external nonReentrant {<br>&gt;&gt;&gt;  199 |         require(!claimsPaused, &quot;Claims paused&quot;);<br>     200 |         require(campaignId &lt; campaigns.length, &quot;Invalid campaign&quot;);<br>     201 | </pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">UNCLEAR require Error Message</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>contracts\AXNVCommunityIncentivesDistributor.sol</code>:200
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> require() with a generic/empty revert message makes debugging harder.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Use custom errors (Solidity 0.8.4+) with specific names for better error handling.</div>
-              <details><summary>Code</summary><pre class="code">     198 |     function claim(uint256 campaignId) external nonReentrant {<br>     199 |         require(!claimsPaused, &quot;Claims paused&quot;);<br>&gt;&gt;&gt;  200 |         require(campaignId &lt; campaigns.length, &quot;Invalid campaign&quot;);<br>     201 | <br>     202 |         Campaign storage c = campaigns[campaignId];</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">UNCLEAR require Error Message</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>contracts\AXNVCommunityIncentivesDistributor.sol</code>:203
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> require() with a generic/empty revert message makes debugging harder.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Use custom errors (Solidity 0.8.4+) with specific names for better error handling.</div>
-              <details><summary>Code</summary><pre class="code">     201 | <br>     202 |         Campaign storage c = campaigns[campaignId];<br>&gt;&gt;&gt;  203 |         require(c.exists, &quot;Campaign missing&quot;);<br>     204 |         require(c.active, &quot;Campaign inactive&quot;);<br>     205 |         require(!claimed[campaignId][msg.sender], &quot;Already claimed&quot;);</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">UNCLEAR require Error Message</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>contracts\AXNVCommunityIncentivesDistributor.sol</code>:204
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> require() with a generic/empty revert message makes debugging harder.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Use custom errors (Solidity 0.8.4+) with specific names for better error handling.</div>
-              <details><summary>Code</summary><pre class="code">     202 |         Campaign storage c = campaigns[campaignId];<br>     203 |         require(c.exists, &quot;Campaign missing&quot;);<br>&gt;&gt;&gt;  204 |         require(c.active, &quot;Campaign inactive&quot;);<br>     205 |         require(!claimed[campaignId][msg.sender], &quot;Already claimed&quot;);<br>     206 | </pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">UNCLEAR require Error Message</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>contracts\AXNVCommunityIncentivesDistributor.sol</code>:205
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> require() with a generic/empty revert message makes debugging harder.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Use custom errors (Solidity 0.8.4+) with specific names for better error handling.</div>
-              <details><summary>Code</summary><pre class="code">     203 |         require(c.exists, &quot;Campaign missing&quot;);<br>     204 |         require(c.active, &quot;Campaign inactive&quot;);<br>&gt;&gt;&gt;  205 |         require(!claimed[campaignId][msg.sender], &quot;Already claimed&quot;);<br>     206 | <br>     207 |         uint256 amount = rewards[campaignId][msg.sender];</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">UNCLEAR require Error Message</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>contracts\AXNVCommunityIncentivesDistributor.sol</code>:208
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> require() with a generic/empty revert message makes debugging harder.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Use custom errors (Solidity 0.8.4+) with specific names for better error handling.</div>
-              <details><summary>Code</summary><pre class="code">     206 | <br>     207 |         uint256 amount = rewards[campaignId][msg.sender];<br>&gt;&gt;&gt;  208 |         require(amount &gt; 0, &quot;Nothing claimable&quot;);<br>     209 | <br>     210 |         claimed[campaignId][msg.sender] = true;</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">UNCLEAR require Error Message</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>contracts\AXNVCommunityIncentivesDistributor.sol</code>:221
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> require() with a generic/empty revert message makes debugging harder.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Use custom errors (Solidity 0.8.4+) with specific names for better error handling.</div>
-              <details><summary>Code</summary><pre class="code">     219 | <br>     220 |     function claimMany(uint256[] calldata campaignIds) external nonReentrant {<br>&gt;&gt;&gt;  221 |         require(!claimsPaused, &quot;Claims paused&quot;);<br>     222 |         require(campaignIds.length &gt; 0, &quot;Empty array&quot;);<br>     223 | </pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">UNCLEAR require Error Message</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>contracts\AXNVCommunityIncentivesDistributor.sol</code>:222
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> require() with a generic/empty revert message makes debugging harder.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Use custom errors (Solidity 0.8.4+) with specific names for better error handling.</div>
-              <details><summary>Code</summary><pre class="code">     220 |     function claimMany(uint256[] calldata campaignIds) external nonReentrant {<br>     221 |         require(!claimsPaused, &quot;Claims paused&quot;);<br>&gt;&gt;&gt;  222 |         require(campaignIds.length &gt; 0, &quot;Empty array&quot;);<br>     223 | <br>     224 |         uint256 totalAmount;</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">UNCLEAR require Error Message</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>contracts\AXNVCommunityIncentivesDistributor.sol</code>:229
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> require() with a generic/empty revert message makes debugging harder.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Use custom errors (Solidity 0.8.4+) with specific names for better error handling.</div>
-              <details><summary>Code</summary><pre class="code">     227 |             uint256 campaignId = campaignIds[i];<br>     228 | <br>&gt;&gt;&gt;  229 |             require(campaignId &lt; campaigns.length, &quot;Invalid campaign&quot;);<br>     230 | <br>     231 |             Campaign storage c = campaigns[campaignId];</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">UNCLEAR require Error Message</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>contracts\AXNVCommunityIncentivesDistributor.sol</code>:232
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> require() with a generic/empty revert message makes debugging harder.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Use custom errors (Solidity 0.8.4+) with specific names for better error handling.</div>
-              <details><summary>Code</summary><pre class="code">     230 | <br>     231 |             Campaign storage c = campaigns[campaignId];<br>&gt;&gt;&gt;  232 |             require(c.exists, &quot;Campaign missing&quot;);<br>     233 |             require(c.active, &quot;Campaign inactive&quot;);<br>     234 | </pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">UNCLEAR require Error Message</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>contracts\AXNVCommunityIncentivesDistributor.sol</code>:233
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> require() with a generic/empty revert message makes debugging harder.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Use custom errors (Solidity 0.8.4+) with specific names for better error handling.</div>
-              <details><summary>Code</summary><pre class="code">     231 |             Campaign storage c = campaigns[campaignId];<br>     232 |             require(c.exists, &quot;Campaign missing&quot;);<br>&gt;&gt;&gt;  233 |             require(c.active, &quot;Campaign inactive&quot;);<br>     234 | <br>     235 |             if (claimed[campaignId][msg.sender]) continue;</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">UNCLEAR require Error Message</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>contracts\AXNVCommunityIncentivesDistributor.sol</code>:249
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> require() with a generic/empty revert message makes debugging harder.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Use custom errors (Solidity 0.8.4+) with specific names for better error handling.</div>
-              <details><summary>Code</summary><pre class="code">     247 |         }<br>     248 | <br>&gt;&gt;&gt;  249 |         require(totalAmount &gt; 0, &quot;Nothing claimable&quot;);<br>     250 | <br>     251 |         axnv.safeTransfer(msg.sender, totalAmount);</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">UNCLEAR require Error Message</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>contracts\AXNVCommunityIncentivesDistributor.sol</code>:268
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> require() with a generic/empty revert message makes debugging harder.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Use custom errors (Solidity 0.8.4+) with specific names for better error handling.</div>
-              <details><summary>Code</summary><pre class="code">     266 |         )<br>     267 |     {<br>&gt;&gt;&gt;  268 |         require(campaignId &lt; campaigns.length, &quot;Invalid campaign&quot;);<br>     269 | <br>     270 |         Campaign memory c = campaigns[campaignId];</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">UNCLEAR require Error Message</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>contracts\AXNVCommunityIncentivesDistributor.sol</code>:291
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> require() with a generic/empty revert message makes debugging harder.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Use custom errors (Solidity 0.8.4+) with specific names for better error handling.</div>
-              <details><summary>Code</summary><pre class="code">     289 |         )<br>     290 |     {<br>&gt;&gt;&gt;  291 |         require(campaignId &lt; campaigns.length, &quot;Invalid campaign&quot;);<br>     292 | <br>     293 |         assignedAmount = rewards[campaignId][user];</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">Unoptimized Loop</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>contracts\AXNVCommunityIncentivesDistributor.sol</code>:139
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> Loops in Solidity cost gas per iteration. Consider bounds and caching state variables in memory.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Cache state variables in memory before the loop, and consider if the loop can be avoided.</div>
-              <details><summary>Code</summary><pre class="code">     137 |         uint256 totalAmount;<br>     138 | <br>&gt;&gt;&gt;  139 |         for (uint256 i = 0; i &lt; wallets.length; i++) {<br>     140 |             address wallet = wallets[i];<br>     141 |             uint256 amount = amounts[i];</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">Unoptimized Loop</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>contracts\AXNVCommunityIncentivesDistributor.sol</code>:226
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> Loops in Solidity cost gas per iteration. Consider bounds and caching state variables in memory.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Cache state variables in memory before the loop, and consider if the loop can be avoided.</div>
-              <details><summary>Code</summary><pre class="code">     224 |         uint256 totalAmount;<br>     225 | <br>&gt;&gt;&gt;  226 |         for (uint256 i = 0; i &lt; campaignIds.length; i++) {<br>     227 |             uint256 campaignId = campaignIds[i];<br>     228 | </pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">UNCLEAR require Error Message</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>contracts\AXNVLiquidityAllocationVault.sol</code>:42
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> require() with a generic/empty revert message makes debugging harder.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Use custom errors (Solidity 0.8.4+) with specific names for better error handling.</div>
-              <details><summary>Code</summary><pre class="code">      40 | <br>      41 |     function fundVault(uint256 amount) external onlyOwner nonReentrant {<br>&gt;&gt;&gt;   42 |         require(amount &gt; 0, &quot;Zero amount&quot;);<br>      43 | <br>      44 |         uint256 newAccounted = accountedAXNV() + amount;</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">UNCLEAR require Error Message</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>contracts\AXNVLiquidityAllocationVault.sol</code>:45
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> require() with a generic/empty revert message makes debugging harder.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Use custom errors (Solidity 0.8.4+) with specific names for better error handling.</div>
-              <details><summary>Code</summary><pre class="code">      43 | <br>      44 |         uint256 newAccounted = accountedAXNV() + amount;<br>&gt;&gt;&gt;   45 |         require(newAccounted &lt;= LIQUIDITY_ALLOCATION_CAP, &quot;Cap exceeded&quot;);<br>      46 | <br>      47 |         axnv.safeTransferFrom(msg.sender, address(this), amount);</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">UNCLEAR require Error Message</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>contracts\AXNVLiquidityAllocationVault.sol</code>:57
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> require() with a generic/empty revert message makes debugging harder.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Use custom errors (Solidity 0.8.4+) with specific names for better error handling.</div>
-              <details><summary>Code</summary><pre class="code">      55 |         nonReentrant<br>      56 |     {<br>&gt;&gt;&gt;   57 |         require(!releasePaused, &quot;Release paused&quot;);<br>      58 |         require(amount &gt; 0, &quot;Zero amount&quot;);<br>      59 |         require(totalReleased + amount &lt;= LIQUIDITY_ALLOCATION_CAP, &quot;Cap exceeded&quot;);</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">UNCLEAR require Error Message</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>contracts\AXNVLiquidityAllocationVault.sol</code>:58
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> require() with a generic/empty revert message makes debugging harder.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Use custom errors (Solidity 0.8.4+) with specific names for better error handling.</div>
-              <details><summary>Code</summary><pre class="code">      56 |     {<br>      57 |         require(!releasePaused, &quot;Release paused&quot;);<br>&gt;&gt;&gt;   58 |         require(amount &gt; 0, &quot;Zero amount&quot;);<br>      59 |         require(totalReleased + amount &lt;= LIQUIDITY_ALLOCATION_CAP, &quot;Cap exceeded&quot;);<br>      60 |         require(amount &lt;= contractAXNVBalance(), &quot;Insufficient AXNV&quot;);</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">UNCLEAR require Error Message</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>contracts\AXNVLiquidityAllocationVault.sol</code>:59
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> require() with a generic/empty revert message makes debugging harder.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Use custom errors (Solidity 0.8.4+) with specific names for better error handling.</div>
-              <details><summary>Code</summary><pre class="code">      57 |         require(!releasePaused, &quot;Release paused&quot;);<br>      58 |         require(amount &gt; 0, &quot;Zero amount&quot;);<br>&gt;&gt;&gt;   59 |         require(totalReleased + amount &lt;= LIQUIDITY_ALLOCATION_CAP, &quot;Cap exceeded&quot;);<br>      60 |         require(amount &lt;= contractAXNVBalance(), &quot;Insufficient AXNV&quot;);<br>      61 | </pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">UNCLEAR require Error Message</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>contracts\AXNVLiquidityAllocationVault.sol</code>:81
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> require() with a generic/empty revert message makes debugging harder.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Use custom errors (Solidity 0.8.4+) with specific names for better error handling.</div>
-              <details><summary>Code</summary><pre class="code">      79 |     {<br>      80 |         require(to != address(0), &quot;Invalid recipient&quot;);<br>&gt;&gt;&gt;   81 |         require(amount &gt; 0, &quot;Zero amount&quot;);<br>      82 | <br>      83 |         uint256 excess = excessAXNV();</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">UNCLEAR require Error Message</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>contracts\AXNVLiquidityAllocationVault.sol</code>:84
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> require() with a generic/empty revert message makes debugging harder.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Use custom errors (Solidity 0.8.4+) with specific names for better error handling.</div>
-              <details><summary>Code</summary><pre class="code">      82 | <br>      83 |         uint256 excess = excessAXNV();<br>&gt;&gt;&gt;   84 |         require(amount &lt;= excess, &quot;Exceeds excess&quot;);<br>      85 | <br>      86 |         axnv.safeTransfer(to, amount);</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">UNCLEAR require Error Message</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>contracts\AXNVLiquidityAllocationVault.sol</code>:99
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> require() with a generic/empty revert message makes debugging harder.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Use custom errors (Solidity 0.8.4+) with specific names for better error handling.</div>
-              <details><summary>Code</summary><pre class="code">      97 |         require(token != address(0), &quot;Invalid token&quot;);<br>      98 |         require(to != address(0), &quot;Invalid recipient&quot;);<br>&gt;&gt;&gt;   99 |         require(amount &gt; 0, &quot;Zero amount&quot;);<br>     100 | <br>     101 |         IERC20(token).safeTransfer(to, amount);</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">UNCLEAR require Error Message</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>contracts\AXNVPresaleVesting.sol</code>:109
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> require() with a generic/empty revert message makes debugging harder.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Use custom errors (Solidity 0.8.4+) with specific names for better error handling.</div>
-              <details><summary>Code</summary><pre class="code">     107 | <br>     108 |     function buy(uint256 usdtAmount) external nonReentrant whenNotPaused {<br>&gt;&gt;&gt;  109 |         require(presaleActive, &quot;Presale is not active&quot;);<br>     110 |         require(!saleEnded, &quot;Sale has ended&quot;);<br>     111 |         require(usdtAmount &gt; 0, &quot;Invalid USDT amount&quot;);</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">UNCLEAR require Error Message</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>contracts\AXNVPresaleVesting.sol</code>:110
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> require() with a generic/empty revert message makes debugging harder.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Use custom errors (Solidity 0.8.4+) with specific names for better error handling.</div>
-              <details><summary>Code</summary><pre class="code">     108 |     function buy(uint256 usdtAmount) external nonReentrant whenNotPaused {<br>     109 |         require(presaleActive, &quot;Presale is not active&quot;);<br>&gt;&gt;&gt;  110 |         require(!saleEnded, &quot;Sale has ended&quot;);<br>     111 |         require(usdtAmount &gt; 0, &quot;Invalid USDT amount&quot;);<br>     112 |         require(totalAXNVSold &lt; PRESALE_SUPPLY, &quot;Sold out&quot;);</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">UNCLEAR require Error Message</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>contracts\AXNVPresaleVesting.sol</code>:111
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> require() with a generic/empty revert message makes debugging harder.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Use custom errors (Solidity 0.8.4+) with specific names for better error handling.</div>
-              <details><summary>Code</summary><pre class="code">     109 |         require(presaleActive, &quot;Presale is not active&quot;);<br>     110 |         require(!saleEnded, &quot;Sale has ended&quot;);<br>&gt;&gt;&gt;  111 |         require(usdtAmount &gt; 0, &quot;Invalid USDT amount&quot;);<br>     112 |         require(totalAXNVSold &lt; PRESALE_SUPPLY, &quot;Sold out&quot;);<br>     113 | </pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">UNCLEAR require Error Message</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>contracts\AXNVPresaleVesting.sol</code>:112
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> require() with a generic/empty revert message makes debugging harder.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Use custom errors (Solidity 0.8.4+) with specific names for better error handling.</div>
-              <details><summary>Code</summary><pre class="code">     110 |         require(!saleEnded, &quot;Sale has ended&quot;);<br>     111 |         require(usdtAmount &gt; 0, &quot;Invalid USDT amount&quot;);<br>&gt;&gt;&gt;  112 |         require(totalAXNVSold &lt; PRESALE_SUPPLY, &quot;Sold out&quot;);<br>     113 | <br>     114 |         if (tgeTimestamp != 0) {</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">UNCLEAR require Error Message</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>contracts\AXNVPresaleVesting.sol</code>:115
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> require() with a generic/empty revert message makes debugging harder.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Use custom errors (Solidity 0.8.4+) with specific names for better error handling.</div>
-              <details><summary>Code</summary><pre class="code">     113 | <br>     114 |         if (tgeTimestamp != 0) {<br>&gt;&gt;&gt;  115 |             require(block.timestamp &lt; tgeTimestamp, &quot;Buying after TGE disabled&quot;);<br>     116 |         }<br>     117 | </pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">UNCLEAR require Error Message</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>contracts\AXNVPresaleVesting.sol</code>:166
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> require() with a generic/empty revert message makes debugging harder.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Use custom errors (Solidity 0.8.4+) with specific names for better error handling.</div>
-              <details><summary>Code</summary><pre class="code">     164 |         }<br>     165 | <br>&gt;&gt;&gt;  166 |         require(totalAXNVToBuy &gt; 0, &quot;AXNV amount is zero&quot;);<br>     167 |         require(<br>     168 |             totalAXNVSold + totalAXNVToBuy &lt;= PRESALE_SUPPLY,</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">UNCLEAR require Error Message</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>contracts\AXNVPresaleVesting.sol</code>:173
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> require() with a generic/empty revert message makes debugging harder.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Use custom errors (Solidity 0.8.4+) with specific names for better error handling.</div>
-              <details><summary>Code</summary><pre class="code">     171 | <br>     172 |         uint256 usdtActuallyUsed = usdtAmount - remainingUSDT;<br>&gt;&gt;&gt;  173 |         require(usdtActuallyUsed &gt; 0, &quot;No USDT used&quot;);<br>     174 | <br>     175 |         require(</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">UNCLEAR require Error Message</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>contracts\AXNVPresaleVesting.sol</code>:219
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> require() with a generic/empty revert message makes debugging harder.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Use custom errors (Solidity 0.8.4+) with specific names for better error handling.</div>
-              <details><summary>Code</summary><pre class="code">     217 |         returns (uint256)<br>     218 |     {<br>&gt;&gt;&gt;  219 |         require(axnvAmount &gt; 0, &quot;Invalid AXNV amount&quot;);<br>     220 | <br>     221 |         uint256 remainingAXNV = axnvAmount;</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">UNCLEAR require Error Message</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>contracts\AXNVPresaleVesting.sol</code>:245
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> require() with a generic/empty revert message makes debugging harder.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Use custom errors (Solidity 0.8.4+) with specific names for better error handling.</div>
-              <details><summary>Code</summary><pre class="code">     243 |         }<br>     244 | <br>&gt;&gt;&gt;  245 |         require(remainingAXNV == 0, &quot;Not enough AXNV left&quot;);<br>     246 | <br>     247 |         return totalUSDT;</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">UNCLEAR require Error Message</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>contracts\AXNVPresaleVesting.sol</code>:298
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> require() with a generic/empty revert message makes debugging harder.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Use custom errors (Solidity 0.8.4+) with specific names for better error handling.</div>
-              <details><summary>Code</summary><pre class="code">     296 | <br>     297 |     function claim() external nonReentrant whenNotPaused {<br>&gt;&gt;&gt;  298 |         require(tgeTimestamp != 0, &quot;TGE is not set&quot;);<br>     299 |         require(block.timestamp &gt;= tgeTimestamp, &quot;TGE has not started&quot;);<br>     300 | </pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">UNCLEAR require Error Message</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>contracts\AXNVPresaleVesting.sol</code>:299
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> require() with a generic/empty revert message makes debugging harder.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Use custom errors (Solidity 0.8.4+) with specific names for better error handling.</div>
-              <details><summary>Code</summary><pre class="code">     297 |     function claim() external nonReentrant whenNotPaused {<br>     298 |         require(tgeTimestamp != 0, &quot;TGE is not set&quot;);<br>&gt;&gt;&gt;  299 |         require(block.timestamp &gt;= tgeTimestamp, &quot;TGE has not started&quot;);<br>     300 | <br>     301 |         uint256 amount = claimableAmount(msg.sender);</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">UNCLEAR require Error Message</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>contracts\AXNVPresaleVesting.sol</code>:302
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> require() with a generic/empty revert message makes debugging harder.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Use custom errors (Solidity 0.8.4+) with specific names for better error handling.</div>
-              <details><summary>Code</summary><pre class="code">     300 | <br>     301 |         uint256 amount = claimableAmount(msg.sender);<br>&gt;&gt;&gt;  302 |         require(amount &gt; 0, &quot;Nothing to claim&quot;);<br>     303 | <br>     304 |         BuyerInfo storage buyer = buyers[msg.sender];</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">UNCLEAR require Error Message</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>contracts\AXNVPresaleVesting.sol</code>:515
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> require() with a generic/empty revert message makes debugging harder.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Use custom errors (Solidity 0.8.4+) with specific names for better error handling.</div>
-              <details><summary>Code</summary><pre class="code">     513 | <br>     514 |     function startSale() external onlyOwner {<br>&gt;&gt;&gt;  515 |         require(!saleEnded, &quot;Sale already ended&quot;);<br>     516 |         require(!presaleActive, &quot;Sale already active&quot;);<br>     517 |         require(totalAXNVSold &lt; PRESALE_SUPPLY, &quot;Sold out&quot;);</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">UNCLEAR require Error Message</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>contracts\AXNVPresaleVesting.sol</code>:516
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> require() with a generic/empty revert message makes debugging harder.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Use custom errors (Solidity 0.8.4+) with specific names for better error handling.</div>
-              <details><summary>Code</summary><pre class="code">     514 |     function startSale() external onlyOwner {<br>     515 |         require(!saleEnded, &quot;Sale already ended&quot;);<br>&gt;&gt;&gt;  516 |         require(!presaleActive, &quot;Sale already active&quot;);<br>     517 |         require(totalAXNVSold &lt; PRESALE_SUPPLY, &quot;Sold out&quot;);<br>     518 | </pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">UNCLEAR require Error Message</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>contracts\AXNVPresaleVesting.sol</code>:517
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> require() with a generic/empty revert message makes debugging harder.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Use custom errors (Solidity 0.8.4+) with specific names for better error handling.</div>
-              <details><summary>Code</summary><pre class="code">     515 |         require(!saleEnded, &quot;Sale already ended&quot;);<br>     516 |         require(!presaleActive, &quot;Sale already active&quot;);<br>&gt;&gt;&gt;  517 |         require(totalAXNVSold &lt; PRESALE_SUPPLY, &quot;Sold out&quot;);<br>     518 | <br>     519 |         presaleActive = true;</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">UNCLEAR require Error Message</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>contracts\AXNVPresaleVesting.sol</code>:525
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> require() with a generic/empty revert message makes debugging harder.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Use custom errors (Solidity 0.8.4+) with specific names for better error handling.</div>
-              <details><summary>Code</summary><pre class="code">     523 | <br>     524 |     function stopSale() external onlyOwner {<br>&gt;&gt;&gt;  525 |         require(presaleActive, &quot;Sale not active&quot;);<br>     526 | <br>     527 |         presaleActive = false;</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">UNCLEAR require Error Message</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>contracts\AXNVPresaleVesting.sol</code>:540
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> require() with a generic/empty revert message makes debugging harder.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Use custom errors (Solidity 0.8.4+) with specific names for better error handling.</div>
-              <details><summary>Code</summary><pre class="code">     538 | <br>     539 |     function setTGE(uint256 newTgeTimestamp) external onlyOwner {<br>&gt;&gt;&gt;  540 |         require(newTgeTimestamp &gt; 0, &quot;Invalid TGE timestamp&quot;);<br>     541 | <br>     542 |         if (tgeTimestamp != 0) {</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">UNCLEAR require Error Message</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>contracts\AXNVPresaleVesting.sol</code>:543
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> require() with a generic/empty revert message makes debugging harder.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Use custom errors (Solidity 0.8.4+) with specific names for better error handling.</div>
-              <details><summary>Code</summary><pre class="code">     541 | <br>     542 |         if (tgeTimestamp != 0) {<br>&gt;&gt;&gt;  543 |             require(block.timestamp &lt; tgeTimestamp, &quot;TGE already started&quot;);<br>     544 |         }<br>     545 | </pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">UNCLEAR require Error Message</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>contracts\AXNVPresaleVesting.sol</code>:571
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> require() with a generic/empty revert message makes debugging harder.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Use custom errors (Solidity 0.8.4+) with specific names for better error handling.</div>
-              <details><summary>Code</summary><pre class="code">     569 |     {<br>     570 |         require(to != address(0), &quot;Invalid receiver&quot;);<br>&gt;&gt;&gt;  571 |         require(amount &gt; 0, &quot;Invalid amount&quot;);<br>     572 | <br>     573 |         USDT.safeTransfer(to, amount);</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">UNCLEAR require Error Message</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>contracts\AXNVPresaleVesting.sol</code>:582
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> require() with a generic/empty revert message makes debugging harder.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Use custom errors (Solidity 0.8.4+) with specific names for better error handling.</div>
-              <details><summary>Code</summary><pre class="code">     580 | <br>     581 |         uint256 amount = USDT.balanceOf(address(this));<br>&gt;&gt;&gt;  582 |         require(amount &gt; 0, &quot;No USDT to withdraw&quot;);<br>     583 | <br>     584 |         USDT.safeTransfer(to, amount);</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">UNCLEAR require Error Message</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>contracts\AXNVPresaleVesting.sol</code>:595
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> require() with a generic/empty revert message makes debugging harder.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Use custom errors (Solidity 0.8.4+) with specific names for better error handling.</div>
-              <details><summary>Code</summary><pre class="code">     593 |     {<br>     594 |         require(to != address(0), &quot;Invalid receiver&quot;);<br>&gt;&gt;&gt;  595 |         require(amount &gt; 0, &quot;Invalid amount&quot;);<br>     596 | <br>     597 |         uint256 available = availableAXNVBalance();</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">UNCLEAR require Error Message</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>contracts\AXNVPresaleVesting.sol</code>:598
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> require() with a generic/empty revert message makes debugging harder.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Use custom errors (Solidity 0.8.4+) with specific names for better error handling.</div>
-              <details><summary>Code</summary><pre class="code">     596 | <br>     597 |         uint256 available = availableAXNVBalance();<br>&gt;&gt;&gt;  598 |         require(amount &lt;= available, &quot;Amount exceeds unreserved AXNV&quot;);<br>     599 | <br>     600 |         AXNV.safeTransfer(to, amount);</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">UNCLEAR require Error Message</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>contracts\AXNVPresaleVesting.sol</code>:613
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> require() with a generic/empty revert message makes debugging harder.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Use custom errors (Solidity 0.8.4+) with specific names for better error handling.</div>
-              <details><summary>Code</summary><pre class="code">     611 | <br>     612 |         uint256 amount = availableAXNVBalance();<br>&gt;&gt;&gt;  613 |         require(amount &gt; 0, &quot;No unsold AXNV&quot;);<br>     614 | <br>     615 |         AXNV.safeTransfer(to, amount);</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">UNCLEAR require Error Message</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>contracts\AXNVPresaleVesting.sol</code>:625
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> require() with a generic/empty revert message makes debugging harder.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Use custom errors (Solidity 0.8.4+) with specific names for better error handling.</div>
-              <details><summary>Code</summary><pre class="code">     623 |         nonReentrant<br>     624 |     {<br>&gt;&gt;&gt;  625 |         require(token != AXNV_ADDRESS, &quot;Use withdrawUnsoldAXNV&quot;);<br>     626 |         require(token != USDT_ADDRESS, &quot;Use withdrawUSDT&quot;);<br>     627 |         require(to != address(0), &quot;Invalid receiver&quot;);</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">UNCLEAR require Error Message</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>contracts\AXNVPresaleVesting.sol</code>:626
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> require() with a generic/empty revert message makes debugging harder.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Use custom errors (Solidity 0.8.4+) with specific names for better error handling.</div>
-              <details><summary>Code</summary><pre class="code">     624 |     {<br>     625 |         require(token != AXNV_ADDRESS, &quot;Use withdrawUnsoldAXNV&quot;);<br>&gt;&gt;&gt;  626 |         require(token != USDT_ADDRESS, &quot;Use withdrawUSDT&quot;);<br>     627 |         require(to != address(0), &quot;Invalid receiver&quot;);<br>     628 |         require(amount &gt; 0, &quot;Invalid amount&quot;);</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">UNCLEAR require Error Message</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>contracts\AXNVPresaleVesting.sol</code>:628
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> require() with a generic/empty revert message makes debugging harder.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Use custom errors (Solidity 0.8.4+) with specific names for better error handling.</div>
-              <details><summary>Code</summary><pre class="code">     626 |         require(token != USDT_ADDRESS, &quot;Use withdrawUSDT&quot;);<br>     627 |         require(to != address(0), &quot;Invalid receiver&quot;);<br>&gt;&gt;&gt;  628 |         require(amount &gt; 0, &quot;Invalid amount&quot;);<br>     629 | <br>     630 |         IERC20(token).safeTransfer(to, amount);</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">UNCLEAR require Error Message</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>contracts\AXNVReserveVault.sol</code>:33
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> require() with a generic/empty revert message makes debugging harder.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Use custom errors (Solidity 0.8.4+) with specific names for better error handling.</div>
-              <details><summary>Code</summary><pre class="code">      31 | <br>      32 |     function fundVault(uint256 amount) external onlyOwner nonReentrant {<br>&gt;&gt;&gt;   33 |         require(amount &gt; 0, &quot;Zero amount&quot;);<br>      34 | <br>      35 |         totalFunded += amount;</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">UNCLEAR require Error Message</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>contracts\AXNVReserveVault.sol</code>:48
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> require() with a generic/empty revert message makes debugging harder.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Use custom errors (Solidity 0.8.4+) with specific names for better error handling.</div>
-              <details><summary>Code</summary><pre class="code">      46 |     ) external onlyOwner nonReentrant {<br>      47 |         require(to != address(0), &quot;Invalid recipient&quot;);<br>&gt;&gt;&gt;   48 |         require(amount &gt; 0, &quot;Zero amount&quot;);<br>      49 |         require(amount &lt;= axnv.balanceOf(address(this)), &quot;Insufficient AXNV&quot;);<br>      50 | </pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">UNCLEAR require Error Message</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>contracts\AXNVReserveVault.sol</code>:65
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> require() with a generic/empty revert message makes debugging harder.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Use custom errors (Solidity 0.8.4+) with specific names for better error handling.</div>
-              <details><summary>Code</summary><pre class="code">      63 | <br>      64 |         uint256 balance = axnv.balanceOf(address(this));<br>&gt;&gt;&gt;   65 |         require(balance &gt; 0, &quot;No AXNV&quot;);<br>      66 | <br>      67 |         totalReleased += balance;</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">UNCLEAR require Error Message</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>contracts\AXNVReserveVault.sol</code>:82
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> require() with a generic/empty revert message makes debugging harder.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Use custom errors (Solidity 0.8.4+) with specific names for better error handling.</div>
-              <details><summary>Code</summary><pre class="code">      80 |         require(token != address(0), &quot;Invalid token&quot;);<br>      81 |         require(to != address(0), &quot;Invalid recipient&quot;);<br>&gt;&gt;&gt;   82 |         require(amount &gt; 0, &quot;Zero amount&quot;);<br>      83 | <br>      84 |         IERC20(token).safeTransfer(to, amount);</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">UNCLEAR require Error Message</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>contracts\AXNVStaking.sol</code>:85
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> require() with a generic/empty revert message makes debugging harder.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Use custom errors (Solidity 0.8.4+) with specific names for better error handling.</div>
-              <details><summary>Code</summary><pre class="code">      83 | <br>      84 |     function stake(uint256 amount) external nonReentrant whenNotPaused {<br>&gt;&gt;&gt;   85 |         require(amount &gt;= minStake, &quot;Below minimum stake&quot;);<br>      86 | <br>      87 |         axnv.safeTransferFrom(msg.sender, address(this), amount);</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">UNCLEAR require Error Message</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>contracts\AXNVStaking.sol</code>:109
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> require() with a generic/empty revert message makes debugging harder.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Use custom errors (Solidity 0.8.4+) with specific names for better error handling.</div>
-              <details><summary>Code</summary><pre class="code">     107 | <br>     108 |     function claimReward(uint256 stakeId) public nonReentrant whenNotPaused {<br>&gt;&gt;&gt;  109 |         require(stakeId &lt; stakes.length, &quot;Invalid stake&quot;);<br>     110 | <br>     111 |         StakeInfo storage s = stakes[stakeId];</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">UNCLEAR require Error Message</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>contracts\AXNVStaking.sol</code>:113
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> require() with a generic/empty revert message makes debugging harder.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Use custom errors (Solidity 0.8.4+) with specific names for better error handling.</div>
-              <details><summary>Code</summary><pre class="code">     111 |         StakeInfo storage s = stakes[stakeId];<br>     112 | <br>&gt;&gt;&gt;  113 |         require(s.user == msg.sender, &quot;Not stake owner&quot;);<br>     114 |         require(!s.withdrawn, &quot;Stake withdrawn&quot;);<br>     115 |         require(block.timestamp &gt;= s.startTime + SIX_MONTHS, &quot;Reward locked&quot;);</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">UNCLEAR require Error Message</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>contracts\AXNVStaking.sol</code>:114
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> require() with a generic/empty revert message makes debugging harder.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Use custom errors (Solidity 0.8.4+) with specific names for better error handling.</div>
-              <details><summary>Code</summary><pre class="code">     112 | <br>     113 |         require(s.user == msg.sender, &quot;Not stake owner&quot;);<br>&gt;&gt;&gt;  114 |         require(!s.withdrawn, &quot;Stake withdrawn&quot;);<br>     115 |         require(block.timestamp &gt;= s.startTime + SIX_MONTHS, &quot;Reward locked&quot;);<br>     116 | </pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">UNCLEAR require Error Message</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>contracts\AXNVStaking.sol</code>:115
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> require() with a generic/empty revert message makes debugging harder.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Use custom errors (Solidity 0.8.4+) with specific names for better error handling.</div>
-              <details><summary>Code</summary><pre class="code">     113 |         require(s.user == msg.sender, &quot;Not stake owner&quot;);<br>     114 |         require(!s.withdrawn, &quot;Stake withdrawn&quot;);<br>&gt;&gt;&gt;  115 |         require(block.timestamp &gt;= s.startTime + SIX_MONTHS, &quot;Reward locked&quot;);<br>     116 | <br>     117 |         uint256 reward = claimableReward(stakeId);</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">UNCLEAR require Error Message</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>contracts\AXNVStaking.sol</code>:119
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> require() with a generic/empty revert message makes debugging harder.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Use custom errors (Solidity 0.8.4+) with specific names for better error handling.</div>
-              <details><summary>Code</summary><pre class="code">     117 |         uint256 reward = claimableReward(stakeId);<br>     118 | <br>&gt;&gt;&gt;  119 |         require(reward &gt; 0, &quot;Nothing claimable&quot;);<br>     120 |         require(availableRewardPool() &gt;= reward, &quot;Insufficient reward pool&quot;);<br>     121 |         require(totalRewardsPaid + reward &lt;= STAKING_REWARD_CAP, &quot;Reward cap exceeded&quot;);</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">UNCLEAR require Error Message</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>contracts\AXNVStaking.sol</code>:121
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> require() with a generic/empty revert message makes debugging harder.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Use custom errors (Solidity 0.8.4+) with specific names for better error handling.</div>
-              <details><summary>Code</summary><pre class="code">     119 |         require(reward &gt; 0, &quot;Nothing claimable&quot;);<br>     120 |         require(availableRewardPool() &gt;= reward, &quot;Insufficient reward pool&quot;);<br>&gt;&gt;&gt;  121 |         require(totalRewardsPaid + reward &lt;= STAKING_REWARD_CAP, &quot;Reward cap exceeded&quot;);<br>     122 | <br>     123 |         s.rewardClaimed += reward;</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">UNCLEAR require Error Message</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>contracts\AXNVStaking.sol</code>:132
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> require() with a generic/empty revert message makes debugging harder.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Use custom errors (Solidity 0.8.4+) with specific names for better error handling.</div>
-              <details><summary>Code</summary><pre class="code">     130 | <br>     131 |     function withdraw(uint256 stakeId) external nonReentrant whenNotPaused {<br>&gt;&gt;&gt;  132 |         require(stakeId &lt; stakes.length, &quot;Invalid stake&quot;);<br>     133 | <br>     134 |         StakeInfo storage s = stakes[stakeId];</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">UNCLEAR require Error Message</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>contracts\AXNVStaking.sol</code>:136
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> require() with a generic/empty revert message makes debugging harder.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Use custom errors (Solidity 0.8.4+) with specific names for better error handling.</div>
-              <details><summary>Code</summary><pre class="code">     134 |         StakeInfo storage s = stakes[stakeId];<br>     135 | <br>&gt;&gt;&gt;  136 |         require(s.user == msg.sender, &quot;Not stake owner&quot;);<br>     137 |         require(!s.withdrawn, &quot;Already withdrawn&quot;);<br>     138 | </pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">UNCLEAR require Error Message</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>contracts\AXNVStaking.sol</code>:137
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> require() with a generic/empty revert message makes debugging harder.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Use custom errors (Solidity 0.8.4+) with specific names for better error handling.</div>
-              <details><summary>Code</summary><pre class="code">     135 | <br>     136 |         require(s.user == msg.sender, &quot;Not stake owner&quot;);<br>&gt;&gt;&gt;  137 |         require(!s.withdrawn, &quot;Already withdrawn&quot;);<br>     138 | <br>     139 |         uint256 elapsed = block.timestamp - s.startTime;</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">UNCLEAR require Error Message</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>contracts\AXNVStaking.sol</code>:191
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> require() with a generic/empty revert message makes debugging harder.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Use custom errors (Solidity 0.8.4+) with specific names for better error handling.</div>
-              <details><summary>Code</summary><pre class="code">     189 | <br>     190 |     function accruedReward(uint256 stakeId) public view returns (uint256) {<br>&gt;&gt;&gt;  191 |         require(stakeId &lt; stakes.length, &quot;Invalid stake&quot;);<br>     192 | <br>     193 |         StakeInfo memory s = stakes[stakeId];</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">UNCLEAR require Error Message</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>contracts\AXNVStaking.sol</code>:218
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> require() with a generic/empty revert message makes debugging harder.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Use custom errors (Solidity 0.8.4+) with specific names for better error handling.</div>
-              <details><summary>Code</summary><pre class="code">     216 | <br>     217 |     function claimableReward(uint256 stakeId) public view returns (uint256) {<br>&gt;&gt;&gt;  218 |         require(stakeId &lt; stakes.length, &quot;Invalid stake&quot;);<br>     219 | <br>     220 |         StakeInfo memory s = stakes[stakeId];</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">UNCLEAR require Error Message</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>contracts\AXNVStaking.sol</code>:244
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> require() with a generic/empty revert message makes debugging harder.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Use custom errors (Solidity 0.8.4+) with specific names for better error handling.</div>
-              <details><summary>Code</summary><pre class="code">     242 |         nonReentrant<br>     243 |     {<br>&gt;&gt;&gt;  244 |         require(amount &gt; 0, &quot;Zero amount&quot;);<br>     245 |         require(<br>     246 |             totalRewardPoolFunded + amount &lt;= STAKING_REWARD_CAP,</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">UNCLEAR require Error Message</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>contracts\AXNVStaking.sol</code>:261
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> require() with a generic/empty revert message makes debugging harder.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Use custom errors (Solidity 0.8.4+) with specific names for better error handling.</div>
-              <details><summary>Code</summary><pre class="code">     259 |         onlyOwner<br>     260 |     {<br>&gt;&gt;&gt;  261 |         require(newMinStake &gt; 0, &quot;Invalid min stake&quot;);<br>     262 | <br>     263 |         uint256 oldMinStake = minStake;</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">UNCLEAR require Error Message</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>contracts\AXNVStaking.sol</code>:284
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> require() with a generic/empty revert message makes debugging harder.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Use custom errors (Solidity 0.8.4+) with specific names for better error handling.</div>
-              <details><summary>Code</summary><pre class="code">     282 |         require(paused(), &quot;Pause first&quot;);<br>     283 |         require(to != address(0), &quot;Invalid receiver&quot;);<br>&gt;&gt;&gt;  284 |         require(amount &gt; 0, &quot;Zero amount&quot;);<br>     285 | <br>     286 |         uint256 available = unallocatedAXNV();</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">UNCLEAR require Error Message</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>contracts\AXNVStaking.sol</code>:288
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> require() with a generic/empty revert message makes debugging harder.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Use custom errors (Solidity 0.8.4+) with specific names for better error handling.</div>
-              <details><summary>Code</summary><pre class="code">     286 |         uint256 available = unallocatedAXNV();<br>     287 | <br>&gt;&gt;&gt;  288 |         require(amount &lt;= available, &quot;Exceeds unallocated AXNV&quot;);<br>     289 | <br>     290 |         axnv.safeTransfer(to, amount);</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">UNCLEAR require Error Message</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>contracts\AXNVStaking.sol</code>:303
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> require() with a generic/empty revert message makes debugging harder.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Use custom errors (Solidity 0.8.4+) with specific names for better error handling.</div>
-              <details><summary>Code</summary><pre class="code">     301 |         require(token != address(0), &quot;Invalid token&quot;);<br>     302 |         require(to != address(0), &quot;Invalid receiver&quot;);<br>&gt;&gt;&gt;  303 |         require(amount &gt; 0, &quot;Zero amount&quot;);<br>     304 | <br>     305 |         IERC20(token).safeTransfer(to, amount);</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">UNCLEAR require Error Message</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>contracts\AXNVStaking.sol</code>:382
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> require() with a generic/empty revert message makes debugging harder.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Use custom errors (Solidity 0.8.4+) with specific names for better error handling.</div>
-              <details><summary>Code</summary><pre class="code">     380 |         )<br>     381 |     {<br>&gt;&gt;&gt;  382 |         require(stakeId &lt; stakes.length, &quot;Invalid stake&quot;);<br>     383 | <br>     384 |         StakeInfo memory s = stakes[stakeId];</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">UNCLEAR require Error Message</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>contracts\AXNVTeamAdvisorFounderVestingVault.sol</code>:108
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> require() with a generic/empty revert message makes debugging harder.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Use custom errors (Solidity 0.8.4+) with specific names for better error handling.</div>
-              <details><summary>Code</summary><pre class="code">     106 |     ) external onlyOwner validCategory(category) returns (uint256 scheduleId) {<br>     107 |         require(beneficiary != address(0), &quot;Invalid beneficiary&quot;);<br>&gt;&gt;&gt;  108 |         require(amount &gt; 0, &quot;Zero amount&quot;);<br>     109 |         require(startTime &gt;= block.timestamp, &quot;Past start&quot;);<br>     110 | </pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">UNCLEAR require Error Message</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>contracts\AXNVTeamAdvisorFounderVestingVault.sol</code>:109
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> require() with a generic/empty revert message makes debugging harder.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Use custom errors (Solidity 0.8.4+) with specific names for better error handling.</div>
-              <details><summary>Code</summary><pre class="code">     107 |         require(beneficiary != address(0), &quot;Invalid beneficiary&quot;);<br>     108 |         require(amount &gt; 0, &quot;Zero amount&quot;);<br>&gt;&gt;&gt;  109 |         require(startTime &gt;= block.timestamp, &quot;Past start&quot;);<br>     110 | <br>     111 |         require(</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">UNCLEAR require Error Message</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>contracts\AXNVTeamAdvisorFounderVestingVault.sol</code>:116
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> require() with a generic/empty revert message makes debugging harder.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Use custom errors (Solidity 0.8.4+) with specific names for better error handling.</div>
-              <details><summary>Code</summary><pre class="code">     114 |         );<br>     115 | <br>&gt;&gt;&gt;  116 |         require(totalAllocated + amount &lt;= TOTAL_CAP, &quot;Total cap exceeded&quot;);<br>     117 | <br>     118 |         categoryAllocated[category] += amount;</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">UNCLEAR require Error Message</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>contracts\AXNVTeamAdvisorFounderVestingVault.sol</code>:153
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> require() with a generic/empty revert message makes debugging harder.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Use custom errors (Solidity 0.8.4+) with specific names for better error handling.</div>
-              <details><summary>Code</summary><pre class="code">     151 |         uint256 length = categories.length;<br>     152 | <br>&gt;&gt;&gt;  153 |         require(length &gt; 0, &quot;Empty array&quot;);<br>     154 |         require(beneficiaries.length == length, &quot;Length mismatch&quot;);<br>     155 |         require(amounts.length == length, &quot;Length mismatch&quot;);</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">UNCLEAR require Error Message</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>contracts\AXNVTeamAdvisorFounderVestingVault.sol</code>:154
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> require() with a generic/empty revert message makes debugging harder.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Use custom errors (Solidity 0.8.4+) with specific names for better error handling.</div>
-              <details><summary>Code</summary><pre class="code">     152 | <br>     153 |         require(length &gt; 0, &quot;Empty array&quot;);<br>&gt;&gt;&gt;  154 |         require(beneficiaries.length == length, &quot;Length mismatch&quot;);<br>     155 |         require(amounts.length == length, &quot;Length mismatch&quot;);<br>     156 |         require(startTimes.length == length, &quot;Length mismatch&quot;);</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">UNCLEAR require Error Message</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>contracts\AXNVTeamAdvisorFounderVestingVault.sol</code>:155
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> require() with a generic/empty revert message makes debugging harder.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Use custom errors (Solidity 0.8.4+) with specific names for better error handling.</div>
-              <details><summary>Code</summary><pre class="code">     153 |         require(length &gt; 0, &quot;Empty array&quot;);<br>     154 |         require(beneficiaries.length == length, &quot;Length mismatch&quot;);<br>&gt;&gt;&gt;  155 |         require(amounts.length == length, &quot;Length mismatch&quot;);<br>     156 |         require(startTimes.length == length, &quot;Length mismatch&quot;);<br>     157 | </pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">UNCLEAR require Error Message</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>contracts\AXNVTeamAdvisorFounderVestingVault.sol</code>:156
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> require() with a generic/empty revert message makes debugging harder.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Use custom errors (Solidity 0.8.4+) with specific names for better error handling.</div>
-              <details><summary>Code</summary><pre class="code">     154 |         require(beneficiaries.length == length, &quot;Length mismatch&quot;);<br>     155 |         require(amounts.length == length, &quot;Length mismatch&quot;);<br>&gt;&gt;&gt;  156 |         require(startTimes.length == length, &quot;Length mismatch&quot;);<br>     157 | <br>     158 |         for (uint256 i = 0; i &lt; length; i++) {</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">UNCLEAR require Error Message</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>contracts\AXNVTeamAdvisorFounderVestingVault.sol</code>:175
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> require() with a generic/empty revert message makes debugging harder.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Use custom errors (Solidity 0.8.4+) with specific names for better error handling.</div>
-              <details><summary>Code</summary><pre class="code">     173 |     ) internal validCategory(category) returns (uint256 scheduleId) {<br>     174 |         require(beneficiary != address(0), &quot;Invalid beneficiary&quot;);<br>&gt;&gt;&gt;  175 |         require(amount &gt; 0, &quot;Zero amount&quot;);<br>     176 |         require(startTime &gt;= block.timestamp, &quot;Past start&quot;);<br>     177 | </pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">UNCLEAR require Error Message</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>contracts\AXNVTeamAdvisorFounderVestingVault.sol</code>:176
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> require() with a generic/empty revert message makes debugging harder.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Use custom errors (Solidity 0.8.4+) with specific names for better error handling.</div>
-              <details><summary>Code</summary><pre class="code">     174 |         require(beneficiary != address(0), &quot;Invalid beneficiary&quot;);<br>     175 |         require(amount &gt; 0, &quot;Zero amount&quot;);<br>&gt;&gt;&gt;  176 |         require(startTime &gt;= block.timestamp, &quot;Past start&quot;);<br>     177 | <br>     178 |         require(</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">UNCLEAR require Error Message</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>contracts\AXNVTeamAdvisorFounderVestingVault.sol</code>:183
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> require() with a generic/empty revert message makes debugging harder.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Use custom errors (Solidity 0.8.4+) with specific names for better error handling.</div>
-              <details><summary>Code</summary><pre class="code">     181 |         );<br>     182 | <br>&gt;&gt;&gt;  183 |         require(totalAllocated + amount &lt;= TOTAL_CAP, &quot;Total cap exceeded&quot;);<br>     184 | <br>     185 |         categoryAllocated[category] += amount;</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">UNCLEAR require Error Message</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>contracts\AXNVTeamAdvisorFounderVestingVault.sol</code>:216
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> require() with a generic/empty revert message makes debugging harder.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Use custom errors (Solidity 0.8.4+) with specific names for better error handling.</div>
-              <details><summary>Code</summary><pre class="code">     214 |         address newBeneficiary<br>     215 |     ) external onlyOwner {<br>&gt;&gt;&gt;  216 |         require(scheduleId &lt; schedules.length, &quot;Invalid schedule&quot;);<br>     217 |         require(newBeneficiary != address(0), &quot;Invalid beneficiary&quot;);<br>     218 | </pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">UNCLEAR require Error Message</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>contracts\AXNVTeamAdvisorFounderVestingVault.sol</code>:221
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> require() with a generic/empty revert message makes debugging harder.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Use custom errors (Solidity 0.8.4+) with specific names for better error handling.</div>
-              <details><summary>Code</summary><pre class="code">     219 |         VestingSchedule storage s = schedules[scheduleId];<br>     220 | <br>&gt;&gt;&gt;  221 |         require(s.exists, &quot;Schedule missing&quot;);<br>     222 | <br>     223 |         address oldBeneficiary = s.beneficiary;</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">UNCLEAR require Error Message</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>contracts\AXNVTeamAdvisorFounderVestingVault.sol</code>:225
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> require() with a generic/empty revert message makes debugging harder.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Use custom errors (Solidity 0.8.4+) with specific names for better error handling.</div>
-              <details><summary>Code</summary><pre class="code">     223 |         address oldBeneficiary = s.beneficiary;<br>     224 | <br>&gt;&gt;&gt;  225 |         require(oldBeneficiary != newBeneficiary, &quot;Same beneficiary&quot;);<br>     226 | <br>     227 |         _removeScheduleFromBeneficiary(oldBeneficiary, scheduleId);</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">UNCLEAR require Error Message</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>contracts\AXNVTeamAdvisorFounderVestingVault.sol</code>:237
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> require() with a generic/empty revert message makes debugging harder.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Use custom errors (Solidity 0.8.4+) with specific names for better error handling.</div>
-              <details><summary>Code</summary><pre class="code">     235 | <br>     236 |     function fundVault(uint256 amount) external onlyOwner {<br>&gt;&gt;&gt;  237 |         require(amount &gt; 0, &quot;Zero amount&quot;);<br>     238 | <br>     239 |         axnv.safeTransferFrom(msg.sender, address(this), amount);</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">UNCLEAR require Error Message</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>contracts\AXNVTeamAdvisorFounderVestingVault.sol</code>:251
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> require() with a generic/empty revert message makes debugging harder.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Use custom errors (Solidity 0.8.4+) with specific names for better error handling.</div>
-              <details><summary>Code</summary><pre class="code">     249 | <br>     250 |     function claim(uint256 scheduleId) public nonReentrant {<br>&gt;&gt;&gt;  251 |         require(!claimsPaused, &quot;Claims paused&quot;);<br>     252 |         require(scheduleId &lt; schedules.length, &quot;Invalid schedule&quot;);<br>     253 | </pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">UNCLEAR require Error Message</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>contracts\AXNVTeamAdvisorFounderVestingVault.sol</code>:252
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> require() with a generic/empty revert message makes debugging harder.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Use custom errors (Solidity 0.8.4+) with specific names for better error handling.</div>
-              <details><summary>Code</summary><pre class="code">     250 |     function claim(uint256 scheduleId) public nonReentrant {<br>     251 |         require(!claimsPaused, &quot;Claims paused&quot;);<br>&gt;&gt;&gt;  252 |         require(scheduleId &lt; schedules.length, &quot;Invalid schedule&quot;);<br>     253 | <br>     254 |         VestingSchedule storage s = schedules[scheduleId];</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">UNCLEAR require Error Message</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>contracts\AXNVTeamAdvisorFounderVestingVault.sol</code>:256
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> require() with a generic/empty revert message makes debugging harder.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Use custom errors (Solidity 0.8.4+) with specific names for better error handling.</div>
-              <details><summary>Code</summary><pre class="code">     254 |         VestingSchedule storage s = schedules[scheduleId];<br>     255 | <br>&gt;&gt;&gt;  256 |         require(s.exists, &quot;Schedule missing&quot;);<br>     257 |         require(s.beneficiary == msg.sender, &quot;Not beneficiary&quot;);<br>     258 | </pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">UNCLEAR require Error Message</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>contracts\AXNVTeamAdvisorFounderVestingVault.sol</code>:257
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> require() with a generic/empty revert message makes debugging harder.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Use custom errors (Solidity 0.8.4+) with specific names for better error handling.</div>
-              <details><summary>Code</summary><pre class="code">     255 | <br>     256 |         require(s.exists, &quot;Schedule missing&quot;);<br>&gt;&gt;&gt;  257 |         require(s.beneficiary == msg.sender, &quot;Not beneficiary&quot;);<br>     258 | <br>     259 |         uint256 amount = claimable(scheduleId);</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">UNCLEAR require Error Message</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>contracts\AXNVTeamAdvisorFounderVestingVault.sol</code>:261
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> require() with a generic/empty revert message makes debugging harder.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Use custom errors (Solidity 0.8.4+) with specific names for better error handling.</div>
-              <details><summary>Code</summary><pre class="code">     259 |         uint256 amount = claimable(scheduleId);<br>     260 | <br>&gt;&gt;&gt;  261 |         require(amount &gt; 0, &quot;Nothing claimable&quot;);<br>     262 | <br>     263 |         s.releasedAmount += amount;</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">UNCLEAR require Error Message</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>contracts\AXNVTeamAdvisorFounderVestingVault.sol</code>:272
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> require() with a generic/empty revert message makes debugging harder.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Use custom errors (Solidity 0.8.4+) with specific names for better error handling.</div>
-              <details><summary>Code</summary><pre class="code">     270 | <br>     271 |     function claimMany(uint256[] calldata scheduleIds) external nonReentrant {<br>&gt;&gt;&gt;  272 |         require(!claimsPaused, &quot;Claims paused&quot;);<br>     273 |         require(scheduleIds.length &gt; 0, &quot;Empty array&quot;);<br>     274 | </pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">UNCLEAR require Error Message</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>contracts\AXNVTeamAdvisorFounderVestingVault.sol</code>:273
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> require() with a generic/empty revert message makes debugging harder.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Use custom errors (Solidity 0.8.4+) with specific names for better error handling.</div>
-              <details><summary>Code</summary><pre class="code">     271 |     function claimMany(uint256[] calldata scheduleIds) external nonReentrant {<br>     272 |         require(!claimsPaused, &quot;Claims paused&quot;);<br>&gt;&gt;&gt;  273 |         require(scheduleIds.length &gt; 0, &quot;Empty array&quot;);<br>     274 | <br>     275 |         uint256 totalAmount;</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">UNCLEAR require Error Message</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>contracts\AXNVTeamAdvisorFounderVestingVault.sol</code>:280
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> require() with a generic/empty revert message makes debugging harder.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Use custom errors (Solidity 0.8.4+) with specific names for better error handling.</div>
-              <details><summary>Code</summary><pre class="code">     278 |             uint256 scheduleId = scheduleIds[i];<br>     279 | <br>&gt;&gt;&gt;  280 |             require(scheduleId &lt; schedules.length, &quot;Invalid schedule&quot;);<br>     281 | <br>     282 |             VestingSchedule storage s = schedules[scheduleId];</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">UNCLEAR require Error Message</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>contracts\AXNVTeamAdvisorFounderVestingVault.sol</code>:284
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> require() with a generic/empty revert message makes debugging harder.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Use custom errors (Solidity 0.8.4+) with specific names for better error handling.</div>
-              <details><summary>Code</summary><pre class="code">     282 |             VestingSchedule storage s = schedules[scheduleId];<br>     283 | <br>&gt;&gt;&gt;  284 |             require(s.exists, &quot;Schedule missing&quot;);<br>     285 |             require(s.beneficiary == msg.sender, &quot;Not beneficiary&quot;);<br>     286 | </pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">UNCLEAR require Error Message</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>contracts\AXNVTeamAdvisorFounderVestingVault.sol</code>:285
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> require() with a generic/empty revert message makes debugging harder.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Use custom errors (Solidity 0.8.4+) with specific names for better error handling.</div>
-              <details><summary>Code</summary><pre class="code">     283 | <br>     284 |             require(s.exists, &quot;Schedule missing&quot;);<br>&gt;&gt;&gt;  285 |             require(s.beneficiary == msg.sender, &quot;Not beneficiary&quot;);<br>     286 | <br>     287 |             uint256 amount = claimable(scheduleId);</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">UNCLEAR require Error Message</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>contracts\AXNVTeamAdvisorFounderVestingVault.sol</code>:298
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> require() with a generic/empty revert message makes debugging harder.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Use custom errors (Solidity 0.8.4+) with specific names for better error handling.</div>
-              <details><summary>Code</summary><pre class="code">     296 |         }<br>     297 | <br>&gt;&gt;&gt;  298 |         require(totalAmount &gt; 0, &quot;Nothing claimable&quot;);<br>     299 | <br>     300 |         axnv.safeTransfer(msg.sender, totalAmount);</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">UNCLEAR require Error Message</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>contracts\AXNVTeamAdvisorFounderVestingVault.sol</code>:304
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> require() with a generic/empty revert message makes debugging harder.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Use custom errors (Solidity 0.8.4+) with specific names for better error handling.</div>
-              <details><summary>Code</summary><pre class="code">     302 | <br>     303 |     function claimable(uint256 scheduleId) public view returns (uint256) {<br>&gt;&gt;&gt;  304 |         require(scheduleId &lt; schedules.length, &quot;Invalid schedule&quot;);<br>     305 | <br>     306 |         VestingSchedule memory s = schedules[scheduleId];</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">UNCLEAR require Error Message</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>contracts\AXNVTeamAdvisorFounderVestingVault.sol</code>:322
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> require() with a generic/empty revert message makes debugging harder.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Use custom errors (Solidity 0.8.4+) with specific names for better error handling.</div>
-              <details><summary>Code</summary><pre class="code">     320 | <br>     321 |     function vestedAmount(uint256 scheduleId) public view returns (uint256) {<br>&gt;&gt;&gt;  322 |         require(scheduleId &lt; schedules.length, &quot;Invalid schedule&quot;);<br>     323 | <br>     324 |         VestingSchedule memory s = schedules[scheduleId];</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">UNCLEAR require Error Message</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>contracts\AXNVTeamAdvisorFounderVestingVault.sol</code>:364
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> require() with a generic/empty revert message makes debugging harder.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Use custom errors (Solidity 0.8.4+) with specific names for better error handling.</div>
-              <details><summary>Code</summary><pre class="code">     362 |         )<br>     363 |     {<br>&gt;&gt;&gt;  364 |         require(scheduleId &lt; schedules.length, &quot;Invalid schedule&quot;);<br>     365 | <br>     366 |         VestingSchedule memory s = schedules[scheduleId];</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">UNCLEAR require Error Message</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>contracts\AXNVTeamAdvisorFounderVestingVault.sol</code>:515
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> require() with a generic/empty revert message makes debugging harder.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Use custom errors (Solidity 0.8.4+) with specific names for better error handling.</div>
-              <details><summary>Code</summary><pre class="code">     513 |     ) external onlyOwner nonReentrant {<br>     514 |         require(to != address(0), &quot;Invalid receiver&quot;);<br>&gt;&gt;&gt;  515 |         require(amount &gt; 0, &quot;Zero amount&quot;);<br>     516 | <br>     517 |         uint256 recoverable = recoverableAXNV();</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">UNCLEAR require Error Message</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>contracts\AXNVTeamAdvisorFounderVestingVault.sol</code>:519
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> require() with a generic/empty revert message makes debugging harder.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Use custom errors (Solidity 0.8.4+) with specific names for better error handling.</div>
-              <details><summary>Code</summary><pre class="code">     517 |         uint256 recoverable = recoverableAXNV();<br>     518 | <br>&gt;&gt;&gt;  519 |         require(amount &lt;= recoverable, &quot;Exceeds recoverable&quot;);<br>     520 | <br>     521 |         axnv.safeTransfer(to, amount);</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">UNCLEAR require Error Message</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>contracts\AXNVTeamAdvisorFounderVestingVault.sol</code>:534
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> require() with a generic/empty revert message makes debugging harder.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Use custom errors (Solidity 0.8.4+) with specific names for better error handling.</div>
-              <details><summary>Code</summary><pre class="code">     532 |         require(token != address(0), &quot;Invalid token&quot;);<br>     533 |         require(to != address(0), &quot;Invalid receiver&quot;);<br>&gt;&gt;&gt;  534 |         require(amount &gt; 0, &quot;Zero amount&quot;);<br>     535 | <br>     536 |         IERC20(token).safeTransfer(to, amount);</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">Unoptimized Loop</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>contracts\AXNVTeamAdvisorFounderVestingVault.sol</code>:158
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> Loops in Solidity cost gas per iteration. Consider bounds and caching state variables in memory.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Cache state variables in memory before the loop, and consider if the loop can be avoided.</div>
-              <details><summary>Code</summary><pre class="code">     156 |         require(startTimes.length == length, &quot;Length mismatch&quot;);<br>     157 | <br>&gt;&gt;&gt;  158 |         for (uint256 i = 0; i &lt; length; i++) {<br>     159 |             _createSchedule(<br>     160 |                 categories[i],</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">Unoptimized Loop</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>contracts\AXNVTeamAdvisorFounderVestingVault.sol</code>:277
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> Loops in Solidity cost gas per iteration. Consider bounds and caching state variables in memory.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Cache state variables in memory before the loop, and consider if the loop can be avoided.</div>
-              <details><summary>Code</summary><pre class="code">     275 |         uint256 totalAmount;<br>     276 | <br>&gt;&gt;&gt;  277 |         for (uint256 i = 0; i &lt; scheduleIds.length; i++) {<br>     278 |             uint256 scheduleId = scheduleIds[i];<br>     279 | </pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">Unoptimized Loop</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>contracts\AXNVTeamAdvisorFounderVestingVault.sol</code>:406
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> Loops in Solidity cost gas per iteration. Consider bounds and caching state variables in memory.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Cache state variables in memory before the loop, and consider if the loop can be avoided.</div>
-              <details><summary>Code</summary><pre class="code">     404 |         scheduleCount = ids.length;<br>     405 | <br>&gt;&gt;&gt;  406 |         for (uint256 i = 0; i &lt; ids.length; i++) {<br>     407 |             VestingSchedule memory s = schedules[ids[i]];<br>     408 | </pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">Unoptimized Loop</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>contracts\AXNVTeamAdvisorFounderVestingVault.sol</code>:547
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> Loops in Solidity cost gas per iteration. Consider bounds and caching state variables in memory.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Cache state variables in memory before the loop, and consider if the loop can be avoided.</div>
-              <details><summary>Code</summary><pre class="code">     545 |         uint256[] storage ids = beneficiaryScheduleIds[beneficiary];<br>     546 | <br>&gt;&gt;&gt;  547 |         for (uint256 i = 0; i &lt; ids.length; i++) {<br>     548 |             if (ids[i] == scheduleId) {<br>     549 |                 ids[i] = ids[ids.length - 1];</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">UNCLEAR require Error Message</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>contracts\AXNVTreasury.sol</code>:115
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> require() with a generic/empty revert message makes debugging harder.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Use custom errors (Solidity 0.8.4+) with specific names for better error handling.</div>
-              <details><summary>Code</summary><pre class="code">     113 |         uint256 length = categories.length;<br>     114 | <br>&gt;&gt;&gt;  115 |         require(length &gt; 0, &quot;Empty batch&quot;);<br>     116 |         require(recipients.length == length, &quot;Recipients length mismatch&quot;);<br>     117 |         require(amounts.length == length, &quot;Amounts length mismatch&quot;);</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">UNCLEAR require Error Message</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>contracts\AXNVTreasury.sol</code>:116
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> require() with a generic/empty revert message makes debugging harder.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Use custom errors (Solidity 0.8.4+) with specific names for better error handling.</div>
-              <details><summary>Code</summary><pre class="code">     114 | <br>     115 |         require(length &gt; 0, &quot;Empty batch&quot;);<br>&gt;&gt;&gt;  116 |         require(recipients.length == length, &quot;Recipients length mismatch&quot;);<br>     117 |         require(amounts.length == length, &quot;Amounts length mismatch&quot;);<br>     118 |         require(purposes.length == length, &quot;Purposes length mismatch&quot;);</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">UNCLEAR require Error Message</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>contracts\AXNVTreasury.sol</code>:117
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> require() with a generic/empty revert message makes debugging harder.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Use custom errors (Solidity 0.8.4+) with specific names for better error handling.</div>
-              <details><summary>Code</summary><pre class="code">     115 |         require(length &gt; 0, &quot;Empty batch&quot;);<br>     116 |         require(recipients.length == length, &quot;Recipients length mismatch&quot;);<br>&gt;&gt;&gt;  117 |         require(amounts.length == length, &quot;Amounts length mismatch&quot;);<br>     118 |         require(purposes.length == length, &quot;Purposes length mismatch&quot;);<br>     119 | </pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">UNCLEAR require Error Message</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>contracts\AXNVTreasury.sol</code>:118
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> require() with a generic/empty revert message makes debugging harder.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Use custom errors (Solidity 0.8.4+) with specific names for better error handling.</div>
-              <details><summary>Code</summary><pre class="code">     116 |         require(recipients.length == length, &quot;Recipients length mismatch&quot;);<br>     117 |         require(amounts.length == length, &quot;Amounts length mismatch&quot;);<br>&gt;&gt;&gt;  118 |         require(purposes.length == length, &quot;Purposes length mismatch&quot;);<br>     119 | <br>     120 |         uint256 batchTotal;</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">UNCLEAR require Error Message</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>contracts\AXNVTreasury.sol</code>:302
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> require() with a generic/empty revert message makes debugging harder.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Use custom errors (Solidity 0.8.4+) with specific names for better error handling.</div>
-              <details><summary>Code</summary><pre class="code">     300 |         uint256 recoverable = recoverableAXNV();<br>     301 | <br>&gt;&gt;&gt;  302 |         require(amount &lt;= recoverable, &quot;Exceeds recoverable AXNV&quot;);<br>     303 | <br>     304 |         axnv.safeTransfer(to, amount);</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">Unoptimized Loop</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>contracts\AXNVTreasury.sol</code>:122
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> Loops in Solidity cost gas per iteration. Consider bounds and caching state variables in memory.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Cache state variables in memory before the loop, and consider if the loop can be avoided.</div>
-              <details><summary>Code</summary><pre class="code">     120 |         uint256 batchTotal;<br>     121 | <br>&gt;&gt;&gt;  122 |         for (uint256 i = 0; i &lt; length; i++) {<br>     123 |             uint8 category = categories[i];<br>     124 |             address to = recipients[i];</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">Unoptimized Loop</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>contracts\AXNVTreasury.sol</code>:157
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> Loops in Solidity cost gas per iteration. Consider bounds and caching state variables in memory.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Cache state variables in memory before the loop, and consider if the loop can be avoided.</div>
-              <details><summary>Code</summary><pre class="code">     155 |         totalSpent += batchTotal;<br>     156 | <br>&gt;&gt;&gt;  157 |         for (uint256 i = 0; i &lt; length; i++) {<br>     158 |             axnv.safeTransfer(recipients[i], amounts[i]);<br>     159 | </pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">UNCLEAR require Error Message</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>contracts\governance\AXNVGovernanceVault.sol</code>:32
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> require() with a generic/empty revert message makes debugging harder.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Use custom errors (Solidity 0.8.4+) with specific names for better error handling.</div>
-              <details><summary>Code</summary><pre class="code">      30 | <br>      31 |     function fundVault(uint256 amount) external onlyOwner nonReentrant {<br>&gt;&gt;&gt;   32 |         require(amount &gt; 0, &quot;Zero amount&quot;);<br>      33 | <br>      34 |         uint256 newAccounted = accountedAXNV() + amount;</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">UNCLEAR require Error Message</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>contracts\governance\AXNVGovernanceVault.sol</code>:35
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> require() with a generic/empty revert message makes debugging harder.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Use custom errors (Solidity 0.8.4+) with specific names for better error handling.</div>
-              <details><summary>Code</summary><pre class="code">      33 | <br>      34 |         uint256 newAccounted = accountedAXNV() + amount;<br>&gt;&gt;&gt;   35 |         require(newAccounted &lt;= GOVERNANCE_ALLOCATION_CAP, &quot;Cap exceeded&quot;);<br>      36 | <br>      37 |         axnv.safeTransferFrom(msg.sender, address(this), amount);</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">UNCLEAR require Error Message</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>contracts\governance\AXNVGovernanceVault.sol</code>:53
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> require() with a generic/empty revert message makes debugging harder.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Use custom errors (Solidity 0.8.4+) with specific names for better error handling.</div>
-              <details><summary>Code</summary><pre class="code">      51 |     {<br>      52 |         require(to != address(0), &quot;Invalid recipient&quot;);<br>&gt;&gt;&gt;   53 |         require(amount &gt; 0, &quot;Zero amount&quot;);<br>      54 |         require(totalReleased + amount &lt;= GOVERNANCE_ALLOCATION_CAP, &quot;Cap exceeded&quot;);<br>      55 |         require(amount &lt;= contractAXNVBalance(), &quot;Insufficient AXNV&quot;);</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">UNCLEAR require Error Message</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>contracts\governance\AXNVGovernanceVault.sol</code>:54
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> require() with a generic/empty revert message makes debugging harder.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Use custom errors (Solidity 0.8.4+) with specific names for better error handling.</div>
-              <details><summary>Code</summary><pre class="code">      52 |         require(to != address(0), &quot;Invalid recipient&quot;);<br>      53 |         require(amount &gt; 0, &quot;Zero amount&quot;);<br>&gt;&gt;&gt;   54 |         require(totalReleased + amount &lt;= GOVERNANCE_ALLOCATION_CAP, &quot;Cap exceeded&quot;);<br>      55 |         require(amount &lt;= contractAXNVBalance(), &quot;Insufficient AXNV&quot;);<br>      56 | </pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">UNCLEAR require Error Message</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>contracts\governance\AXNVGovernanceVault.sol</code>:78
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> require() with a generic/empty revert message makes debugging harder.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Use custom errors (Solidity 0.8.4+) with specific names for better error handling.</div>
-              <details><summary>Code</summary><pre class="code">      76 |     {<br>      77 |         require(to != address(0), &quot;Invalid recipient&quot;);<br>&gt;&gt;&gt;   78 |         require(amount &gt; 0, &quot;Zero amount&quot;);<br>      79 | <br>      80 |         uint256 excess = excessAXNV();</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">UNCLEAR require Error Message</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>contracts\governance\AXNVGovernanceVault.sol</code>:81
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> require() with a generic/empty revert message makes debugging harder.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Use custom errors (Solidity 0.8.4+) with specific names for better error handling.</div>
-              <details><summary>Code</summary><pre class="code">      79 | <br>      80 |         uint256 excess = excessAXNV();<br>&gt;&gt;&gt;   81 |         require(amount &lt;= excess, &quot;Exceeds excess&quot;);<br>      82 | <br>      83 |         axnv.safeTransfer(to, amount);</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">UNCLEAR require Error Message</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>contracts\governance\AXNVGovernanceVault.sol</code>:96
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> require() with a generic/empty revert message makes debugging harder.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Use custom errors (Solidity 0.8.4+) with specific names for better error handling.</div>
-              <details><summary>Code</summary><pre class="code">      94 |         require(token != address(0), &quot;Invalid token&quot;);<br>      95 |         require(to != address(0), &quot;Invalid recipient&quot;);<br>&gt;&gt;&gt;   96 |         require(amount &gt; 0, &quot;Zero amount&quot;);<br>      97 | <br>      98 |         IERC20(token).safeTransfer(to, amount);</pre></details>
-            </div>
-            
-
-  <div class="footer">Generated by BugHunter · AI-assisted automated security review · For auditing purposes only</div>
-</div>
-</body>
-</html>
