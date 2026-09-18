@@ -1,1688 +1,0 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Security Review — bug_hunter</title>
-<style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background:#0d1117; color:#c9d1d9; padding: 32px; }
-  .page { max-width: 980px; margin: 0 auto; }
-  .header { border-bottom: 1px solid #21262d; padding-bottom: 20px; margin-bottom: 24px; }
-  h1 { font-size: 26px; color: #f0f6fc; }
-  .sub { color: #8b949e; margin-top: 6px; }
-  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; }
-  .card { background:#161b22; border: 1px solid #21262d; border-radius: 8px; padding: 18px; }
-  .card h3 { color:#f0f6fc; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; }
-  .score { font-size: 52px; font-weight: 700; color: #d93025; }
-  .grade { font-size: 22px; color: #d93025; font-weight: 600; display:block; margin-top: 4px; }
-  .sev-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
-  .sev-dot { width: 10px; height: 10px; border-radius: 50%; display:inline-block; flex: 0 0 10px; }
-  .sev-label { width: 90px; color: #c9d1d9; }
-  .sev-bar { flex: 1; background:#21262d; border-radius: 4px; height: 10px; overflow:hidden; }
-  .sev-fill { height: 100%; border-radius: 4px; }
-  .sev-count { width: 30px; text-align:right; color:#8b949e; }
-  .metrics { display: flex; gap: 28px; flex-wrap: wrap; color:#8b949e; font-size: 13px; margin-bottom: 8px; }
-  .finding { background:#161b22; border: 1px solid #21262d; border-left: 4px solid #30363d; border-radius: 8px; padding: 16px 18px; margin-bottom: 14px; }
-  .finding-head { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
-  .badge { color:#fff; font-size: 11px; font-weight:700; padding: 3px 9px; border-radius: 20px; text-transform: uppercase; letter-spacing: .5px; }
-  .finding-title { font-size: 15px; font-weight:600; color:#f0f6fc; }
-  .conf { margin-left:auto; font-size: 11px; color:#8b949e; }
-  .finding-meta { margin-top:6px; font-size: 12px; color:#8b949e; }
-  code { background:#21262d; padding: 2px 6px; border-radius: 4px; font-size: 12px; font-family: Consolas, monospace; }
-  .analyzer { background:#1f6feb22; color:#58a6ff; padding: 2px 8px; border-radius: 4px; margin-left: 8px; }
-  .finding-desc { margin-top: 10px; font-size: 13.5px; color:#c9d1d9; }
-  .finding-fix { margin-top: 6px; font-size: 13px; color:#8b949e; }
-  .code { background:#0d1117; border:1px solid #21262d; border-radius: 6px; padding: 12px; margin-top: 10px; font-family: Consolas, monospace; font-size: 12px; overflow-x:auto; color:#a5d6ff; }
-  .err { background:#d9302511; border:1px solid #d9302555; border-radius:6px; padding:10px 12px; margin:6px 0; font-family:Consolas,monospace; font-size:12px; color:#f85149; white-space:pre-wrap; }
-  details summary { cursor:pointer; color:#58a6ff; font-size:12px; margin-top:8px; }
-  .footer { color:#484f58; font-size: 11px; margin-top: 28px; text-align:center; }
-</style>
-</head>
-<body>
-<div class="page">
-  <div class="header">
-    <h1>Security Review — bug_hunter</h1>
-    <div class="sub">Generated 2026-09-17 02:30:12 &nbsp;·&nbsp; Analyzers: static, ast, solidity_semantic</div>
-    <div class="sub">Path: <code>C:\Users\123123\Desktop\BugHunter_Work\bug_hunter</code></div>
-  </div>
-
-  <div class="grid">
-    <div class="card">
-      <h3>Security Score</h3>
-      <span class="score">13</span><span class="grade">Grade F</span>
-      <div class="metrics" style="margin-top:12px">
-        <span>Bugs: 107</span>
-        <span>Files: 52</span>
-        <span>Lines: 39,863</span>
-      </div>
-    </div>
-    <div class="card">
-      <h3>Findings Breakdown</h3>
-      <div class="sev-row"><span class="sev-dot" style="background:#d93025"></span><span class="sev-label">Critical</span><div class="sev-bar"><div class="sev-fill" style="width:0.9%;background:#d93025"></div></div><span class="sev-count">1</span></div>
-<div class="sev-row"><span class="sev-dot" style="background:#ea4335"></span><span class="sev-label">High</span><div class="sev-bar"><div class="sev-fill" style="width:1.9%;background:#ea4335"></div></div><span class="sev-count">2</span></div>
-<div class="sev-row"><span class="sev-dot" style="background:#f9ab00"></span><span class="sev-label">Medium</span><div class="sev-bar"><div class="sev-fill" style="width:1.9%;background:#f9ab00"></div></div><span class="sev-count">2</span></div>
-<div class="sev-row"><span class="sev-dot" style="background:#1a73e8"></span><span class="sev-label">Low</span><div class="sev-bar"><div class="sev-fill" style="width:15.0%;background:#1a73e8"></div></div><span class="sev-count">16</span></div>
-<div class="sev-row"><span class="sev-dot" style="background:#5f6368"></span><span class="sev-label">Info</span><div class="sev-bar"><div class="sev-fill" style="width:80.4%;background:#5f6368"></div></div><span class="sev-count">86</span></div>
-    </div>
-  </div>
-
-  <div class="card" style="margin-bottom:24px">
-    <h3>Scope</h3>
-    <b>html</b>: 38 files<br><b>python</b>: 14 files
-  </div>
-
-  
-
-  <h2 style="font-size:20px;color:#f0f6fc;margin-bottom:16px">Findings (107)</h2>
-  
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#d93025">Critical</span>
-                <span class="finding-title">Dangerous Code Execution</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>analyzer\static.py</code>:34
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> Dynamic code execution detected. This can lead to remote code execution vulnerabilities.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Avoid eval/exec. Use safe alternatives like ast.literal_eval() or specific function calls.</div>
-              <details><summary>Code</summary><pre class="code">      32 |             &quot;title&quot;: &quot;Dangerous Code Execution&quot;,<br>      33 |             &quot;description&quot;: &quot;Dynamic code execution detected. This can lead to remote code execution vulnerabilities.&quot;,<br>&gt;&gt;&gt;   34 |             &quot;suggestion&quot;: &quot;Avoid eval/exec. Use safe alternatives like ast.literal_eval() or specific function calls.&quot;,<br>      35 |             &quot;severity&quot;: &quot;critical&quot;,<br>      36 |             &quot;languages&quot;: [&quot;python&quot;, &quot;javascript&quot;, &quot;typescript&quot;],</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#ea4335">High</span>
-                <span class="finding-title">Use of global Statement</span>
-                <span class="conf">confidence 90%</span>
-              </div>
-              <div class="finding-meta">
-                <code>analyzer\static.py</code>:352
-                <span class="analyzer">ast</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> Using 'global _RULES_CACHE' creates hidden state and makes code hard to test.<br>EXPLOIT: Modify the rules_dir parameter to a non-existent directory to trigger the bug.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Pass values as parameters and return results instead.</div>
-              <details><summary>Code</summary><pre class="code">     350 |         languages (optional: derived from the filename, e.g. python.yaml -&gt; python).<br>     351 |     &quot;&quot;&quot;<br>&gt;&gt;&gt;  352 |     global _RULES_CACHE<br>     353 |     if _RULES_CACHE is not None and rules_dir is None:<br>     354 |         return _RULES_CACHE</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#ea4335">High</span>
-                <span class="finding-title">Bare Exception Handler</span>
-                <span class="conf">confidence 90%</span>
-              </div>
-              <div class="finding-meta">
-                <code>analyzer\ai_analyzer.py</code>:344
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> Catching all exceptions silently hides bugs and makes debugging nearly impossible.<br>EXPLOIT: An attacker can trigger a bare exception handler by causing a transient error in the AI chat method. This can be done by sending a request that results in a 429, 500, 502, 503, or 504 status code, or by sending a request that includes a message containing keywords like 'rate limit', 'internal', 'too many requests', 'connection', 'timeout', or 'temporarily unavailable'.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Catch specific exceptions and log them. Never use bare 'except:' without re-raising.</div>
-              <details><summary>Code</summary><pre class="code">     342 |                     try:<br>     343 |                         status = e.response.status_code<br>&gt;&gt;&gt;  344 |                     except Exception:<br>     345 |                         status = None<br>     346 |                 status = getattr(getattr(e, &quot;status_code&quot;, None), &quot;value&quot;, None)</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#f9ab00">Medium</span>
-                <span class="finding-title">Bare Exception Handler</span>
-                <span class="conf">confidence 90%</span>
-              </div>
-              <div class="finding-meta">
-                <code>analyzer\ai_analyzer.py</code>:350
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> Catching all exceptions silently hides bugs and makes debugging nearly impossible.<br>EXPLOIT: No concrete trigger path provided.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Catch specific exceptions and log them. Never use bare 'except:' without re-raising.</div>
-              <details><summary>Code</summary><pre class="code">     348 |                     try:<br>     349 |                         status = e.response.status_code<br>&gt;&gt;&gt;  350 |                     except Exception:<br>     351 |                         status = None<br>     352 |                 transient = (</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#f9ab00">Medium</span>
-                <span class="finding-title">Bare Exception Handler</span>
-                <span class="conf">confidence 90%</span>
-              </div>
-              <div class="finding-meta">
-                <code>analyzer\static.py</code>:371
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> Catching all exceptions silently hides bugs and makes debugging nearly impossible.<br>EXPLOIT: No concrete trigger path provided.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Catch specific exceptions and log them. Never use bare 'except:' without re-raising.</div>
-              <details><summary>Code</summary><pre class="code">     369 |         try:<br>     370 |             data = yaml.safe_load(path.read_text(encoding=&quot;utf-8&quot;))<br>&gt;&gt;&gt;  371 |         except Exception:<br>     372 |             continue<br>     373 |         if not isinstance(data, list):</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">Overly Long Function</span>
-                <span class="conf">confidence 60%</span>
-              </div>
-              <div class="finding-meta">
-                <code>main.py</code>:19
-                <span class="analyzer">ast</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> Function 'main' is 156 lines long. Long functions are hard to test and review.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Split it into smaller functions with a single responsibility.</div>
-              <details><summary>Code</summary><pre class="code">      17 | <br>      18 | <br>&gt;&gt;&gt;   19 | def main():<br>      20 |     parser = argparse.ArgumentParser(<br>      21 |         description=&quot;BugHunter - AI-powered automatic bug finder&quot;,</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">Overly Long Function</span>
-                <span class="conf">confidence 60%</span>
-              </div>
-              <div class="finding-meta">
-                <code>analyzer\ai_analyzer.py</code>:222
-                <span class="analyzer">ast</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> Function 'verify_candidates' is 64 lines long. Long functions are hard to test and review.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Split it into smaller functions with a single responsibility.</div>
-              <details><summary>Code</summary><pre class="code">     220 |     # AI verification of rule-detected candidates (hybrid: rules + AI).<br>     221 |     # ------------------------------------------------------------------<br>&gt;&gt;&gt;  222 |     def verify_candidates(self, candidates: list, files: list, errors=None) -&gt; list[Bug]:<br>     223 |         if not candidates:<br>     224 |             return []</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">Overly Long Function</span>
-                <span class="conf">confidence 60%</span>
-              </div>
-              <div class="finding-meta">
-                <code>analyzer\ai_analyzer.py</code>:393
-                <span class="analyzer">ast</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> Function '_call_llm' is 72 lines long. Long functions are hard to test and review.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Split it into smaller functions with a single responsibility.</div>
-              <details><summary>Code</summary><pre class="code">     391 |         return &quot;\n&quot;.join(header_lines)<br>     392 | <br>&gt;&gt;&gt;  393 |     def _call_llm(self, prompt: str, f, chunk_start: int) -&gt; list[Bug]:<br>     394 |         try:<br>     395 |             response = self._chat(</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">Overly Long Function</span>
-                <span class="conf">confidence 60%</span>
-              </div>
-              <div class="finding-meta">
-                <code>analyzer\ai_analyzer.py</code>:506
-                <span class="analyzer">ast</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> Function '_extract_json_issues' is 65 lines long. Long functions are hard to test and review.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Split it into smaller functions with a single responsibility.</div>
-              <details><summary>Code</summary><pre class="code">     504 | <br>     505 | <br>&gt;&gt;&gt;  506 | def _extract_json_issues(text: str) -&gt; list:<br>     507 |     &quot;&quot;&quot;Robustly extract a list of finding dicts from a model response.&quot;&quot;&quot;<br>     508 |     text = _strip_code_fences(text)</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">Too Many Parameters</span>
-                <span class="conf">confidence 60%</span>
-              </div>
-              <div class="finding-meta">
-                <code>analyzer\ast_analyzer.py</code>:57
-                <span class="analyzer">ast</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> Function '_add_bug' takes 8 parameters. Wide signatures are error-prone.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Group related parameters into a dataclass/config object.</div>
-              <details><summary>Code</summary><pre class="code">      55 |         return False<br>      56 | <br>&gt;&gt;&gt;   57 |     def _add_bug(self, node, severity, category, title, description, suggestion, confidence=0.8):<br>      58 |         line = getattr(node, &quot;lineno&quot;, 1)<br>      59 |         col = getattr(node, &quot;col_offset&quot;, 0)</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">Overly Long Function</span>
-                <span class="conf">confidence 60%</span>
-              </div>
-              <div class="finding-meta">
-                <code>analyzer\ast_analyzer.py</code>:280
-                <span class="analyzer">ast</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> Function '_check_chained_comparison' is 61 lines long. Long functions are hard to test and review.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Split it into smaller functions with a single responsibility.</div>
-              <details><summary>Code</summary><pre class="code">     278 |                     return<br>     279 | <br>&gt;&gt;&gt;  280 |     def _check_chained_comparison(self, boolop, compare):<br>     281 |         # Redundant overlapping bounds within an and-chain, e.g.  x &lt; 10 and x &lt; 5<br>     282 |         # (the second is redundant) or x &gt; 3 and x &gt; 1 (first is redundant).</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">Overly Long Function</span>
-                <span class="conf">confidence 60%</span>
-              </div>
-              <div class="finding-meta">
-                <code>analyzer\solidity_analyzer.py</code>:93
-                <span class="analyzer">ast</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> Function '_analyze_file' is 91 lines long. Long functions are hard to test and review.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Split it into smaller functions with a single responsibility.</div>
-              <details><summary>Code</summary><pre class="code">      91 |         return _COMMENT_RE.sub(&quot; &quot;, line)<br>      92 | <br>&gt;&gt;&gt;   93 |     def _analyze_file(self, f, result, project_storage: set):<br>      94 |         self._scopes = []<br>      95 |         self._current_func = None</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">Overly Long Function</span>
-                <span class="conf">confidence 60%</span>
-              </div>
-              <div class="finding-meta">
-                <code>analyzer\solidity_analyzer.py</code>:252
-                <span class="analyzer">ast</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> Function '_track_line' is 87 lines long. Long functions are hard to test and review.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Split it into smaller functions with a single responsibility.</div>
-              <details><summary>Code</summary><pre class="code">     250 | <br>     251 |     # ------------------------------------------------------------------<br>&gt;&gt;&gt;  252 |     def _track_line(self, sc, line, line_no, result, f):<br>     253 |         # Track oracle-sanity guards inside the current function.<br>     254 |         if _ORACLE_READ_RE.search(line):</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">Overly Long Function</span>
-                <span class="conf">confidence 60%</span>
-              </div>
-              <div class="finding-meta">
-                <code>analyzer\solidity_analyzer.py</code>:524
-                <span class="analyzer">ast</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> Function '_check_sweep' is 61 lines long. Long functions are hard to test and review.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Split it into smaller functions with a single responsibility.</div>
-              <details><summary>Code</summary><pre class="code">     522 |         return m.group(&quot;var&quot;), is_native<br>     523 | <br>&gt;&gt;&gt;  524 |     def _check_sweep(self, line: str, line_no: int, result, f):<br>     525 |         # ---- Case A: transfer / payout target is a var that holds a full-balance<br>     526 |         #      snapshot taken earlier in the SAME function (multi-line correlation).</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">Too Many Parameters</span>
-                <span class="conf">confidence 60%</span>
-              </div>
-              <div class="finding-meta">
-                <code>analyzer\solidity_analyzer.py</code>:586
-                <span class="analyzer">ast</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> Function '_add_sweep_bug' takes 9 parameters. Wide signatures are error-prone.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Group related parameters into a dataclass/config object.</div>
-              <details><summary>Code</summary><pre class="code">     584 |             )<br>     585 | <br>&gt;&gt;&gt;  586 |     def _add_sweep_bug(self, result, f, line, sev, title, desc, sug, conf):<br>     587 |         self._add_bug(result, f, line, sev, &quot;accounting&quot;, title, desc, sug, conf)<br>     588 | </pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">Too Many Parameters</span>
-                <span class="conf">confidence 60%</span>
-              </div>
-              <div class="finding-meta">
-                <code>analyzer\solidity_analyzer.py</code>:590
-                <span class="analyzer">ast</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> Function '_add_bug' takes 10 parameters. Wide signatures are error-prone.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Group related parameters into a dataclass/config object.</div>
-              <details><summary>Code</summary><pre class="code">     588 | <br>     589 |     # ------------------------------------------------------------------<br>&gt;&gt;&gt;  590 |     def _add_bug(self, result, f, line, sev, category, title, desc, sug, conf):<br>     591 |         snippet = self._get_snippet(f.content.split(&quot;\n&quot;), line - 1)<br>     592 |         result.add(Bug(</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">Overly Long Function</span>
-                <span class="conf">confidence 60%</span>
-              </div>
-              <div class="finding-meta">
-                <code>reporters\html_report.py</code>:84
-                <span class="analyzer">ast</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> Function 'generate_html_report' is 144 lines long. Long functions are hard to test and review.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Split it into smaller functions with a single responsibility.</div>
-              <details><summary>Code</summary><pre class="code">      82 | <br>      83 | <br>&gt;&gt;&gt;   84 | def generate_html_report(result, project_path: str, project_stats: dict, analyzers_used: list[str]) -&gt; Path:<br>      85 |     REPORT_DIR = reporters.REPORT_DIR  # noqa: F821<br>      86 |     REPORT_DIR.mkdir(exist_ok=True)</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">Overly Long Function</span>
-                <span class="conf">confidence 60%</span>
-              </div>
-              <div class="finding-meta">
-                <code>reporters\__init__.py</code>:24
-                <span class="analyzer">ast</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> Function 'generate_report' is 118 lines long. Long functions are hard to test and review.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Split it into smaller functions with a single responsibility.</div>
-              <details><summary>Code</summary><pre class="code">      22 | <br>      23 | <br>&gt;&gt;&gt;   24 | def generate_report(result, project_path: str, project_stats: dict, analyzers_used: list[str]) -&gt; Path:<br>      25 |     REPORT_DIR.mkdir(exist_ok=True)<br>      26 | </pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">Hardcoded Sleep</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>analyzer\ai_analyzer.py</code>:217
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> Using sleep() in code can cause performance issues and race conditions.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Use proper synchronization primitives, event loops, or polling with backoff.</div>
-              <details><summary>Code</summary><pre class="code">     215 |                 result.bugs.append(b)<br>     216 | <br>&gt;&gt;&gt;  217 |             time.sleep(0.2)<br>     218 | <br>     219 |     # ------------------------------------------------------------------</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">Hardcoded Sleep</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>analyzer\ai_analyzer.py</code>:284
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> Using sleep() in code can cause performance issues and race conditions.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Use proper synchronization primitives, event loops, or polling with backoff.</div>
-              <details><summary>Code</summary><pre class="code">     282 |                 cand.description = (cand.description or &quot;&quot;) + &quot;\n[AI REJECTED] &quot; + fix<br>     283 |                 result.append(cand)<br>&gt;&gt;&gt;  284 |             time.sleep(verify_delay)<br>     285 |         return result<br>     286 | </pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#1a73e8">Low</span>
-                <span class="finding-title">Hardcoded Sleep</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>analyzer\ai_analyzer.py</code>:366
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> Using sleep() in code can cause performance issues and race conditions.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Use proper synchronization primitives, event loops, or polling with backoff.</div>
-              <details><summary>Code</summary><pre class="code">     364 |                         warn=True,<br>     365 |                     )<br>&gt;&gt;&gt;  366 |                     time.sleep(delay)<br>     367 |                     delay *= 2<br>     368 |                     continue</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#5f6368">Info</span>
-                <span class="finding-title">Extraneous print() Call</span>
-                <span class="conf">confidence 50%</span>
-              </div>
-              <div class="finding-meta">
-                <code>main.py</code>:47
-                <span class="analyzer">ast</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> A bare 'print()' without a 'debug' marker was left in the code. It may expose internal data in production or indicate unfinished work.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Remove debug prints or gate them behind a logger/config flag.</div>
-              <details><summary>Code</summary><pre class="code">      45 |     project_path = Path(args.project).resolve()<br>      46 |     if not project_path.is_dir():<br>&gt;&gt;&gt;   47 |         print(f&quot;Error: '{project_path}' is not a directory.&quot;)<br>      48 |         sys.exit(1)<br>      49 | </pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#5f6368">Info</span>
-                <span class="finding-title">Extraneous print() Call</span>
-                <span class="conf">confidence 50%</span>
-              </div>
-              <div class="finding-meta">
-                <code>main.py</code>:50
-                <span class="analyzer">ast</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> A bare 'print()' without a 'debug' marker was left in the code. It may expose internal data in production or indicate unfinished work.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Remove debug prints or gate them behind a logger/config flag.</div>
-              <details><summary>Code</summary><pre class="code">      48 |         sys.exit(1)<br>      49 | <br>&gt;&gt;&gt;   50 |     print(&quot;=&quot; * 60)<br>      51 |     print(&quot;  BugHunter - AI-Powered Bug Finder&quot;)<br>      52 |     print(&quot;=&quot; * 60)</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#5f6368">Info</span>
-                <span class="finding-title">Extraneous print() Call</span>
-                <span class="conf">confidence 50%</span>
-              </div>
-              <div class="finding-meta">
-                <code>main.py</code>:53
-                <span class="analyzer">ast</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> A bare 'print()' without a 'debug' marker was left in the code. It may expose internal data in production or indicate unfinished work.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Remove debug prints or gate them behind a logger/config flag.</div>
-              <details><summary>Code</summary><pre class="code">      51 |     print(&quot;  BugHunter - AI-Powered Bug Finder&quot;)<br>      52 |     print(&quot;=&quot; * 60)<br>&gt;&gt;&gt;   53 |     print()<br>      54 | <br>      55 |     print(f&quot;[*] Scanning project: {project_path}&quot;)</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#5f6368">Info</span>
-                <span class="finding-title">Extraneous print() Call</span>
-                <span class="conf">confidence 50%</span>
-              </div>
-              <div class="finding-meta">
-                <code>main.py</code>:61
-                <span class="analyzer">ast</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> A bare 'print()' without a 'debug' marker was left in the code. It may expose internal data in production or indicate unfinished work.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Remove debug prints or gate them behind a logger/config flag.</div>
-              <details><summary>Code</summary><pre class="code">      59 | <br>      60 |     if not files:<br>&gt;&gt;&gt;   61 |         print(&quot;[!] No source files found. Check the project path.&quot;)<br>      62 |         sys.exit(0)<br>      63 | </pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#5f6368">Info</span>
-                <span class="finding-title">Extraneous print() Call</span>
-                <span class="conf">confidence 50%</span>
-              </div>
-              <div class="finding-meta">
-                <code>main.py</code>:65
-                <span class="analyzer">ast</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> A bare 'print()' without a 'debug' marker was left in the code. It may expose internal data in production or indicate unfinished work.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Remove debug prints or gate them behind a logger/config flag.</div>
-              <details><summary>Code</summary><pre class="code">      63 | <br>      64 |     stats = get_project_stats(files)<br>&gt;&gt;&gt;   65 |     print(f&quot;[+] Found {stats['total_files']} files ({stats['total_lines']:,} lines)&quot;)<br>      66 |     print(f&quot;[+] Languages: {', '.join(f'{k}({v})' for k, v in stats['languages'].items())}&quot;)<br>      67 |     print(f&quot;[+] Scan completed in {scan_time:.2f}s&quot;)</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#5f6368">Info</span>
-                <span class="finding-title">Extraneous print() Call</span>
-                <span class="conf">confidence 50%</span>
-              </div>
-              <div class="finding-meta">
-                <code>main.py</code>:68
-                <span class="analyzer">ast</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> A bare 'print()' without a 'debug' marker was left in the code. It may expose internal data in production or indicate unfinished work.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Remove debug prints or gate them behind a logger/config flag.</div>
-              <details><summary>Code</summary><pre class="code">      66 |     print(f&quot;[+] Languages: {', '.join(f'{k}({v})' for k, v in stats['languages'].items())}&quot;)<br>      67 |     print(f&quot;[+] Scan completed in {scan_time:.2f}s&quot;)<br>&gt;&gt;&gt;   68 |     print()<br>      69 | <br>      70 |     analyzers_used = []</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#5f6368">Info</span>
-                <span class="finding-title">Extraneous print() Call</span>
-                <span class="conf">confidence 50%</span>
-              </div>
-              <div class="finding-meta">
-                <code>main.py</code>:73
-                <span class="analyzer">ast</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> A bare 'print()' without a 'debug' marker was left in the code. It may expose internal data in production or indicate unfinished work.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Remove debug prints or gate them behind a logger/config flag.</div>
-              <details><summary>Code</summary><pre class="code">      71 |     result = AnalysisResult()<br>      72 | <br>&gt;&gt;&gt;   73 |     print(&quot;[*] Running static analysis...&quot;)<br>      74 |     start = time.time()<br>      75 |     static = StaticAnalyzer()</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#5f6368">Info</span>
-                <span class="finding-title">Extraneous print() Call</span>
-                <span class="conf">confidence 50%</span>
-              </div>
-              <div class="finding-meta">
-                <code>main.py</code>:79
-                <span class="analyzer">ast</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> A bare 'print()' without a 'debug' marker was left in the code. It may expose internal data in production or indicate unfinished work.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Remove debug prints or gate them behind a logger/config flag.</div>
-              <details><summary>Code</summary><pre class="code">      77 |     result.merge(static_result)<br>      78 |     analyzers_used.append(&quot;static&quot;)<br>&gt;&gt;&gt;   79 |     print(f&quot;[+] Static analysis: {len(static_result.bugs)} issues found ({time.time() - start:.2f}s)&quot;)<br>      80 | <br>      81 |     if not args.static_only and not args.no_ast:</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#5f6368">Info</span>
-                <span class="finding-title">Extraneous print() Call</span>
-                <span class="conf">confidence 50%</span>
-              </div>
-              <div class="finding-meta">
-                <code>main.py</code>:82
-                <span class="analyzer">ast</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> A bare 'print()' without a 'debug' marker was left in the code. It may expose internal data in production or indicate unfinished work.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Remove debug prints or gate them behind a logger/config flag.</div>
-              <details><summary>Code</summary><pre class="code">      80 | <br>      81 |     if not args.static_only and not args.no_ast:<br>&gt;&gt;&gt;   82 |         print(&quot;[*] Running AST analysis (Python)...&quot;)<br>      83 |         start = time.time()<br>      84 |         ast_analyzer = ASTAnalyzer()</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#5f6368">Info</span>
-                <span class="finding-title">Extraneous print() Call</span>
-                <span class="conf">confidence 50%</span>
-              </div>
-              <div class="finding-meta">
-                <code>main.py</code>:88
-                <span class="analyzer">ast</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> A bare 'print()' without a 'debug' marker was left in the code. It may expose internal data in production or indicate unfinished work.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Remove debug prints or gate them behind a logger/config flag.</div>
-              <details><summary>Code</summary><pre class="code">      86 |         result.merge(ast_result)<br>      87 |         analyzers_used.append(&quot;ast&quot;)<br>&gt;&gt;&gt;   88 |         print(f&quot;[+] AST analysis: {len(ast_result.bugs)} issues found ({time.time() - start:.2f}s)&quot;)<br>      89 | <br>      90 |     if not args.static_only:</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#5f6368">Info</span>
-                <span class="finding-title">Extraneous print() Call</span>
-                <span class="conf">confidence 50%</span>
-              </div>
-              <div class="finding-meta">
-                <code>main.py</code>:91
-                <span class="analyzer">ast</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> A bare 'print()' without a 'debug' marker was left in the code. It may expose internal data in production or indicate unfinished work.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Remove debug prints or gate them behind a logger/config flag.</div>
-              <details><summary>Code</summary><pre class="code">      89 | <br>      90 |     if not args.static_only:<br>&gt;&gt;&gt;   91 |         print(&quot;[*] Running Solidity semantic analysis...&quot;)<br>      92 |         start = time.time()<br>      93 |         sol_analyzer = SolidityAnalyzer()</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#5f6368">Info</span>
-                <span class="finding-title">Extraneous print() Call</span>
-                <span class="conf">confidence 50%</span>
-              </div>
-              <div class="finding-meta">
-                <code>main.py</code>:97
-                <span class="analyzer">ast</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> A bare 'print()' without a 'debug' marker was left in the code. It may expose internal data in production or indicate unfinished work.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Remove debug prints or gate them behind a logger/config flag.</div>
-              <details><summary>Code</summary><pre class="code">      95 |         result.merge(sol_result)<br>      96 |         analyzers_used.append(&quot;solidity_semantic&quot;)<br>&gt;&gt;&gt;   97 |         print(f&quot;[+] Solidity analysis: {len(sol_result.bugs)} issues found ({time.time() - start:.2f}s)&quot;)<br>      98 | <br>      99 |     if not args.static_only and not args.no_ai:</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#5f6368">Info</span>
-                <span class="finding-title">Extraneous print() Call</span>
-                <span class="conf">confidence 50%</span>
-              </div>
-              <div class="finding-meta">
-                <code>main.py</code>:100
-                <span class="analyzer">ast</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> A bare 'print()' without a 'debug' marker was left in the code. It may expose internal data in production or indicate unfinished work.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Remove debug prints or gate them behind a logger/config flag.</div>
-              <details><summary>Code</summary><pre class="code">      98 | <br>      99 |     if not args.static_only and not args.no_ai:<br>&gt;&gt;&gt;  100 |         print(&quot;[*] Verifying rule candidates with AI (hybrid)...&quot;, flush=True)<br>     101 |         start = time.time()<br>     102 |         candidates = [</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#5f6368">Info</span>
-                <span class="finding-title">Extraneous print() Call</span>
-                <span class="conf">confidence 50%</span>
-              </div>
-              <div class="finding-meta">
-                <code>main.py</code>:108
-                <span class="analyzer">ast</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> A bare 'print()' without a 'debug' marker was left in the code. It may expose internal data in production or indicate unfinished work.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Remove debug prints or gate them behind a logger/config flag.</div>
-              <details><summary>Code</summary><pre class="code">     106 |         max_verify = int(os.environ.get(&quot;BH_MAX_VERIFY&quot;, &quot;100&quot;))<br>     107 |         if len(candidates) &gt; max_verify:<br>&gt;&gt;&gt;  108 |             print(f&quot;[!] {len(candidates)} rule candidates — verifying top {max_verify} by severity &quot;<br>     109 |                   f&quot;(raise limit with BH_MAX_VERIFY)&quot;, flush=True)<br>     110 |             sev_rank = {&quot;high&quot;: 0, &quot;medium&quot;: 1}</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#5f6368">Info</span>
-                <span class="finding-title">Extraneous print() Call</span>
-                <span class="conf">confidence 50%</span>
-              </div>
-              <div class="finding-meta">
-                <code>main.py</code>:122
-                <span class="analyzer">ast</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> A bare 'print()' without a 'debug' marker was left in the code. It may expose internal data in production or indicate unfinished work.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Remove debug prints or gate them behind a logger/config flag.</div>
-              <details><summary>Code</summary><pre class="code">     120 |                     result.bugs.remove(b)<br>     121 |             result.bugs.extend(verified)<br>&gt;&gt;&gt;  122 |             print(f&quot;[+] AI verified {len(candidates)} rule candidates in {time.time() - start:.2f}s&quot;, flush=True)<br>     123 |         else:<br>     124 |             print(&quot;[+] No rule candidates to verify (skipped)&quot;, flush=True)</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#5f6368">Info</span>
-                <span class="finding-title">Extraneous print() Call</span>
-                <span class="conf">confidence 50%</span>
-              </div>
-              <div class="finding-meta">
-                <code>main.py</code>:127
-                <span class="analyzer">ast</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> A bare 'print()' without a 'debug' marker was left in the code. It may expose internal data in production or indicate unfinished work.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Remove debug prints or gate them behind a logger/config flag.</div>
-              <details><summary>Code</summary><pre class="code">     125 | <br>     126 |         if not args.hybrid_only:<br>&gt;&gt;&gt;  127 |             print(&quot;[*] Running AI analysis (this may take a while)...&quot;, flush=True)<br>     128 |             start = time.time()<br>     129 |             ai = AIAnalyzer()</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#5f6368">Info</span>
-                <span class="finding-title">Extraneous print() Call</span>
-                <span class="conf">confidence 50%</span>
-              </div>
-              <div class="finding-meta">
-                <code>main.py</code>:135
-                <span class="analyzer">ast</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> A bare 'print()' without a 'debug' marker was left in the code. It may expose internal data in production or indicate unfinished work.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Remove debug prints or gate them behind a logger/config flag.</div>
-              <details><summary>Code</summary><pre class="code">     133 |             if ai_result.errors:<br>     134 |                 for err in ai_result.errors:<br>&gt;&gt;&gt;  135 |                     print(f&quot;[!] {err}&quot;, flush=True)<br>     136 |             print(f&quot;[+] AI analysis: {len(ai_result.bugs)} issues found ({time.time() - start:.2f}s)&quot;, flush=True)<br>     137 | </pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#5f6368">Info</span>
-                <span class="finding-title">Extraneous print() Call</span>
-                <span class="conf">confidence 50%</span>
-              </div>
-              <div class="finding-meta">
-                <code>main.py</code>:141
-                <span class="analyzer">ast</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> A bare 'print()' without a 'debug' marker was left in the code. It may expose internal data in production or indicate unfinished work.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Remove debug prints or gate them behind a logger/config flag.</div>
-              <details><summary>Code</summary><pre class="code">     139 |     result.bugs = dedup_bugs(result.bugs)<br>     140 |     if len(result.bugs) &lt; before_dedup:<br>&gt;&gt;&gt;  141 |         print(f&quot;[+] Deduplication: {before_dedup} -&gt; {len(result.bugs)} issues&quot;)<br>     142 | <br>     143 |     print()</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#5f6368">Info</span>
-                <span class="finding-title">Extraneous print() Call</span>
-                <span class="conf">confidence 50%</span>
-              </div>
-              <div class="finding-meta">
-                <code>main.py</code>:150
-                <span class="analyzer">ast</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> A bare 'print()' without a 'debug' marker was left in the code. It may expose internal data in production or indicate unfinished work.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Remove debug prints or gate them behind a logger/config flag.</div>
-              <details><summary>Code</summary><pre class="code">     148 | <br>     149 |     report_path = generate_report(result, str(project_path), stats, analyzers_used)<br>&gt;&gt;&gt;  150 |     print(f&quot;[+] Report saved to: {report_path}&quot;)<br>     151 | <br>     152 |     html_path = generate_html_report(result, str(project_path), stats, analyzers_used)</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#5f6368">Info</span>
-                <span class="finding-title">Extraneous print() Call</span>
-                <span class="conf">confidence 50%</span>
-              </div>
-              <div class="finding-meta">
-                <code>main.py</code>:153
-                <span class="analyzer">ast</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> A bare 'print()' without a 'debug' marker was left in the code. It may expose internal data in production or indicate unfinished work.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Remove debug prints or gate them behind a logger/config flag.</div>
-              <details><summary>Code</summary><pre class="code">     151 | <br>     152 |     html_path = generate_html_report(result, str(project_path), stats, analyzers_used)<br>&gt;&gt;&gt;  153 |     print(f&quot;[+] HTML security review saved to: {html_path}&quot;)<br>     154 |     print()<br>     155 | </pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#5f6368">Info</span>
-                <span class="finding-title">Extraneous print() Call</span>
-                <span class="conf">confidence 50%</span>
-              </div>
-              <div class="finding-meta">
-                <code>main.py</code>:161
-                <span class="analyzer">ast</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> A bare 'print()' without a 'debug' marker was left in the code. It may expose internal data in production or indicate unfinished work.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Remove debug prints or gate them behind a logger/config flag.</div>
-              <details><summary>Code</summary><pre class="code">     159 |         sev_counts[bug.severity] = sev_counts.get(bug.severity, 0) + 1<br>     160 | <br>&gt;&gt;&gt;  161 |     print(&quot;=&quot; * 60)<br>     162 |     print(&quot;  RESULTS SUMMARY&quot;)<br>     163 |     print(&quot;=&quot; * 60)</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#5f6368">Info</span>
-                <span class="finding-title">Extraneous print() Call</span>
-                <span class="conf">confidence 50%</span>
-              </div>
-              <div class="finding-meta">
-                <code>main.py</code>:164
-                <span class="analyzer">ast</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> A bare 'print()' without a 'debug' marker was left in the code. It may expose internal data in production or indicate unfinished work.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Remove debug prints or gate them behind a logger/config flag.</div>
-              <details><summary>Code</summary><pre class="code">     162 |     print(&quot;  RESULTS SUMMARY&quot;)<br>     163 |     print(&quot;=&quot; * 60)<br>&gt;&gt;&gt;  164 |     print(f&quot;  Total issues: {len(result.bugs)}&quot;)<br>     165 |     for sev in [&quot;critical&quot;, &quot;high&quot;, &quot;medium&quot;, &quot;low&quot;, &quot;info&quot;]:<br>     166 |         count = sev_counts.get(sev, 0)</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#5f6368">Info</span>
-                <span class="finding-title">Extraneous print() Call</span>
-                <span class="conf">confidence 50%</span>
-              </div>
-              <div class="finding-meta">
-                <code>main.py</code>:169
-                <span class="analyzer">ast</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> A bare 'print()' without a 'debug' marker was left in the code. It may expose internal data in production or indicate unfinished work.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Remove debug prints or gate them behind a logger/config flag.</div>
-              <details><summary>Code</summary><pre class="code">     167 |         if count &gt; 0:<br>     168 |             marker = &quot;!!!&quot; if sev == &quot;critical&quot; else &quot;!!&quot; if sev == &quot;high&quot; else &quot;!&quot; if sev == &quot;medium&quot; else &quot;~&quot; if sev == &quot;low&quot; else &quot;i&quot;<br>&gt;&gt;&gt;  169 |             print(f&quot;  {marker} {sev.upper():10s}: {count}&quot;)<br>     170 |     if result.errors:<br>     171 |         print(f&quot;  ERRORS     : {len(result.errors)}&quot;)</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#5f6368">Info</span>
-                <span class="finding-title">Extraneous print() Call</span>
-                <span class="conf">confidence 50%</span>
-              </div>
-              <div class="finding-meta">
-                <code>main.py</code>:172
-                <span class="analyzer">ast</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> A bare 'print()' without a 'debug' marker was left in the code. It may expose internal data in production or indicate unfinished work.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Remove debug prints or gate them behind a logger/config flag.</div>
-              <details><summary>Code</summary><pre class="code">     170 |     if result.errors:<br>     171 |         print(f&quot;  ERRORS     : {len(result.errors)}&quot;)<br>&gt;&gt;&gt;  172 |     print(&quot;=&quot; * 60)<br>     173 | <br>     174 |     sys.exit(1 if sev_counts.get(&quot;critical&quot;, 0) &gt; 0 else 0)</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#5f6368">Info</span>
-                <span class="finding-title">Unresolved TODO/FIXME</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>main.py</code>:158
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> Developer left a note indicating unfinished or problematic code.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Review and resolve the TODO/FIXME before deploying.</div>
-              <details><summary>Code</summary><pre class="code">     156 |     sorted_bugs = result.sorted_bugs()<br>     157 |     sev_counts = {}<br>&gt;&gt;&gt;  158 |     for bug in sorted_bugs:<br>     159 |         sev_counts[bug.severity] = sev_counts.get(bug.severity, 0) + 1<br>     160 | </pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#5f6368">Info</span>
-                <span class="finding-title">Unresolved TODO/FIXME</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>analyzer\ai_analyzer.py</code>:6
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> Developer left a note indicating unfinished or problematic code.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Review and resolve the TODO/FIXME before deploying.</div>
-              <details><summary>Code</summary><pre class="code">       4 | from pathlib import Path<br>       5 | <br>&gt;&gt;&gt;    6 | from .base import AnalysisResult, BaseAnalyzer, Bug<br>       7 | from .patterns import pattern_hints, validate_severity<br>       8 | from .. import config as _cfg</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#5f6368">Info</span>
-                <span class="finding-title">Unresolved TODO/FIXME</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>analyzer\ai_analyzer.py</code>:95
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> Developer left a note indicating unfinished or problematic code.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Review and resolve the TODO/FIXME before deploying.</div>
-              <details><summary>Code</summary><pre class="code">      93 | &quot;&quot;&quot;<br>      94 | <br>&gt;&gt;&gt;   95 | VERIFY_PROMPT = &quot;&quot;&quot;You are a security audit validator. A rule-based analyzer flagged a candidate issue in a {language} file. Inspect the code context and decide whether it is a REAL exploitable/reproducible bug.<br>      96 | <br>      97 | CANDIDATE:</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#5f6368">Info</span>
-                <span class="finding-title">Unresolved TODO/FIXME</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>analyzer\ai_analyzer.py</code>:110
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> Developer left a note indicating unfinished or problematic code.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Review and resolve the TODO/FIXME before deploying.</div>
-              <details><summary>Code</summary><pre class="code">     108 | <br>     109 | Rules:<br>&gt;&gt;&gt;  110 | - verdict &quot;confirmed&quot;: real bug. Provide exploit_path.<br>     111 | - verdict &quot;downgrade&quot;: minor/theoretical. Set actual_severity to medium or low.<br>     112 | - verdict &quot;rejected&quot;: not a bug. Explain in one line as fix.</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#5f6368">Info</span>
-                <span class="finding-title">Unresolved TODO/FIXME</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>analyzer\ai_analyzer.py</code>:446
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> Developer left a note indicating unfinished or problematic code.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Review and resolve the TODO/FIXME before deploying.</div>
-              <details><summary>Code</summary><pre class="code">     444 |                 description = &quot;\n&quot;.join(x for x in desc_lines if x)<br>     445 | <br>&gt;&gt;&gt;  446 |                 bug = Bug(<br>     447 |                     file=str(f.relative_path),<br>     448 |                     line=line_num,</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#5f6368">Info</span>
-                <span class="finding-title">Unresolved TODO/FIXME</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>analyzer\ai_analyzer.py</code>:459
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> Developer left a note indicating unfinished or problematic code.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Review and resolve the TODO/FIXME before deploying.</div>
-              <details><summary>Code</summary><pre class="code">     457 |                     confidence=float(issue.get(&quot;confidence&quot;, 0.6)),<br>     458 |                 )<br>&gt;&gt;&gt;  459 |                 bugs.append(bug)<br>     460 | <br>     461 |             return bugs</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#5f6368">Info</span>
-                <span class="finding-title">Unresolved TODO/FIXME</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>analyzer\ast_analyzer.py</code>:5
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> Developer left a note indicating unfinished or problematic code.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Review and resolve the TODO/FIXME before deploying.</div>
-              <details><summary>Code</summary><pre class="code">       3 | from pathlib import Path<br>       4 | <br>&gt;&gt;&gt;    5 | from .base import AnalysisResult, BaseAnalyzer, Bug<br>       6 | <br>       7 | </pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#5f6368">Info</span>
-                <span class="finding-title">Unresolved TODO/FIXME</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>analyzer\ast_analyzer.py</code>:24
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> Developer left a note indicating unfinished or problematic code.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Review and resolve the TODO/FIXME before deploying.</div>
-              <details><summary>Code</summary><pre class="code">      22 |         except SyntaxError as e:<br>      23 |             result.errors.append(f&quot;Syntax error in {f.relative_path}: {e}&quot;)<br>&gt;&gt;&gt;   24 |             result.add(Bug(<br>      25 |                 file=str(f.relative_path),<br>      26 |                 line=e.lineno or 1,</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#5f6368">Info</span>
-                <span class="finding-title">Unresolved TODO/FIXME</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>analyzer\ast_analyzer.py</code>:61
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> Developer left a note indicating unfinished or problematic code.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Review and resolve the TODO/FIXME before deploying.</div>
-              <details><summary>Code</summary><pre class="code">      59 |         col = getattr(node, &quot;col_offset&quot;, 0)<br>      60 |         snippet = _get_snippet(self.f.content.split(&quot;\n&quot;), line - 1)<br>&gt;&gt;&gt;   61 |         self.result.add(Bug(<br>      62 |             file=str(self.f.relative_path),<br>      63 |             line=line,</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#5f6368">Info</span>
-                <span class="finding-title">Unresolved TODO/FIXME</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>analyzer\ast_analyzer.py</code>:135
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> Developer left a note indicating unfinished or problematic code.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Review and resolve the TODO/FIXME before deploying.</div>
-              <details><summary>Code</summary><pre class="code">     133 |     def visit_ExceptHandler(self, node):<br>     134 |         if node.type is None:<br>&gt;&gt;&gt;  135 |             self._add_bug(<br>     136 |                 node, &quot;high&quot;, &quot;error-handling&quot;,<br>     137 |                 &quot;Bare Except Clause&quot;,</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#5f6368">Info</span>
-                <span class="finding-title">Unresolved TODO/FIXME</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>analyzer\ast_analyzer.py</code>:153
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> Developer left a note indicating unfinished or problematic code.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Review and resolve the TODO/FIXME before deploying.</div>
-              <details><summary>Code</summary><pre class="code">     151 |         if isinstance(node.func, ast.Name) and node.func.id == &quot;print&quot;:<br>     152 |             if not any(<br>&gt;&gt;&gt;  153 |                 isinstance(p, ast.Constant) and &quot;debug&quot; in str(p.value).lower()<br>     154 |                 for p in node.args<br>     155 |             ):</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#5f6368">Info</span>
-                <span class="finding-title">Unresolved TODO/FIXME</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>analyzer\ast_analyzer.py</code>:156
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> Developer left a note indicating unfinished or problematic code.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Review and resolve the TODO/FIXME before deploying.</div>
-              <details><summary>Code</summary><pre class="code">     154 |                 for p in node.args<br>     155 |             ):<br>&gt;&gt;&gt;  156 |                 self._add_bug(<br>     157 |                     node, &quot;info&quot;, &quot;code-quality&quot;,<br>     158 |                     &quot;Extraneous print() Call&quot;,</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#5f6368">Info</span>
-                <span class="finding-title">Unresolved TODO/FIXME</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>analyzer\ast_analyzer.py</code>:159
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> Developer left a note indicating unfinished or problematic code.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Review and resolve the TODO/FIXME before deploying.</div>
-              <details><summary>Code</summary><pre class="code">     157 |                     node, &quot;info&quot;, &quot;code-quality&quot;,<br>     158 |                     &quot;Extraneous print() Call&quot;,<br>&gt;&gt;&gt;  159 |                     &quot;A bare 'print()' without a 'debug' marker was left in the code. &quot;<br>     160 |                     &quot;It may expose internal data in production or indicate unfinished work.&quot;,<br>     161 |                     &quot;Remove debug prints or gate them behind a logger/config flag.&quot;,</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#5f6368">Info</span>
-                <span class="finding-title">Unresolved TODO/FIXME</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>analyzer\ast_analyzer.py</code>:168
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> Developer left a note indicating unfinished or problematic code.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Review and resolve the TODO/FIXME before deploying.</div>
-              <details><summary>Code</summary><pre class="code">     166 |     def visit_Global(self, node):<br>     167 |         for name in node.names:<br>&gt;&gt;&gt;  168 |             self._add_bug(<br>     169 |                 node, &quot;medium&quot;, &quot;code-quality&quot;,<br>     170 |                 &quot;Use of global Statement&quot;,</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#5f6368">Info</span>
-                <span class="finding-title">Unresolved TODO/FIXME</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>analyzer\ast_analyzer.py</code>:186
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> Developer left a note indicating unfinished or problematic code.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Review and resolve the TODO/FIXME before deploying.</div>
-              <details><summary>Code</summary><pre class="code">     184 |         length = end - getattr(node, &quot;lineno&quot;, end) + 1<br>     185 |         if length &gt; 60:<br>&gt;&gt;&gt;  186 |             self._add_bug(<br>     187 |                 node, &quot;low&quot;, &quot;code-quality&quot;,<br>     188 |                 &quot;Overly Long Function&quot;,</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#5f6368">Info</span>
-                <span class="finding-title">Unresolved TODO/FIXME</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>analyzer\ast_analyzer.py</code>:197
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> Developer left a note indicating unfinished or problematic code.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Review and resolve the TODO/FIXME before deploying.</div>
-              <details><summary>Code</summary><pre class="code">     195 |         n_params = len(pos_args) + len(kwonly)<br>     196 |         if n_params &gt; 6:<br>&gt;&gt;&gt;  197 |             self._add_bug(<br>     198 |                 node, &quot;low&quot;, &quot;code-quality&quot;,<br>     199 |                 &quot;Too Many Parameters&quot;,</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#5f6368">Info</span>
-                <span class="finding-title">Unresolved TODO/FIXME</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>analyzer\ast_analyzer.py</code>:209
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> Developer left a note indicating unfinished or problematic code.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Review and resolve the TODO/FIXME before deploying.</div>
-              <details><summary>Code</summary><pre class="code">     207 |         ]<br>     208 |         if len(returns) &gt; 5:<br>&gt;&gt;&gt;  209 |             self._add_bug(<br>     210 |                 node, &quot;info&quot;, &quot;code-quality&quot;,<br>     211 |                 &quot;Many Return Statements&quot;,</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#5f6368">Info</span>
-                <span class="finding-title">Unresolved TODO/FIXME</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>analyzer\ast_analyzer.py</code>:239
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> Developer left a note indicating unfinished or problematic code.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Review and resolve the TODO/FIXME before deploying.</div>
-              <details><summary>Code</summary><pre class="code">     237 |             if name.startswith(&quot;_&quot;):<br>     238 |                 continue<br>&gt;&gt;&gt;  239 |             self._add_bug(<br>     240 |                 func_node, &quot;low&quot;, &quot;code-quality&quot;,<br>     241 |                 &quot;Unused Variable&quot;,</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#5f6368">Info</span>
-                <span class="finding-title">Unresolved TODO/FIXME</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>analyzer\ast_analyzer.py</code>:251
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> Developer left a note indicating unfinished or problematic code.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Review and resolve the TODO/FIXME before deploying.</div>
-              <details><summary>Code</summary><pre class="code">     249 |             if isinstance(comparator, ast.Constant) and comparator.value is None:<br>     250 |                 if not isinstance(op, (ast.Is, ast.IsNot)):<br>&gt;&gt;&gt;  251 |                     self._add_bug(<br>     252 |                         node, &quot;low&quot;, &quot;logic&quot;,<br>     253 |                         &quot;Use 'is None' Instead of '== None'&quot;,</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#5f6368">Info</span>
-                <span class="finding-title">Unresolved TODO/FIXME</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>analyzer\ast_analyzer.py</code>:268
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> Developer left a note indicating unfinished or problematic code.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Review and resolve the TODO/FIXME before deploying.</div>
-              <details><summary>Code</summary><pre class="code">     266 |                     not isinstance(o, (ast.Is, ast.IsNot)) for o in node.ops<br>     267 |                 ):<br>&gt;&gt;&gt;  268 |                     self._add_bug(<br>     269 |                         node, &quot;low&quot;, &quot;logic&quot;,<br>     270 |                         &quot;Ambiguous Chained None Comparison&quot;,</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#5f6368">Info</span>
-                <span class="finding-title">Unresolved TODO/FIXME</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>analyzer\ast_analyzer.py</code>:324
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> Developer left a note indicating unfinished or problematic code.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Review and resolve the TODO/FIXME before deploying.</div>
-              <details><summary>Code</summary><pre class="code">     322 |                 # redundant upper bound: sibling tightens beyond current hi already<br>     323 |                 if arrow in (&quot;&lt;&quot;, &quot;&lt;=&quot;) and hi is not None and s_val &lt;= hi:<br>&gt;&gt;&gt;  324 |                     self._add_bug(<br>     325 |                         sibling, &quot;low&quot;, &quot;logic&quot;,<br>     326 |                         &quot;Redundant Chained Comparison&quot;,</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#5f6368">Info</span>
-                <span class="finding-title">Unresolved TODO/FIXME</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>analyzer\ast_analyzer.py</code>:333
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> Developer left a note indicating unfinished or problematic code.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Review and resolve the TODO/FIXME before deploying.</div>
-              <details><summary>Code</summary><pre class="code">     331 |                     )<br>     332 |                 elif arrow in (&quot;&gt;&quot;, &quot;&gt;=&quot;) and lo is not None and s_val &gt;= lo:<br>&gt;&gt;&gt;  333 |                     self._add_bug(<br>     334 |                         sibling, &quot;low&quot;, &quot;logic&quot;,<br>     335 |                         &quot;Redundant Chained Comparison&quot;,</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#5f6368">Info</span>
-                <span class="finding-title">Unresolved TODO/FIXME</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>analyzer\base.py</code>:5
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> Developer left a note indicating unfinished or problematic code.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Review and resolve the TODO/FIXME before deploying.</div>
-              <details><summary>Code</summary><pre class="code">       3 | <br>       4 | @dataclass<br>&gt;&gt;&gt;    5 | class Bug:<br>       6 |     file: str<br>       7 |     line: int</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#5f6368">Info</span>
-                <span class="finding-title">Unresolved TODO/FIXME</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>analyzer\base.py</code>:21
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> Developer left a note indicating unfinished or problematic code.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Review and resolve the TODO/FIXME before deploying.</div>
-              <details><summary>Code</summary><pre class="code">      19 | @dataclass<br>      20 | class AnalysisResult:<br>&gt;&gt;&gt;   21 |     bugs: list[Bug] = field(default_factory=list)<br>      22 |     files_analyzed: int = 0<br>      23 |     errors: list[str] = field(default_factory=list)</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#5f6368">Info</span>
-                <span class="finding-title">Unresolved TODO/FIXME</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>analyzer\base.py</code>:25
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> Developer left a note indicating unfinished or problematic code.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Review and resolve the TODO/FIXME before deploying.</div>
-              <details><summary>Code</summary><pre class="code">      23 |     errors: list[str] = field(default_factory=list)<br>      24 | <br>&gt;&gt;&gt;   25 |     def add(self, bug: Bug):<br>      26 |         self.bugs.append(bug)<br>      27 | </pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#5f6368">Info</span>
-                <span class="finding-title">Unresolved TODO/FIXME</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>analyzer\base.py</code>:33
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> Developer left a note indicating unfinished or problematic code.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Review and resolve the TODO/FIXME before deploying.</div>
-              <details><summary>Code</summary><pre class="code">      31 |         self.errors.extend(other.errors)<br>      32 | <br>&gt;&gt;&gt;   33 |     def sorted_bugs(self, by: str = &quot;severity&quot;) -&gt; list[Bug]:<br>      34 |         from ..config import SEVERITY_ORDER<br>      35 |         return sorted(self.bugs, key=lambda b: SEVERITY_ORDER.get(b.severity, 99))</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#5f6368">Info</span>
-                <span class="finding-title">Unresolved TODO/FIXME</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>analyzer\dedup.py</code>:24
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> Developer left a note indicating unfinished or problematic code.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Review and resolve the TODO/FIXME before deploying.</div>
-              <details><summary>Code</summary><pre class="code">      22 | <br>      23 |     kept: list = []<br>&gt;&gt;&gt;   24 |     for bug in ordered:<br>      25 |         dup = False<br>      26 |         for other in kept:</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#5f6368">Info</span>
-                <span class="finding-title">Unresolved TODO/FIXME</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>analyzer\dedup.py</code>:27
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> Developer left a note indicating unfinished or problematic code.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Review and resolve the TODO/FIXME before deploying.</div>
-              <details><summary>Code</summary><pre class="code">      25 |         dup = False<br>      26 |         for other in kept:<br>&gt;&gt;&gt;   27 |             if bug.file != other.file:<br>      28 |                 continue<br>      29 |             if bug.category != other.category:</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#5f6368">Info</span>
-                <span class="finding-title">Unresolved TODO/FIXME</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>analyzer\dedup.py</code>:31
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> Developer left a note indicating unfinished or problematic code.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Review and resolve the TODO/FIXME before deploying.</div>
-              <details><summary>Code</summary><pre class="code">      29 |             if bug.category != other.category:<br>      30 |                 continue<br>&gt;&gt;&gt;   31 |             if abs(int(bug.line or 0) - int(other.line or 0)) &lt;= line_tolerance:<br>      32 |                 dup = True<br>      33 |                 break</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#5f6368">Info</span>
-                <span class="finding-title">Unresolved TODO/FIXME</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>analyzer\dedup.py</code>:35
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> Developer left a note indicating unfinished or problematic code.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Review and resolve the TODO/FIXME before deploying.</div>
-              <details><summary>Code</summary><pre class="code">      33 |                 break<br>      34 |         if not dup:<br>&gt;&gt;&gt;   35 |             kept.append(bug)<br>      36 |     return kept<br>      37 | </pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#5f6368">Info</span>
-                <span class="finding-title">Unresolved TODO/FIXME</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>analyzer\patterns.py</code>:145
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> Developer left a note indicating unfinished or problematic code.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Review and resolve the TODO/FIXME before deploying.</div>
-              <details><summary>Code</summary><pre class="code">     143 |     &quot;&quot;&quot;<br>     144 |     if compact:<br>&gt;&gt;&gt;  145 |         lines = [&quot;HIGH-VALUE BUG CLASSES (map code to these):&quot;]<br>     146 |         for p in KNOWN_HIGH_VALUE_PATTERNS:<br>     147 |             lines.append(</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#5f6368">Info</span>
-                <span class="finding-title">Unresolved TODO/FIXME</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>analyzer\patterns.py</code>:158
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> Developer left a note indicating unfinished or problematic code.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Review and resolve the TODO/FIXME before deploying.</div>
-              <details><summary>Code</summary><pre class="code">     156 |         return &quot;\n&quot;.join(lines)<br>     157 | <br>&gt;&gt;&gt;  158 |     lines = [&quot;HIGH-VALUE BUG CLASSES THAT ACTUALLY PAY (learn these):&quot;]<br>     159 |     for p in KNOWN_HIGH_VALUE_PATTERNS:<br>     160 |         lines.append(</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#5f6368">Info</span>
-                <span class="finding-title">Unresolved TODO/FIXME</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>analyzer\solidity_analyzer.py</code>:2
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> Developer left a note indicating unfinished or problematic code.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Review and resolve the TODO/FIXME before deploying.</div>
-              <details><summary>Code</summary><pre class="code">       1 | import re<br>&gt;&gt;&gt;    2 | from .base import AnalysisResult, BaseAnalyzer, Bug<br>       3 | <br>       4 | </pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#5f6368">Info</span>
-                <span class="finding-title">Unresolved TODO/FIXME</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>analyzer\solidity_analyzer.py</code>:307
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> Developer left a note indicating unfinished or problematic code.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Review and resolve the TODO/FIXME before deploying.</div>
-              <details><summary>Code</summary><pre class="code">     305 |             sc.calls.append((line_no, call_kind, method))<br>     306 |             if call_kind in (&quot;call&quot;, &quot;delegatecall&quot;) and not self._call_result_captured(line):<br>&gt;&gt;&gt;  307 |                 self._add_bug(<br>     308 |                     result, f, line_no, &quot;medium&quot;, &quot;security&quot;,<br>     309 |                     &quot;Unchecked Low-Level Call Result&quot;,</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#5f6368">Info</span>
-                <span class="finding-title">Unresolved TODO/FIXME</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>analyzer\solidity_analyzer.py</code>:316
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> Developer left a note indicating unfinished or problematic code.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Review and resolve the TODO/FIXME before deploying.</div>
-              <details><summary>Code</summary><pre class="code">     314 |             if call_kind == &quot;call&quot; and re.search(r&quot;\.call\s*\{&quot;, line):<br>     315 |                 if sc.guard:<br>&gt;&gt;&gt;  316 |                     self._add_bug(<br>     317 |                         result, f, line_no, &quot;info&quot;, &quot;security&quot;,<br>     318 |                         &quot;Reentrancy Vector (External Call with Value, Guard Present)&quot;,</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#5f6368">Info</span>
-                <span class="finding-title">Unresolved TODO/FIXME</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>analyzer\solidity_analyzer.py</code>:342
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> Developer left a note indicating unfinished or problematic code.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Review and resolve the TODO/FIXME before deploying.</div>
-              <details><summary>Code</summary><pre class="code">     340 |     def _report_reentrancy_vector(self, sc, result, f):<br>     341 |         if sc.write_after_eth:<br>&gt;&gt;&gt;  342 |             self._add_bug(<br>     343 |                 result, f, sc.eth_call_line, &quot;high&quot;, &quot;security&quot;,<br>     344 |                 &quot;Reentrancy Vector (External Call with Value)&quot;,</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#5f6368">Info</span>
-                <span class="finding-title">Unresolved TODO/FIXME</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>analyzer\solidity_analyzer.py</code>:353
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> Developer left a note indicating unfinished or problematic code.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Review and resolve the TODO/FIXME before deploying.</div>
-              <details><summary>Code</summary><pre class="code">     351 |             )<br>     352 |         else:<br>&gt;&gt;&gt;  353 |             self._add_bug(<br>     354 |                 result, f, sc.eth_call_line, &quot;info&quot;, &quot;security&quot;,<br>     355 |                 &quot;Reentrancy Vector (External Call with Value, CEI Respected)&quot;,</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#5f6368">Info</span>
-                <span class="finding-title">Unresolved TODO/FIXME</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>analyzer\solidity_analyzer.py</code>:405
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> Developer left a note indicating unfinished or problematic code.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Review and resolve the TODO/FIXME before deploying.</div>
-              <details><summary>Code</summary><pre class="code">     403 |         else:<br>     404 |             sev, conf, note = &quot;medium&quot;, 0.4, &quot;&quot;<br>&gt;&gt;&gt;  405 |         self._add_bug(<br>     406 |             result, f, line_no, sev, &quot;logic&quot;,<br>     407 |             &quot;State Change After External Call (CEI Violation)&quot;,</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#5f6368">Info</span>
-                <span class="finding-title">Unresolved TODO/FIXME</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>analyzer\solidity_analyzer.py</code>:426
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> Developer left a note indicating unfinished or problematic code.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Review and resolve the TODO/FIXME before deploying.</div>
-              <details><summary>Code</summary><pre class="code">     424 |             return<br>     425 |         if not sc.oracle_price_checked and sc.oracle_price_casted:<br>&gt;&gt;&gt;  426 |             self._add_bug(<br>     427 |                 result, f, sc.oracle_read_line, &quot;high&quot;, &quot;oracle&quot;,<br>     428 |                 &quot;Oracle Price Missing Positive Check&quot;,</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#5f6368">Info</span>
-                <span class="finding-title">Unresolved TODO/FIXME</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>analyzer\solidity_analyzer.py</code>:443
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> Developer left a note indicating unfinished or problematic code.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Review and resolve the TODO/FIXME before deploying.</div>
-              <details><summary>Code</summary><pre class="code">     441 |             return<br>     442 |         if not sc.oracle_fresh_checked:<br>&gt;&gt;&gt;  443 |             self._add_bug(<br>     444 |                 result, f, sc.oracle_read_line, &quot;medium&quot;, &quot;oracle&quot;,<br>     445 |                 &quot;Oracle Price Missing Staleness Check&quot;,</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#5f6368">Info</span>
-                <span class="finding-title">Unresolved TODO/FIXME</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>analyzer\solidity_analyzer.py</code>:537
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> Developer left a note indicating unfinished or problematic code.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Review and resolve the TODO/FIXME before deploying.</div>
-              <details><summary>Code</summary><pre class="code">     535 |             if var in self._sweep_vars and self._current_func is not None:<br>     536 |                 snap_line, is_native = self._sweep_vars[var]<br>&gt;&gt;&gt;  537 |                 self._add_sweep_bug(<br>     538 |                     result, f, line_no,<br>     539 |                     &quot;high&quot; if is_native else &quot;high&quot;,</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#5f6368">Info</span>
-                <span class="finding-title">Unresolved TODO/FIXME</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>analyzer\solidity_analyzer.py</code>:562
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> Developer left a note indicating unfinished or problematic code.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Review and resolve the TODO/FIXME before deploying.</div>
-              <details><summary>Code</summary><pre class="code">     560 |         lowered = line.lower()<br>     561 |         if &quot;address(this).balance&quot; in lowered or &quot;balanceof(address(this))&quot; in lowered:<br>&gt;&gt;&gt;  562 |             self._add_sweep_bug(<br>     563 |                 result, f, line_no, &quot;high&quot;,<br>     564 |                 &quot;Full-Balance Sweep in Payout&quot;,</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#5f6368">Info</span>
-                <span class="finding-title">Unresolved TODO/FIXME</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>analyzer\solidity_analyzer.py</code>:575
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> Developer left a note indicating unfinished or problematic code.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Review and resolve the TODO/FIXME before deploying.</div>
-              <details><summary>Code</summary><pre class="code">     573 |             )<br>     574 |         else:<br>&gt;&gt;&gt;  575 |             self._add_sweep_bug(<br>     576 |                 result, f, line_no, &quot;medium&quot;,<br>     577 |                 &quot;Suspicious Full-Balance Payout&quot;,</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#5f6368">Info</span>
-                <span class="finding-title">Unresolved TODO/FIXME</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>analyzer\static.py</code>:4
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> Developer left a note indicating unfinished or problematic code.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Review and resolve the TODO/FIXME before deploying.</div>
-              <details><summary>Code</summary><pre class="code">       2 | from pathlib import Path<br>       3 | <br>&gt;&gt;&gt;    4 | from .base import AnalysisResult, BaseAnalyzer, Bug<br>       5 | <br>       6 | </pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#5f6368">Info</span>
-                <span class="finding-title">Unresolved TODO/FIXME</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>analyzer\static.py</code>:111
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> Developer left a note indicating unfinished or problematic code.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Review and resolve the TODO/FIXME before deploying.</div>
-              <details><summary>Code</summary><pre class="code">     109 |         },<br>     110 |         {<br>&gt;&gt;&gt;  111 |             &quot;pattern&quot;: r&quot;(?:TODO|FIXME|HACK|XXX|BUG)\b&quot;,<br>     112 |             &quot;category&quot;: &quot;code-quality&quot;,<br>     113 |             &quot;title&quot;: &quot;Unresolved TODO/FIXME&quot;,</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#5f6368">Info</span>
-                <span class="finding-title">Unresolved TODO/FIXME</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>analyzer\static.py</code>:115
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> Developer left a note indicating unfinished or problematic code.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Review and resolve the TODO/FIXME before deploying.</div>
-              <details><summary>Code</summary><pre class="code">     113 |             &quot;title&quot;: &quot;Unresolved TODO/FIXME&quot;,<br>     114 |             &quot;description&quot;: &quot;Developer left a note indicating unfinished or problematic code.&quot;,<br>&gt;&gt;&gt;  115 |             &quot;suggestion&quot;: &quot;Review and resolve the TODO/FIXME before deploying.&quot;,<br>     116 |             &quot;severity&quot;: &quot;info&quot;,<br>     117 |             &quot;languages&quot;: [&quot;python&quot;, &quot;javascript&quot;, &quot;typescript&quot;, &quot;java&quot;, &quot;go&quot;, &quot;rust&quot;, &quot;ruby&quot;, &quot;php&quot;, &quot;c&quot;, &quot;cpp&quot;],</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#5f6368">Info</span>
-                <span class="finding-title">Unresolved TODO/FIXME</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>analyzer\static.py</code>:123
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> Developer left a note indicating unfinished or problematic code.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Review and resolve the TODO/FIXME before deploying.</div>
-              <details><summary>Code</summary><pre class="code">     121 |             &quot;category&quot;: &quot;concurrency&quot;,<br>     122 |             &quot;title&quot;: &quot;Manual Thread Management&quot;,<br>&gt;&gt;&gt;  123 |             &quot;description&quot;: &quot;Manual thread creation detected. This can cause race conditions and hard-to-debug issues.&quot;,<br>     124 |             &quot;suggestion&quot;: &quot;Consider using thread pools, asyncio, or concurrent.futures instead.&quot;,<br>     125 |             &quot;severity&quot;: &quot;medium&quot;,</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#5f6368">Info</span>
-                <span class="finding-title">Unresolved TODO/FIXME</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>analyzer\static.py</code>:261
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> Developer left a note indicating unfinished or problematic code.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Review and resolve the TODO/FIXME before deploying.</div>
-              <details><summary>Code</summary><pre class="code">     259 |             &quot;category&quot;: &quot;syntax&quot;,<br>     260 |             &quot;title&quot;: &quot;Obsolete Solidity Version&quot;,<br>&gt;&gt;&gt;  261 |             &quot;description&quot;: &quot;Using an outdated Solidity compiler version that lacks safety improvements and bug fixes.&quot;,<br>     262 |             &quot;suggestion&quot;: &quot;Upgrade to Solidity 0.8.x which has built-in overflow/underflow checks.&quot;,<br>     263 |             &quot;severity&quot;: &quot;low&quot;,</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#5f6368">Info</span>
-                <span class="finding-title">Unresolved TODO/FIXME</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>analyzer\static.py</code>:326
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> Developer left a note indicating unfinished or problematic code.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Review and resolve the TODO/FIXME before deploying.</div>
-              <details><summary>Code</summary><pre class="code">     324 |                 if m is not None:<br>     325 |                     snippet = _get_snippet(lines, i - 1)<br>&gt;&gt;&gt;  326 |                     bug = Bug(<br>     327 |                         file=str(f.relative_path),<br>     328 |                         line=i,</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#5f6368">Info</span>
-                <span class="finding-title">Unresolved TODO/FIXME</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>analyzer\static.py</code>:339
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> Developer left a note indicating unfinished or problematic code.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Review and resolve the TODO/FIXME before deploying.</div>
-              <details><summary>Code</summary><pre class="code">     337 |                         confidence=0.7,<br>     338 |                     )<br>&gt;&gt;&gt;  339 |                     result.add(bug)<br>     340 | <br>     341 | </pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#5f6368">Info</span>
-                <span class="finding-title">Unresolved TODO/FIXME</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>analyzer\__init__.py</code>:1
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> Developer left a note indicating unfinished or problematic code.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Review and resolve the TODO/FIXME before deploying.</div>
-              <details><summary>Code</summary><pre class="code">&gt;&gt;&gt;    1 | from .base import AnalysisResult, BaseAnalyzer, Bug<br>       2 | from .static import StaticAnalyzer<br>       3 | from .ast_analyzer import ASTAnalyzer</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#5f6368">Info</span>
-                <span class="finding-title">Unresolved TODO/FIXME</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>analyzer\__init__.py</code>:15
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> Developer left a note indicating unfinished or problematic code.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Review and resolve the TODO/FIXME before deploying.</div>
-              <details><summary>Code</summary><pre class="code">      13 |     &quot;AnalysisResult&quot;,<br>      14 |     &quot;BaseAnalyzer&quot;,<br>&gt;&gt;&gt;   15 |     &quot;Bug&quot;,<br>      16 |     &quot;StaticAnalyzer&quot;,<br>      17 |     &quot;ASTAnalyzer&quot;,</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#5f6368">Info</span>
-                <span class="finding-title">Unresolved TODO/FIXME</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>reporters\__init__.py</code>:50
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> Developer left a note indicating unfinished or problematic code.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Review and resolve the TODO/FIXME before deploying.</div>
-              <details><summary>Code</summary><pre class="code">      48 | <br>      49 |     severity_counts = {}<br>&gt;&gt;&gt;   50 |     for bug in sorted_bugs:<br>      51 |         severity_counts[bug.severity] = severity_counts.get(bug.severity, 0) + 1<br>      52 | </pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#5f6368">Info</span>
-                <span class="finding-title">Unresolved TODO/FIXME</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>reporters\__init__.py</code>:78
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> Developer left a note indicating unfinished or problematic code.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Review and resolve the TODO/FIXME before deploying.</div>
-              <details><summary>Code</summary><pre class="code">      76 | <br>      77 |     category_groups = {}<br>&gt;&gt;&gt;   78 |     for bug in sorted_bugs:<br>      79 |         cat = bug.category<br>      80 |         if cat not in category_groups:</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#5f6368">Info</span>
-                <span class="finding-title">Unresolved TODO/FIXME</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>reporters\__init__.py</code>:82
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> Developer left a note indicating unfinished or problematic code.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Review and resolve the TODO/FIXME before deploying.</div>
-              <details><summary>Code</summary><pre class="code">      80 |         if cat not in category_groups:<br>      81 |             category_groups[cat] = []<br>&gt;&gt;&gt;   82 |         category_groups[cat].append(bug)<br>      83 | <br>      84 |     category_order = [&quot;security&quot;, &quot;logic&quot;, &quot;error-handling&quot;, &quot;concurrency&quot;,</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#5f6368">Info</span>
-                <span class="finding-title">Unresolved TODO/FIXME</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>reporters\__init__.py</code>:93
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> Developer left a note indicating unfinished or problematic code.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Review and resolve the TODO/FIXME before deploying.</div>
-              <details><summary>Code</summary><pre class="code">      91 |         lines.append(f&quot;## {cat.replace('-', ' ').title()} ({len(bugs)})&quot;)<br>      92 |         lines.append(f&quot;&quot;)<br>&gt;&gt;&gt;   93 |         for bug in bugs:<br>      94 |             lines.append(f&quot;### [{SEVERITY_EMOJI[bug.severity].upper()}] {bug.title}&quot;)<br>      95 |             lines.append(f&quot;&quot;)</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#5f6368">Info</span>
-                <span class="finding-title">Unresolved TODO/FIXME</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>reporters\__init__.py</code>:96
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> Developer left a note indicating unfinished or problematic code.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Review and resolve the TODO/FIXME before deploying.</div>
-              <details><summary>Code</summary><pre class="code">      94 |             lines.append(f&quot;### [{SEVERITY_EMOJI[bug.severity].upper()}] {bug.title}&quot;)<br>      95 |             lines.append(f&quot;&quot;)<br>&gt;&gt;&gt;   96 |             lines.append(f&quot;- **File:** `{bug.file}:{bug.line}`&quot;)<br>      97 |             lines.append(f&quot;- **Severity:** {bug.severity.upper()}&quot;)<br>      98 |             lines.append(f&quot;- **Confidence:** {bug.confidence:.0%}&quot;)</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#5f6368">Info</span>
-                <span class="finding-title">Unresolved TODO/FIXME</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>reporters\__init__.py</code>:99
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> Developer left a note indicating unfinished or problematic code.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Review and resolve the TODO/FIXME before deploying.</div>
-              <details><summary>Code</summary><pre class="code">      97 |             lines.append(f&quot;- **Severity:** {bug.severity.upper()}&quot;)<br>      98 |             lines.append(f&quot;- **Confidence:** {bug.confidence:.0%}&quot;)<br>&gt;&gt;&gt;   99 |             lines.append(f&quot;- **Analyzer:** {bug.analyzer}&quot;)<br>     100 |             lines.append(f&quot;&quot;)<br>     101 |             lines.append(f&quot;**Problem:** {bug.description}&quot;)</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#5f6368">Info</span>
-                <span class="finding-title">Unresolved TODO/FIXME</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>reporters\__init__.py</code>:103
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> Developer left a note indicating unfinished or problematic code.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Review and resolve the TODO/FIXME before deploying.</div>
-              <details><summary>Code</summary><pre class="code">     101 |             lines.append(f&quot;**Problem:** {bug.description}&quot;)<br>     102 |             lines.append(f&quot;&quot;)<br>&gt;&gt;&gt;  103 |             lines.append(f&quot;**Fix:** {bug.suggestion}&quot;)<br>     104 |             lines.append(f&quot;&quot;)<br>     105 |             if bug.code_snippet:</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#5f6368">Info</span>
-                <span class="finding-title">Unresolved TODO/FIXME</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>reporters\__init__.py</code>:110
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> Developer left a note indicating unfinished or problematic code.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Review and resolve the TODO/FIXME before deploying.</div>
-              <details><summary>Code</summary><pre class="code">     108 |                 lines.append(f&quot;&quot;)<br>     109 |                 lines.append(f&quot;```&quot;)<br>&gt;&gt;&gt;  110 |                 lines.append(bug.code_snippet)<br>     111 |                 lines.append(f&quot;```&quot;)<br>     112 |                 lines.append(f&quot;&lt;/details&gt;&quot;)</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#5f6368">Info</span>
-                <span class="finding-title">Unresolved TODO/FIXME</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>reporters\__init__.py</code>:121
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> Developer left a note indicating unfinished or problematic code.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Review and resolve the TODO/FIXME before deploying.</div>
-              <details><summary>Code</summary><pre class="code">     119 |             lines.append(f&quot;## {cat.replace('-', ' ').title()} ({len(bugs)})&quot;)<br>     120 |             lines.append(f&quot;&quot;)<br>&gt;&gt;&gt;  121 |             for bug in bugs:<br>     122 |                 lines.append(f&quot;### [{SEVERITY_EMOJI[bug.severity].upper()}] {bug.title}&quot;)<br>     123 |                 lines.append(f&quot;- **File:** `{bug.file}:{bug.line}`&quot;)</pre></details>
-            </div>
-            
-            <div class="finding">
-              <div class="finding-head">
-                <span class="badge" style="background:#5f6368">Info</span>
-                <span class="finding-title">Unresolved TODO/FIXME</span>
-                <span class="conf">confidence 70%</span>
-              </div>
-              <div class="finding-meta">
-                <code>reporters\__init__.py</code>:124
-                <span class="analyzer">static</span>
-              </div>
-              <div class="finding-desc"><b>Problem:</b> Developer left a note indicating unfinished or problematic code.</div>
-              <div class="finding-fix"><b>Recommendation:</b> Review and resolve the TODO/FIXME before deploying.</div>
-              <details><summary>Code</summary><pre class="code">     122 |                 lines.append(f&quot;### [{SEVERITY_EMOJI[bug.severity].upper()}] {bug.title}&quot;)<br>     123 |                 lines.append(f&quot;- **File:** `{bug.file}:{bug.line}`&quot;)<br>&gt;&gt;&gt;  124 |                 lines.append(f&quot;- **Severity:** {bug.severity.upper()}&quot;)<br>     125 |                 lines.append(f&quot;**Problem:** {bug.description}&quot;)<br>     126 |                 lines.append(f&quot;**Fix:** {bug.suggestion}&quot;)</pre></details>
-            </div>
-            
-
-  <div class="footer">Generated by BugHunter · AI-assisted automated security review · For auditing purposes only</div>
-</div>
-</body>
-</html>
