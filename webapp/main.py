@@ -23,13 +23,13 @@ from bug_hunter.analyzer.ast_analyzer import ASTAnalyzer
 from bug_hunter.analyzer.dedup import dedup_bugs
 from bug_hunter.analyzer.base import AnalysisResult
 from bug_hunter.ignore import IgnoreRules, apply_ignores
-from .wpscanner import scan_wordpress
+from .wpscanner import scan_website
 
 APP_DIR = Path(__file__).resolve().parent
 REPORTS_DIR = APP_DIR / "reports"
 REPORTS_DIR.mkdir(exist_ok=True)
 
-DAILY_LIMIT = int(os.environ.get("BH_DAILY_LIMIT", "5"))
+DAILY_LIMIT = int(os.environ.get("BH_DAILY_LIMIT", "100"))
 CLONE_TIMEOUT = 120  # seconds
 
 app = FastAPI(title="BugHunter Web")
@@ -97,13 +97,13 @@ async def wpscan(request: Request, site_url: str = Form(...)):
 
     import asyncio
     loop = asyncio.get_event_loop()
-    result = await loop.run_in_executor(None, scan_wordpress, site_url)
+    result = await loop.run_in_executor(None, scan_website, site_url)
     _record_scan(ip)
 
-    if not result.is_wordpress:
+    if result.errors and not result.technologies and not result.findings:
         return templates.TemplateResponse(request, "index.html", {
             "remaining": _check_limit(ip), "limit": DAILY_LIMIT,
-            "error": f"{site_url} doesn't look like a WordPress site.",
+            "error": result.errors[0] if result.errors else f"Could not scan {site_url}.",
         })
 
     return templates.TemplateResponse(request, "wpreport.html", {

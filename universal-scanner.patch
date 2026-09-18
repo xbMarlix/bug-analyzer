@@ -1,0 +1,423 @@
+From a186fd54fc621933dd592d3c24be6a19479b766a Mon Sep 17 00:00:00 2001
+From: xbMarlix <acc777qwe@gmail.com>
+Date: Fri, 18 Sep 2026 11:44:04 +0000
+Subject: [PATCH] Universal black-box site scanner (any site: headers, exposed
+ files, JS secrets, tech fingerprint) + raise daily limit to 100
+
+---
+ webapp/main.py              |  10 +-
+ webapp/templates/index.html |   4 +-
+ webapp/wpscanner.py         | 215 ++++++++++++++++++++++++++++--------
+ 3 files changed, 175 insertions(+), 54 deletions(-)
+
+diff --git a/webapp/main.py b/webapp/main.py
+index 25b60e1..b23c7e0 100644
+--- a/webapp/main.py
++++ b/webapp/main.py
+@@ -23,13 +23,13 @@ from bug_hunter.analyzer.ast_analyzer import ASTAnalyzer
+ from bug_hunter.analyzer.dedup import dedup_bugs
+ from bug_hunter.analyzer.base import AnalysisResult
+ from bug_hunter.ignore import IgnoreRules, apply_ignores
+-from .wpscanner import scan_wordpress
++from .wpscanner import scan_website
+ 
+ APP_DIR = Path(__file__).resolve().parent
+ REPORTS_DIR = APP_DIR / "reports"
+ REPORTS_DIR.mkdir(exist_ok=True)
+ 
+-DAILY_LIMIT = int(os.environ.get("BH_DAILY_LIMIT", "5"))
++DAILY_LIMIT = int(os.environ.get("BH_DAILY_LIMIT", "100"))
+ CLONE_TIMEOUT = 120  # seconds
+ 
+ app = FastAPI(title="BugHunter Web")
+@@ -97,13 +97,13 @@ async def wpscan(request: Request, site_url: str = Form(...)):
+ 
+     import asyncio
+     loop = asyncio.get_event_loop()
+-    result = await loop.run_in_executor(None, scan_wordpress, site_url)
++    result = await loop.run_in_executor(None, scan_website, site_url)
+     _record_scan(ip)
+ 
+-    if not result.is_wordpress:
++    if result.errors and not result.technologies and not result.findings:
+         return templates.TemplateResponse(request, "index.html", {
+             "remaining": _check_limit(ip), "limit": DAILY_LIMIT,
+-            "error": f"{site_url} doesn't look like a WordPress site.",
++            "error": result.errors[0] if result.errors else f"Could not scan {site_url}.",
+         })
+ 
+     return templates.TemplateResponse(request, "wpreport.html", {
+diff --git a/webapp/templates/index.html b/webapp/templates/index.html
+index 49a5dde..3cdeb51 100644
+--- a/webapp/templates/index.html
++++ b/webapp/templates/index.html
+@@ -41,10 +41,10 @@
+     <div class="limits">Free scans today: {{ remaining }} / {{ limit }}</div>
+ 
+     <div style="margin-top:28px;padding-top:22px;border-top:1px solid #21262d">
+-      <div class="tag" style="margin-bottom:12px">Or black-box test a live <b>WordPress</b> site (no code needed):</div>
++      <div class="tag" style="margin-bottom:12px">Or black-box test a live <b>website</b> (any site, no code needed):</div>
+       <form method="post" action="/wpscan">
+         <input type="url" name="site_url" placeholder="https://example.com" required>
+-        <button type="submit" style="background:#58a6ff">WP Scan</button>
++        <button type="submit" style="background:#58a6ff">Site Scan</button>
+       </form>
+     </div>
+ 
+diff --git a/webapp/wpscanner.py b/webapp/wpscanner.py
+index 2c40464..8fc2a79 100644
+--- a/webapp/wpscanner.py
++++ b/webapp/wpscanner.py
+@@ -1,21 +1,22 @@
+-"""Black-box WordPress security scanner.
++"""Black-box website security scanner (any site, WordPress included).
+ 
+-Given a site URL, passively detects WordPress version, plugins, themes from
+-public pages (readme.html, asset paths, meta generator), checks them against
+-the WPVulnerability database (free, no API key), and runs safe config checks
+-(xmlrpc, wp-json user enumeration, debug mode, directory listing).
++Passive, GET-only checks:
++- Tech fingerprinting (WordPress, Joomla, Drupal, frameworks, servers)
++- Security headers (CSP, HSTS, X-Frame-Options, etc.)
++- Exposed sensitive files (.git, .env, backups, config)
++- Secrets leaked in public JS
++- WordPress-specific: version/plugins/themes + WPVulnDB + config checks
+ 
+-All checks are GET-only and non-intrusive.
++Non-intrusive by design: a handful of GET requests, no fuzzing, no POST.
+ """
+ from __future__ import annotations
+ 
+ import json
+ import re
+-import urllib.parse
+ import urllib.request
+ from dataclasses import dataclass, field
+ 
+-UA = {"User-Agent": "BugHunter-WPScanner/1.0"}
++UA = {"User-Agent": "BugHunter-SiteScanner/1.0"}
+ TIMEOUT = 15
+ VULN_API = "https://www.wpvulnerability.net"
+ 
+@@ -23,7 +24,7 @@ VULN_API = "https://www.wpvulnerability.net"
+ @dataclass
+ class Vuln:
+     software: str
+-    software_type: str  # core|plugin|theme
++    software_type: str
+     title: str
+     max_affected: str
+     cve: str
+@@ -33,7 +34,7 @@ class Vuln:
+ @dataclass
+ class Finding:
+     check: str
+-    severity: str  # critical|high|medium|low|info
++    severity: str
+     title: str
+     detail: str
+     fix: str
+@@ -44,8 +45,11 @@ class ScanResult:
+     url: str
+     is_wordpress: bool = False
+     wp_version: str | None = None
+-    plugins: dict = field(default_factory=dict)   # slug -> version|None
++    plugins: dict = field(default_factory=dict)
+     theme: str | None = None
++    technologies: list = field(default_factory=list)
++    server: str | None = None
++    missing_headers: list = field(default_factory=list)
+     vulns: list = field(default_factory=list)
+     findings: list = field(default_factory=list)
+     errors: list = field(default_factory=list)
+@@ -77,16 +81,132 @@ def _api_get(path: str):
+         return None
+ 
+ 
+-def detect_wordpress(base: str) -> ScanResult:
+-    res = ScanResult(url=base)
+-    base = base.rstrip("/")
++_SECURITY_HEADERS = {
++    "content-security-policy": ("medium", "No Content-Security-Policy",
++                                 "CSP header is missing — XSS attacks are easier to execute.",
++                                 "Add a Content-Security-Policy header."),
++    "strict-transport-security": ("medium", "No HSTS",
++                                   "Strict-Transport-Security missing — connections can be downgraded to HTTP.",
++                                   "Enable HSTS (max-age >= 31536000)."),
++    "x-frame-options": ("low", "No X-Frame-Options",
++                        "Page can be embedded in an iframe — clickjacking possible.",
++                        "Set X-Frame-Options: DENY or SAMEORIGIN (or CSP frame-ancestors)."),
++    "x-content-type-options": ("low", "No X-Content-Type-Options",
++                               "MIME sniffing allowed — browsers may misinterpret files as scripts.",
++                               "Set X-Content-Type-Options: nosniff."),
++    "referrer-policy": ("info", "No Referrer-Policy",
++                        "Referrer may leak internal URLs to third parties.",
++                        "Set Referrer-Policy: strict-origin-when-cross-origin."),
++    "permissions-policy": ("info", "No Permissions-Policy",
++                           "Browser features (camera, mic, geo) not restricted.",
++                           "Set a Permissions-Policy header."),
++}
++
++
++def check_headers(res: ScanResult, headers: dict):
++    lower = {k.lower(): v for k, v in headers.items()}
++    res.server = lower.get("server") or lower.get("x-powered-by")
++    if res.server:
++        res.technologies.append(f"Server: {res.server}")
++    for h, (sev, title, detail, fix) in _SECURITY_HEADERS.items():
++        if h not in lower:
++            res.missing_headers.append(h)
++            res.findings.append(Finding(f"header-{h}", sev, title, detail, fix))
++
++
++def fingerprint(res: ScanResult, html: str, headers: dict):
++    techs = set()
++    lower_headers = {k.lower(): v for k, v in headers.items()}
++
++    if "wp-content/" in html or "wp-includes/" in html or re.search(
++            r'<meta\s+name=["\']generator["\']\s+content=["\']WordPress', html, re.I):
++        techs.add("WordPress")
++    if re.search(r'<meta\s+name=["\']generator["\']\s+content=["\']Joomla', html, re.I) or "/media/joomla/" in html:
++        techs.add("Joomla")
++    if re.search(r"Drupal\.settings", html) or "/sites/default/files/" in html:
++        techs.add("Drupal")
++    if "__NEXT_DATA__" in html or "/_next/static/" in html:
++        techs.add("Next.js")
++    if "react-root" in html or "data-reactroot" in html or re.search(r"react(?:\.production)?(?:\.min)?\.js", html, re.I):
++        techs.add("React")
++    if re.search(r"vue(?:\.runtime)?(?:\.min)?\.js|data-v-[0-9a-f]{8}", html, re.I) or "__vue__" in html:
++        techs.add("Vue.js")
++    if "ng-version" in html or re.search(r"angular(?:\.min)?\.js", html, re.I):
++        techs.add("Angular")
++    if re.search(r"jquery[-.]?(?:\d+\.\d+\.\d+)?(?:\.min)?\.js", html, re.I):
++        techs.add("jQuery")
++    if "bootstrap" in html.lower():
++        techs.add("Bootstrap")
++    if lower_headers.get("x-powered-by"):
++        techs.add(f"Powered by {lower_headers['x-powered-by']}")
++    if lower_headers.get("x-generator"):
++        techs.add(f"Generator: {lower_headers['x-generator']}")
++
++    res.technologies = sorted(set(res.technologies) | techs)
++
++
++def check_exposed_files(res: ScanResult, base: str):
++    probes = [
++        ("/.git/HEAD", "critical", "Git repository exposed",
++         ".git/HEAD is publicly accessible — the entire source code history can be downloaded.",
++         "Block .git in the web server config and remove it from the web root."),
++        ("/.env", "critical", ".env file exposed",
++         "Environment file is publicly accessible — usually contains DB passwords and API keys.",
++         "Remove .env from the web root; rotate all secrets in it NOW."),
++        ("/.git/config", "high", "Git config exposed",
++         ".git/config reveals repository remotes and structure.",
++         "Block .git access in the web server."),
++        ("/backup.sql", "high", "Possible SQL backup exposed",
++         "A backup.sql file responded publicly — may contain the full database.",
++         "Remove database dumps from the web root."),
++        ("/config.php.bak", "high", "Config backup exposed",
++         "A backup copy of config is publicly accessible — likely contains credentials.",
++         "Delete *.bak copies from the web root."),
++        ("/phpinfo.php", "medium", "phpinfo() page exposed",
++         "phpinfo.php reveals server configuration, paths, and modules.",
++         "Remove phpinfo() scripts from production."),
++        ("/server-status", "medium", "Server status page exposed",
++         "Apache server-status leaks requests, IPs, and uptime.",
++         "Restrict server-status to localhost."),
++        ("/.DS_Store", "low", ".DS_Store exposed",
++         "macOS .DS_Store leaks directory file listings.",
++         "Delete .DS_Store and block it in the web server."),
++    ]
++    for path, sev, title, detail, fix in probes:
++        st, body, _ = _get(base + path, timeout=8)
++        if st == 200 and len(body) > 20:
++            if path == "/.git/HEAD" and "ref:" not in body:
++                continue
++            if path == "/.env" and not re.search(r"(DB_|KEY|SECRET|PASSWORD|TOKEN)=", body):
++                continue
++            res.findings.append(Finding(f"exposed{path}", sev, title, detail, fix))
++
++
++def check_js_secrets(res: ScanResult, base: str, html: str):
++    scripts = re.findall(r'<script[^>]+src=["\']([^"\']+\.js[^"\']*)', html, re.I)[:10]
++    secret_re = re.compile(
++        r"(?:api[_-]?key|apikey|secret|token|password)['\"\s:=]{1,10}['\"]([A-Za-z0-9_\-]{20,})['\"]",
++        re.I,
++    )
++    placeholder = re.compile(r"^(token|secret|password|apikey|api_key|example|test|demo|xxx|placeholder|none)", re.I)
++    for src in scripts:
++        full = src if src.startswith("http") else base + ("" if src.startswith("/") else "/") + src
++        st, body, _ = _get(full, timeout=8)
++        if st != 200:
++            continue
++        for m in secret_re.finditer(body):
++            value = m.group(1)
++            if placeholder.match(value) or (value.isalpha() and value.islower()):
++                continue
++            res.findings.append(Finding(
++                "js-secret", "high", "Possible hardcoded secret in JavaScript",
++                f"{src}: a 20+ char token-like value is embedded in public JS: {value[:6]}…{value[-4:]}",
++                "Move secrets server-side; rotate this key — it is public.",
++            ))
++            break
+ 
+-    status, html, headers = _get(base + "/")
+-    if status == 0:
+-        res.errors.append("Site is unreachable")
+-        return res
+ 
+-    # WP signals: meta generator, wp-content paths, wp-json link
++def detect_wordpress(res: ScanResult, base: str, html: str):
+     gen = re.search(r'<meta\s+name=["\']generator["\']\s+content=["\']WordPress\s*([\d.]*)', html, re.I)
+     has_wp_content = "wp-content/" in html or "wp-includes/" in html
+     if gen:
+@@ -96,17 +216,16 @@ def detect_wordpress(base: str) -> ScanResult:
+         res.is_wordpress = True
+ 
+     if not res.is_wordpress:
+-        # Try readme.html — classic WP fingerprint
+         st, readme, _ = _get(base + "/readme.html")
+         if st == 200 and "WordPress" in readme:
+             res.is_wordpress = True
+             m = re.search(r"Version\s+([\d.]+)", readme)
+             if m:
+                 res.wp_version = m.group(1)
+-        else:
+-            return res
+ 
+-    # WP version fallback: feed or login page CSS version
++    if not res.is_wordpress:
++        return
++
+     if not res.wp_version:
+         st, login, _ = _get(base + "/wp-login.php")
+         if st == 200:
+@@ -114,14 +233,12 @@ def detect_wordpress(base: str) -> ScanResult:
+             if m:
+                 res.wp_version = m.group(1)
+ 
+-    # Plugins & theme from asset paths: /wp-content/plugins/<slug>/, /themes/<slug>/
+     for m in re.finditer(r"/wp-content/plugins/([a-z0-9\-_]+)/", html, re.I):
+         res.plugins.setdefault(m.group(1).lower(), None)
+     for m in re.finditer(r"/wp-content/themes/([a-z0-9\-_]+)/", html, re.I):
+         if not res.theme:
+             res.theme = m.group(1).lower()
+ 
+-    # Plugin versions via readme.txt for detected plugins (up to 15)
+     for slug in list(res.plugins)[:15]:
+         st, txt, _ = _get(f"{base}/wp-content/plugins/{slug}/readme.txt")
+         if st == 200:
+@@ -129,10 +246,8 @@ def detect_wordpress(base: str) -> ScanResult:
+             if m:
+                 res.plugins[slug] = m.group(1)
+ 
+-    return res
+-
+ 
+-def check_vulns(res: ScanResult):
++def check_wp_vulns(res: ScanResult):
+     targets = []
+     if res.wp_version:
+         targets.append(("core", "wordpress", res.wp_version))
+@@ -148,7 +263,6 @@ def check_vulns(res: ScanResult):
+         for v in (data.get("data", {}) or {}).get("vulnerability", []) or []:
+             op = v.get("operator", {})
+             max_v = op.get("max_version")
+-            # Version filter: report when installed version is below the fixed one
+             if ver and max_v and _version_gte(ver, max_v):
+                 continue
+             cve = ""
+@@ -157,19 +271,14 @@ def check_vulns(res: ScanResult):
+                     cve = s["id"]
+                     break
+             res.vulns.append(Vuln(
+-                software=slug,
+-                software_type=sw_type,
++                software=slug, software_type=sw_type,
+                 title=v.get("name", "Known vulnerability"),
+-                max_affected=max_v or "?",
+-                cve=cve,
++                max_affected=max_v or "?", cve=cve,
+                 severity="high" if sw_type == "core" else "medium",
+             ))
+ 
+ 
+-def check_config(res: ScanResult):
+-    base = res.url.rstrip("/")
+-
+-    # 1. xmlrpc.php exposed (pingback DDoS / brute force amplification)
++def check_wp_config(res: ScanResult, base: str):
+     st, body, _ = _get(base + "/xmlrpc.php")
+     if st == 200 and "XML-RPC server accepts POST requests only" in body:
+         res.findings.append(Finding(
+@@ -178,7 +287,6 @@ def check_config(res: ScanResult):
+             "Disable XML-RPC (plugin or .htaccess deny) if not needed.",
+         ))
+ 
+-    # 2. User enumeration via REST API
+     st, body, _ = _get(base + "/wp-json/wp/v2/users")
+     if st == 200 and body.strip().startswith("["):
+         try:
+@@ -193,7 +301,6 @@ def check_config(res: ScanResult):
+         except json.JSONDecodeError:
+             pass
+ 
+-    # 3. Debug mode (display errors / wp-config backup)
+     st, body, _ = _get(base + "/wp-config.php.swp")
+     if st == 200 and len(body) > 50:
+         res.findings.append(Finding(
+@@ -202,7 +309,6 @@ def check_config(res: ScanResult):
+             "Delete backup copies of wp-config.php immediately.",
+         ))
+ 
+-    # 4. Directory listing on uploads
+     st, body, _ = _get(base + "/wp-content/uploads/")
+     if st == 200 and ("Index of" in body or "Parent Directory" in body):
+         res.findings.append(Finding(
+@@ -211,7 +317,6 @@ def check_config(res: ScanResult):
+             "Disable directory indexing (Options -Indexes).",
+         ))
+ 
+-    # 5. Outdated core
+     if res.wp_version and _version_lt(res.wp_version, "6.0"):
+         res.findings.append(Finding(
+             "outdated-core", "high", f"Outdated WordPress core {res.wp_version}",
+@@ -233,13 +338,29 @@ def _version_lt(a: str, b: str) -> bool:
+     return not _version_gte(a, b)
+ 
+ 
+-def scan_wordpress(url: str) -> ScanResult:
++def scan_website(url: str) -> ScanResult:
+     if not url.startswith(("http://", "https://")):
+         url = "https://" + url
+-    res = detect_wordpress(url)
+-    if not res.is_wordpress:
+-        res.errors.append("Does not look like a WordPress site")
++    base = url.rstrip("/")
++    res = ScanResult(url=base)
++
++    status, html, headers = _get(base + "/")
++    if status == 0:
++        res.errors.append("Site is unreachable")
+         return res
+-    check_vulns(res)
+-    check_config(res)
++
++    fingerprint(res, html, headers)
++    check_headers(res, headers)
++    check_exposed_files(res, base)
++    check_js_secrets(res, base, html)
++
++    detect_wordpress(res, base, html)
++    if res.is_wordpress:
++        check_wp_vulns(res)
++        check_wp_config(res, base)
++
+     return res
++
++
++def scan_wordpress(url: str) -> ScanResult:
++    return scan_website(url)
+-- 
+2.52.0
+
